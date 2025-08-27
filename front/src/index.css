@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 240 10% 99%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    /* Primary: Deep Professional Red */
+    --primary: 0 85% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 0 70% 65%;
+
+    /* Secondary: Warm Orange/Gold */
+    --secondary: 35 88% 60%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+
+    /* Accent: Vibrant Red */  
+    --accent: 0 85% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 0 85% 55%;
+
+    --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(35 100% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--secondary)) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(220 14.3% 97%));
+
+    /* Shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
+    --shadow-soft: 0 4px 20px -4px hsl(220 10% 10% / 0.1);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bouncy: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary: Deep Professional Red */
+    --primary: 0 85% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 0 70% 65%;
+
+    /* Secondary: Warm Orange/Gold */
+    --secondary: 35 88% 60%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    /* Accent: Vibrant Red */
+    --accent: 0 85% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 0 85% 55%;
+
+    /* Gradients for Dark Mode */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(35 100% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--secondary)) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(240 3.7% 7%));
+
+    /* Shadows for Dark Mode */
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.4);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.5);
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Animation Delay Utilities */
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-300 { animation-delay: 300ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
+  .animation-delay-500 { animation-delay: 500ms; }
+  .animation-delay-600 { animation-delay: 600ms; }
+  .animation-delay-700 { animation-delay: 700ms; }
+  .animation-delay-800 { animation-delay: 800ms; }
+  .animation-delay-1000 { animation-delay: 1000ms; }
+
+  /* Line Clamp Utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}
