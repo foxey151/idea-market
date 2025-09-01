@@ -12,6 +12,7 @@ import { Database } from "@/lib/supabase/types";
 import { Calendar, Edit, MessageSquare, User, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/StableAuthContext";
+import GoogleAdsense from "@/components/GoogleAdsense";
 
 type IdeaDetail = Database['public']['Tables']['ideas']['Row'] & {
   profiles: {
@@ -235,9 +236,12 @@ export default function IdeaDetailPage() {
       <Header />
       
       <main className="pt-24 pb-16">
-        <div className="container mx-auto px-4 max-w-4xl">
-          {/* アイデア詳細 */}
-          <Card className="mb-8">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* メインコンテンツ */}
+            <div className="lg:col-span-3">
+              {/* アイデア詳細 */}
+              <Card className="mb-8">
             <CardHeader>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-4">
@@ -438,6 +442,38 @@ export default function IdeaDetailPage() {
               </div>
             </CardContent>
           </Card>
+            </div>
+
+            {/* サイドバー（広告エリア） */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-8 space-y-6">
+                {/* メイン広告 */}
+                <Card className="p-4">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-4 text-center">スポンサー</h3>
+                  <GoogleAdsense 
+                    adSlot="7718612763"
+                    style={{ 
+                      display: 'block',
+                      minHeight: '300px',
+                      width: '100%'
+                    }}
+                  />
+                </Card>
+
+                {/* 関連情報カード */}
+                <Card className="p-4">
+                  <h3 className="text-sm font-medium mb-3">このアイデアについて</h3>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div>投稿日: {new Date(idea.created_at).toLocaleDateString('ja-JP')}</div>
+                    <div>コメント数: {comments.length}</div>
+                    {idea.deadline && (
+                      <div>議論期限: {new Date(idea.deadline).toLocaleDateString('ja-JP')}</div>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
