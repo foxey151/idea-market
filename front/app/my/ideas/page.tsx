@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/StableAuthContext";
-import { getUserIdeas, getCommentCount } from "@/lib/supabase/ideas";
+import { getUserIdeas, getCommentCount, updateOverdueIdeas } from "@/lib/supabase/ideas";
 import { Database } from "@/lib/supabase/types";
 import { Search, Plus, MessageSquare, Edit, Calendar } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -52,6 +52,10 @@ export default function MyIdeasPage() {
 
     try {
       setLoading(true);
+      
+      // まず期限切れアイデアのステータスを更新
+      await updateOverdueIdeas(user.id);
+      
       const { data, error } = await getUserIdeas(user.id, 50, 0);
       
       if (error) {
@@ -93,7 +97,8 @@ export default function MyIdeasPage() {
     const colors = {
       "draft": "bg-gray-100 text-gray-800",
       "published": "bg-green-100 text-green-800",
-      "closed": "bg-red-100 text-red-800"
+      "closed": "bg-red-100 text-red-800",
+      "overdue": "bg-orange-100 text-orange-800"
     };
     return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
@@ -102,13 +107,22 @@ export default function MyIdeasPage() {
     const statusMap = {
       "draft": "下書き",
       "published": "公開中", 
-      "closed": "終了"
+      "closed": "終了",
+      "overdue": "期限切れ"
     };
     return statusMap[status as keyof typeof statusMap] || status;
   };
 
   const handleEditIdea = (ideaId: string) => {
     router.push(`/ideas/${ideaId}/edit`);
+  };
+
+  const handleCreateFinalIdea = (ideaId: string) => {
+    // TODO: 最終アイデア作成ページに遷移
+    toast({
+      title: "機能準備中",
+      description: "最終アイデア作成機能は準備中です。",
+    });
   };
 
   const handleViewIdea = (ideaId: string) => {
@@ -184,12 +198,12 @@ export default function MyIdeasPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  下書き
+                  期限切れ
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-600">
-                  {ideas.filter(idea => idea.status === 'draft').length}
+                <div className="text-2xl font-bold text-orange-600">
+                  {ideas.filter(idea => (idea.status as any) === 'overdue').length}
                 </div>
               </CardContent>
             </Card>
@@ -295,15 +309,38 @@ export default function MyIdeasPage() {
                       >
                         詳細
                       </Button>
-                      <Button 
-                        variant="secondary" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => handleEditIdea(idea.id)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        編集
-                      </Button>
+                      {(idea.status as any) === 'overdue' ? (
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="flex-1 bg-orange-500 hover:bg-orange-600"
+                          onClick={() => handleCreateFinalIdea(idea.id)}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          最終アイデア作成
+                        </Button>
+                      ) : idea.status === 'published' ? (
+                        <Button 
+                          variant="secondary" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleEditIdea(idea.id)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          編集
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="secondary" 
+                          size="sm" 
+                          className="flex-1"
+                          disabled
+                          title="このアイデアは編集できません"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          編集不可
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

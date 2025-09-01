@@ -188,3 +188,38 @@ export const createComment = async (ideaId: string, text: string, authorId: stri
   
   return { data, error }
 }
+
+// 期限切れアイデアを検出してステータスを更新
+export const updateOverdueIdeas = async (userId: string) => {
+  const now = new Date().toISOString()
+  
+  // 期限切れのアイデアを取得（締切があって過ぎているもの、または締切がないもの）
+  const { data: overdueIdeas, error: fetchError } = await supabase
+    .from('ideas')
+    .select('id, deadline')
+    .eq('author_id', userId)
+    .eq('status', 'published')
+    .or(`deadline.lt.${now},deadline.is.null`)
+  
+  if (fetchError) {
+    console.error('期限切れアイデア取得エラー:', fetchError)
+    return { error: fetchError }
+  }
+
+  if (overdueIdeas && overdueIdeas.length > 0) {
+    const ideaIds = overdueIdeas.map((idea: any) => idea.id)
+    
+    // ステータスをoverdueに更新
+    const { error: updateError } = await supabase
+      .from('ideas')
+      .update({ status: 'overdue' })
+      .in('id', ideaIds)
+    
+    if (updateError) {
+      console.error('ステータス更新エラー:', updateError)
+      return { error: updateError }
+    }
+  }
+  
+  return { data: overdueIdeas }
+}

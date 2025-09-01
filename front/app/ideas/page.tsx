@@ -83,14 +83,6 @@ export default function IdeasPage() {
     router.push(`/ideas/${ideaId}`);
   };
 
-  const handlePurchaseIdea = (ideaId: string) => {
-    // TODO: 購入機能の実装
-    toast({
-      title: "機能準備中",
-      description: "購入機能は準備中です。",
-    });
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -220,18 +212,10 @@ export default function IdeasPage() {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="flex-1"
+                        className="w-full"
                         onClick={() => handleViewIdea(idea.id)}
                       >
-                        詳細を見る
-                      </Button>
-                      <Button 
-                        variant="hero" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => handlePurchaseIdea(idea.id)}
-                      >
-                        購入する
+                        詳細を見る・コメントする
                       </Button>
                     </div>
                   </CardContent>

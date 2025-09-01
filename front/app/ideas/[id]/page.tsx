@@ -7,9 +7,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { getIdeaById, getCommentsByIdeaId, createComment } from "@/lib/supabase/ideas";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { getIdeaById, getCommentsByIdeaId, createComment, deleteIdea } from "@/lib/supabase/ideas";
 import { Database } from "@/lib/supabase/types";
-import { Calendar, Edit, MessageSquare, User, Clock } from "lucide-react";
+import { Calendar, Edit, MessageSquare, User, Clock, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/StableAuthContext";
 import GoogleAdsense from "@/components/GoogleAdsense";
@@ -127,12 +138,52 @@ export default function IdeaDetailPage() {
     router.push(`/ideas/${ideaId}/edit`);
   };
 
-  const handlePurchaseIdea = () => {
-    // TODO: 購入機能の実装
-    toast({
-      title: "機能準備中",
-      description: "購入機能は準備中です。",
-    });
+  const handleDeleteIdea = async () => {
+    if (!user) {
+      toast({
+        title: "ログインが必要です",
+        description: "削除するにはログインしてください。",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (idea && idea.author_id !== user.id) {
+      toast({
+        title: "権限エラー",
+        description: "このアイデアの削除権限がありません。",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await deleteIdea(ideaId);
+      
+      if (error) {
+        console.error('アイデア削除エラー:', error);
+        toast({
+          title: "エラー",
+          description: "アイデアの削除に失敗しました。",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "成功",
+        description: "アイデアを削除しました。",
+      });
+      
+      router.push('/my/ideas');
+    } catch (error) {
+      console.error('予期しないエラー:', error);
+      toast({
+        title: "エラー",
+        description: "予期しないエラーが発生しました。",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSubmitComment = async () => {
@@ -292,28 +343,63 @@ export default function IdeaDetailPage() {
               {/* アクションボタン */}
               <div className="flex flex-wrap gap-3 pt-6 border-t">
                 {isAuthor && (
-                  <Button 
-                    variant="outline" 
-                    onClick={handleEditIdea}
-                    className="flex items-center gap-2"
-                  >
-                    <Edit className="h-4 w-4" />
-                    編集する
-                  </Button>
+                  idea.status === 'published' ? (
+                    <Button 
+                      variant="outline" 
+                      onClick={handleEditIdea}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                      編集する
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      disabled
+                      className="flex items-center gap-2"
+                      title="このアイデアは編集できません"
+                    >
+                      <Edit className="h-4 w-4" />
+                      編集不可
+                    </Button>
+                  )
                 )}
-                <Button 
-                  variant="hero" 
-                  onClick={handlePurchaseIdea}
-                  className="flex items-center gap-2"
-                >
-                  購入する
-                </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => router.push('/ideas')}
                 >
                   一覧に戻る
                 </Button>
+                {isAuthor && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="destructive" 
+                        className="flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        削除する
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>アイデアを削除しますか？</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          この操作は取り消すことができません。このアイデアとそれに関連するすべてのコメントが完全に削除されます。
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteIdea}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          削除する
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.ideas (
     summary TEXT NOT NULL,
     attachments TEXT[] NOT NULL DEFAULT '{}', -- ファイルパス配列
     deadline TIMESTAMPTZ, -- 募集締切日時
-    status TEXT NOT NULL DEFAULT 'published' CHECK (status IN ('draft', 'published', 'closed')),
+    status TEXT NOT NULL DEFAULT 'published' CHECK (status IN ('overdue', 'published', 'closed')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
