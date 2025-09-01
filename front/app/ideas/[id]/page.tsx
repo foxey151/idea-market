@@ -28,8 +28,10 @@ import { getFileUrl } from "@/lib/supabase/storage";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 type IdeaDetail = Database['public']['Tables']['ideas']['Row'] & {
   profiles: {
@@ -382,6 +384,9 @@ export default function IdeaDetailPage() {
       {/* 画像ギャラリーモーダル */}
       <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
         <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
+          <VisuallyHidden>
+            <DialogTitle>画像ギャラリー</DialogTitle>
+          </VisuallyHidden>
           {selectedImageIndex !== null && imageFiles[selectedImageIndex] && (
             <div className="relative w-full h-full">
               {/* 闉するボタン */}
@@ -545,11 +550,11 @@ export default function IdeaDetailPage() {
                                     loading="lazy"
                                   />
                                 </div>
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-red-500/20 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
                                   <Button 
                                     size="sm" 
                                     variant="secondary" 
-                                    className="bg-white/90 hover:bg-white pointer-events-none"
+                                    className="bg-red-500 hover:bg-red-600 text-white pointer-events-none"
                                   >
                                     <Eye className="h-4 w-4 mr-1" />
                                     拡大
