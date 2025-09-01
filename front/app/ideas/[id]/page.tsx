@@ -20,10 +20,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getIdeaById, getCommentsByIdeaId, createComment, deleteIdea } from "@/lib/supabase/ideas";
 import { Database } from "@/lib/supabase/types";
-import { Calendar, Edit, MessageSquare, User, Clock, Trash2, FileText } from "lucide-react";
+import { Calendar, Edit, MessageSquare, User, Clock, Trash2, FileText, Image, Download, Eye, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/StableAuthContext";
 import GoogleAdsense from "@/components/GoogleAdsense";
+import { getFileUrl } from "@/lib/supabase/storage";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 type IdeaDetail = Database['public']['Tables']['ideas']['Row'] & {
   profiles: {
@@ -48,6 +56,10 @@ export default function IdeaDetailPage() {
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [attachmentUrls, setAttachmentUrls] = useState<{path: string, url: string, isImage: boolean, fileName: string}[]>([]);
+  const [loadingAttachments, setLoadingAttachments] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
@@ -57,6 +69,84 @@ export default function IdeaDetailPage() {
     fetchIdea();
     fetchComments();
   }, [ideaId]);
+
+  useEffect(() => {
+    if (idea && idea.attachments && idea.attachments.length > 0) {
+      loadAttachments();
+    } else {
+      setAttachmentUrls([]);
+    }
+  }, [idea]);
+
+  const loadAttachments = async () => {
+    if (!idea || !idea.attachments || idea.attachments.length === 0) {
+      return;
+    }
+
+    try {
+      setLoadingAttachments(true);
+      console.log('添付ファイル読み込み開始:', idea.attachments);
+      
+      const attachmentsWithUrls = await Promise.all(
+        idea.attachments.map(async (filePath) => {
+          const url = await getFileUrl(filePath);
+          // ファイル拡張子から画像かどうかを判定
+          const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(filePath);
+          // ファイル名を取得
+          const fileName = filePath.split('/').pop() || filePath;
+          
+          console.log('ファイル処理:', { filePath, url, isImage, fileName });
+          
+          return {
+            path: filePath,
+            url,
+            isImage,
+            fileName
+          };
+        })
+      );
+      
+      console.log('添付ファイル読み込み完了:', attachmentsWithUrls);
+      setAttachmentUrls(attachmentsWithUrls);
+    } catch (error) {
+      console.error('添付ファイル読み込みエラー:', error);
+      toast({
+        title: "エラー",
+        description: "添付ファイルの読み込みに失敗しました。",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAttachments(false);
+    }
+  };
+
+  const openGallery = (index: number) => {
+    setSelectedImageIndex(index);
+    setIsGalleryOpen(true);
+  };
+
+  const closeGallery = () => {
+    setIsGalleryOpen(false);
+    setSelectedImageIndex(null);
+  };
+
+  const goToPrevImage = () => {
+    const imageFiles = attachmentUrls.filter(file => file.isImage);
+    if (selectedImageIndex !== null && selectedImageIndex > 0) {
+      setSelectedImageIndex(selectedImageIndex - 1);
+    } else if (selectedImageIndex !== null) {
+      setSelectedImageIndex(imageFiles.length - 1);
+    }
+  };
+
+  const goToNextImage = () => {
+    const imageFiles = attachmentUrls.filter(file => file.isImage);
+    if (selectedImageIndex !== null && selectedImageIndex < imageFiles.length - 1) {
+      setSelectedImageIndex(selectedImageIndex + 1);
+    } else if (selectedImageIndex !== null) {
+      setSelectedImageIndex(0);
+    }
+  };
 
   const fetchIdea = async () => {
     try {
@@ -287,10 +377,75 @@ export default function IdeaDetailPage() {
 
   // ユーザーがアイデアの作成者かどうかチェック
   const isAuthor = user && idea.author_id === user.id;
+  const imageFiles = attachmentUrls.filter(file => file.isImage);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      {/* 画像ギャラリーモーダル */}
+      <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+        <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
+          <VisuallyHidden>
+            <DialogTitle>画像ギャラリー</DialogTitle>
+          </VisuallyHidden>
+          {selectedImageIndex !== null && imageFiles[selectedImageIndex] && (
+            <div className="relative w-full h-full">
+              {/* 闉するボタン */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
+                onClick={closeGallery}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              
+              {/* 画像表示 */}
+              <div className="w-full h-full flex items-center justify-center bg-black">
+                <img
+                  src={imageFiles[selectedImageIndex].url}
+                  alt={imageFiles[selectedImageIndex].fileName}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+              
+              {/* ナビゲーションボタン */}
+              {imageFiles.length > 1 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                    onClick={goToPrevImage}
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                    onClick={goToNextImage}
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                </>
+              )}
+              
+              {/* 画像情報 */}
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-black/70 text-white p-3 rounded-lg">
+                  <p className="text-sm font-medium">{imageFiles[selectedImageIndex].fileName}</p>
+                  <p className="text-xs text-gray-300">
+                    {selectedImageIndex + 1} / {imageFiles.length}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      <div className="min-h-screen bg-background">
+        <Header />
       
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-7xl">
@@ -359,6 +514,101 @@ export default function IdeaDetailPage() {
                       {idea.detail}
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* 添付ファイル表示 */}
+              {(attachmentUrls.length > 0 || loadingAttachments) && (
+                <div className="prose max-w-none mb-6">
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    添付ファイル {attachmentUrls.length > 0 && `(${attachmentUrls.length})`}
+                  </h3>
+                  
+                  {loadingAttachments ? (
+                    <div className="flex items-center justify-center p-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <span className="ml-2 text-muted-foreground">添付ファイルを読み込み中...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* 画像ファイル */}
+                      {attachmentUrls.filter(file => file.isImage).length > 0 && (
+                        <div>
+                          <h4 className="text-md font-medium mb-3 flex items-center gap-2">
+                            <Image className="h-4 w-4" />
+                            画像ファイル ({attachmentUrls.filter(file => file.isImage).length})
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {attachmentUrls.filter(file => file.isImage).map((file, index) => (
+                              <div key={index} className="group relative cursor-pointer" onClick={() => openGallery(index)}>
+                                <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+                                  <img 
+                                    src={file.url} 
+                                    alt={file.fileName}
+                                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                    loading="lazy"
+                                  />
+                                </div>
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-red-500/20 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                  <Button 
+                                    size="sm" 
+                                    variant="secondary" 
+                                    className="bg-red-500 hover:bg-red-600 text-white pointer-events-none"
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    拡大
+                                  </Button>
+                                </div>
+                                <div className="absolute bottom-2 left-2 right-2">
+                                  <div className="bg-black/70 text-white text-xs px-2 py-1 rounded truncate">
+                                    {file.fileName}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* PDFファイル */}
+                      {attachmentUrls.filter(file => !file.isImage).length > 0 && (
+                        <div>
+                          <h4 className="text-md font-medium mb-3 flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            ドキュメントファイル ({attachmentUrls.filter(file => !file.isImage).length})
+                          </h4>
+                          <div className="space-y-2">
+                            {attachmentUrls.filter(file => !file.isImage).map((file, index) => {
+                              const fileExtension = file.fileName.split('.').pop()?.toUpperCase() || 'FILE';
+                              
+                              return (
+                                <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                      <span className="text-xs font-bold text-primary">{fileExtension}</span>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-sm">{file.fileName}</p>
+                                      <p className="text-xs text-muted-foreground">クリックしてダウンロード</p>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => window.open(file.url, '_blank')}
+                                  >
+                                    <Download className="h-4 w-4 mr-1" />
+                                    ダウンロード
+                                  </Button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -611,7 +861,8 @@ export default function IdeaDetailPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }

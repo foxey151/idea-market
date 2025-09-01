@@ -31,7 +31,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const { signIn } = useAuth()
   const { toast } = useToast()
 
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+  const handleSocialLogin = async (provider: 'google' /* | 'facebook' */) => {
     try {
       setLoading(true)
       const { error } = await supabase.auth.signInWithOAuth({
@@ -144,7 +144,8 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
               Googleでログイン
             </Button>
 
-            {/* Facebook ログイン */}
+            {/* Facebook ログイン - 無効化中 */}
+            {/*
             <Button
               onClick={() => handleSocialLogin('facebook')}
               disabled={loading}
@@ -156,6 +157,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
               </svg>
               Facebookでログイン
             </Button>
+            */}
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

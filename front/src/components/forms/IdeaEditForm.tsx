@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/StableAuthContext"
 import { getIdeaById, updateIdea } from "@/lib/supabase/ideas"
 import { Database } from "@/lib/supabase/types"
+import { uploadFiles, validateFile } from "@/lib/supabase/storage"
 
 type Idea = Database['public']['Tables']['ideas']['Row']
 
@@ -153,7 +154,35 @@ export function IdeaEditForm({ ideaId }: IdeaEditFormProps) {
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
-    setUploadedFiles(prev => [...prev, ...files])
+    
+    // ファイルバリデーション
+    const validFiles: File[] = []
+    const errorMessages: string[] = []
+    
+    files.forEach(file => {
+      const validation = validateFile(file)
+      if (validation.valid) {
+        validFiles.push(file)
+      } else {
+        errorMessages.push(`${file.name}: ${validation.error}`)
+      }
+    })
+    
+    // エラーメッセージ表示
+    if (errorMessages.length > 0) {
+      toast({
+        title: "ファイルエラー",
+        description: errorMessages.join('\n'),
+        variant: "destructive"
+      })
+    }
+    
+    // 有効なファイルのみ追加
+    if (validFiles.length > 0) {
+      setUploadedFiles(prev => [...prev, ...validFiles])
+    }
+    
+    event.target.value = ''
   }
 
   const removeFile = (index: number) => {
@@ -183,11 +212,29 @@ export function IdeaEditForm({ ideaId }: IdeaEditFormProps) {
         return
       }
 
-      // ファイルアップロード処理（必要に応じて）
-      let attachments: string[] = []
+      // ファイルアップロード処理
+      let newAttachments: string[] = []
       if (uploadedFiles.length > 0) {
-        // TODO: Supabase Storageにファイルをアップロード
-        // attachments = await uploadFiles(uploadedFiles)
+        try {
+          const { data: uploadData, error: uploadError } = await uploadFiles(uploadedFiles)
+          
+          if (uploadError) {
+            throw new Error(`ファイルアップロードエラー: ${uploadError}`)
+          }
+          
+          if (uploadData) {
+            newAttachments = uploadData.map(file => file.path)
+          }
+          
+        } catch (error) {
+          console.error('ファイルアップロードエラー:', error)
+          toast({
+            title: "ファイルアップロード失敗",
+            description: '新しいファイルのアップロードに失敗しました。',
+            variant: "destructive"
+          })
+          return
+        }
       }
 
       // 更新データの準備
@@ -196,6 +243,10 @@ export function IdeaEditForm({ ideaId }: IdeaEditFormProps) {
         summary: data.summary,
         deadline: data.deadline || null,
         updated_at: new Date().toISOString(),
+        // 新しいファイルがある場合は追加（既存のファイルは保持）
+        ...(newAttachments.length > 0 && {
+          attachments: [...(originalIdea?.attachments || []), ...newAttachments]
+        })
       }
 
       // デバッグ情報
