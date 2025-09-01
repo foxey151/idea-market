@@ -168,7 +168,7 @@ export default function IdeasPage() {
               {filteredIdeas.map((idea, index) => (
                 <Card 
                   key={idea.id} 
-                  className="group hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 cursor-pointer animate-fade-in"
+                  className="group hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 cursor-pointer animate-fade-in flex flex-col h-full"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <CardHeader className="pb-3">
@@ -189,26 +189,30 @@ export default function IdeasPage() {
                     </CardDescription>
                   </CardHeader>
                   
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                      <span>by {idea.profiles?.display_name || 'Unknown'}</span>
+                  <CardContent className="flex-1 flex flex-col">
+                    {/* 上部コンテンツ */}
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                        <span>by {idea.profiles?.display_name || 'Unknown'}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                        <div className="flex items-center gap-1">
+                          <MessageSquare className="h-4 w-4" />
+                          <span>{idea.commentCount || 0}</span>
+                        </div>
+                      </div>
+
+                      {/* Deadline */}
+                      {idea.deadline && (
+                        <div className="text-sm text-muted-foreground mb-4">
+                          締切: {new Date(idea.deadline).toLocaleDateString('ja-JP')}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                                                                    <div className="flex items-center gap-1">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>{idea.commentCount || 0}</span>
-                      </div>
-                    </div>
-
-                    {/* Deadline */}
-                    {idea.deadline && (
-                      <div className="text-sm text-muted-foreground mb-4">
-                        締切: {new Date(idea.deadline).toLocaleDateString('ja-JP')}
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
+                    {/* Actions - 下部固定 */}
+                    <div className="flex gap-2 mt-auto">
                       <Button 
                         variant="outline" 
                         size="sm" 

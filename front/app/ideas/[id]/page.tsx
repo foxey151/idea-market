@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getIdeaById, getCommentsByIdeaId, createComment, deleteIdea } from "@/lib/supabase/ideas";
 import { Database } from "@/lib/supabase/types";
-import { Calendar, Edit, MessageSquare, User, Clock, Trash2 } from "lucide-react";
+import { Calendar, Edit, MessageSquare, User, Clock, Trash2, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/StableAuthContext";
 import GoogleAdsense from "@/components/GoogleAdsense";
@@ -100,6 +100,7 @@ export default function IdeaDetailPage() {
 
   const fetchComments = async () => {
     try {
+      console.log('コメント取得開始 - ideaId:', ideaId);
       const { data, error } = await getCommentsByIdeaId(ideaId);
       
       if (error) {
@@ -107,8 +108,13 @@ export default function IdeaDetailPage() {
         return;
       }
 
+      console.log('コメント取得結果:', data);
       if (data) {
         setComments(data);
+        console.log('コメント設定完了:', data.length, '件');
+      } else {
+        console.log('コメントデータがnullです');
+        setComments([]);
       }
     } catch (error) {
       console.error('コメント取得エラー:', error);
@@ -301,7 +307,8 @@ export default function IdeaDetailPage() {
                   </Badge>
                   <Badge variant={idea.status === 'published' ? 'default' : 'secondary'}>
                     {idea.status === 'published' ? '公開中' : 
-                     idea.status === 'draft' ? '下書き' : '終了'}
+                     (idea.status as any) === 'overdue' ? '期限切れ' :
+                     (idea.status as any) === 'completed' ? '完成' : 'その他'}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -340,6 +347,21 @@ export default function IdeaDetailPage() {
                 </p>
               </div>
 
+              {/* 完成したアイデアの詳細表示 */}
+              {(idea.status as any) === 'completed' && idea.detail && (
+                <div className="prose max-w-none mb-6">
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    最終アイデア詳細
+                  </h3>
+                  <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                    <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                      {idea.detail}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* アクションボタン */}
               <div className="flex flex-wrap gap-3 pt-6 border-t">
                 {isAuthor && (
@@ -352,6 +374,11 @@ export default function IdeaDetailPage() {
                       <Edit className="h-4 w-4" />
                       編集する
                     </Button>
+                  ) : (idea.status as any) === 'completed' ? (
+                    <Badge variant="secondary" className="flex items-center gap-2 px-3 py-2">
+                      <FileText className="h-4 w-4" />
+                      完成済み
+                    </Badge>
                   ) : (
                     <Button 
                       variant="outline" 
@@ -412,12 +439,20 @@ export default function IdeaDetailPage() {
                 コメント ({comments.length})
               </CardTitle>
               <CardDescription>
-                このアイデアについてディスカッションしましょう
+                {idea.status === 'published' ? 
+                  'このアイデアについてディスカッションしましょう' :
+                  (idea.status as any) === 'overdue' ?
+                  '期限切れのため新しいコメントは投稿できません' :
+                  '完成したアイデアのコメント履歴です'
+                }
               </CardDescription>
             </CardHeader>
             
             <CardContent>
-              {comments && comments.length > 0 ? (
+              {(() => {
+                console.log('コメント表示チェック - comments:', comments, 'length:', comments.length);
+                return comments && comments.length > 0;
+              })() ? (
                 <div className="space-y-6">
                   {comments.map((comment) => {
                     const isIdeaAuthor = comment.author_id === idea.author_id;
@@ -483,46 +518,61 @@ export default function IdeaDetailPage() {
               
               {/* コメント投稿フォーム */}
               <div className="mt-6 pt-6 border-t">
-                {user ? (
-                  <div className="space-y-4">
-                    <Textarea
-                      placeholder="コメントを入力してください..."
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      rows={3}
-                      className="resize-none"
-                    />
-                    <div className="flex justify-end">
+                {idea.status === 'published' ? (
+                  user ? (
+                    <div className="space-y-4">
+                      <Textarea
+                        placeholder="コメントを入力してください..."
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        rows={3}
+                        className="resize-none"
+                      />
+                      <div className="flex justify-end">
+                        <Button 
+                          onClick={handleSubmitComment}
+                          disabled={!commentText.trim() || commentSubmitting}
+                          className="flex items-center gap-2"
+                        >
+                          {commentSubmitting ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              投稿中...
+                            </>
+                          ) : (
+                            <>
+                              <MessageSquare className="h-4 w-4" />
+                              コメントを投稿
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground mb-4">
+                        コメントを投稿するにはログインが必要です
+                      </p>
                       <Button 
-                        onClick={handleSubmitComment}
-                        disabled={!commentText.trim() || commentSubmitting}
-                        className="flex items-center gap-2"
+                        variant="outline" 
+                        onClick={() => router.push(`/login?redirect=${encodeURIComponent(`/ideas/${ideaId}`)}`)}
                       >
-                        {commentSubmitting ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            投稿中...
-                          </>
-                        ) : (
-                          <>
-                            <MessageSquare className="h-4 w-4" />
-                            コメントを投稿
-                          </>
-                        )}
+                        ログイン
                       </Button>
                     </div>
-                  </div>
+                  )
                 ) : (
                   <div className="text-center py-4">
-                    <p className="text-muted-foreground mb-4">
-                      コメントを投稿するにはログインが必要です
-                    </p>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => router.push(`/login?redirect=${encodeURIComponent(`/ideas/${ideaId}`)}`)}
-                    >
-                      ログイン
-                    </Button>
+                    <div className="p-4 bg-muted rounded-lg">
+                      <p className="text-muted-foreground">
+                        {(idea.status as any) === 'overdue' ? 
+                          '期限切れのアイデアにはコメントできません。' :
+                          (idea.status as any) === 'completed' ?
+                          '完成したアイデアにはコメントできません。' :
+                          'このアイデアにはコメントできません。'
+                        }
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

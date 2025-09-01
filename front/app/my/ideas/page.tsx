@@ -95,20 +95,18 @@ export default function MyIdeasPage() {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      "draft": "bg-gray-100 text-gray-800",
       "published": "bg-green-100 text-green-800",
-      "closed": "bg-red-100 text-red-800",
-      "overdue": "bg-orange-100 text-orange-800"
+      "overdue": "bg-orange-100 text-orange-800",
+      "completed": "bg-blue-100 text-blue-800"
     };
     return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
 
   const getStatusText = (status: string) => {
     const statusMap = {
-      "draft": "下書き",
       "published": "公開中", 
-      "closed": "終了",
-      "overdue": "期限切れ"
+      "overdue": "期限切れ",
+      "completed": "完成"
     };
     return statusMap[status as keyof typeof statusMap] || status;
   };
@@ -118,11 +116,7 @@ export default function MyIdeasPage() {
   };
 
   const handleCreateFinalIdea = (ideaId: string) => {
-    // TODO: 最終アイデア作成ページに遷移
-    toast({
-      title: "機能準備中",
-      description: "最終アイデア作成機能は準備中です。",
-    });
+    router.push(`/ideas/${ideaId}/final`);
   };
 
   const handleViewIdea = (ideaId: string) => {
@@ -198,12 +192,12 @@ export default function MyIdeasPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  期限切れ
+                  完成
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">
-                  {ideas.filter(idea => (idea.status as any) === 'overdue').length}
+                <div className="text-2xl font-bold text-blue-600">
+                  {ideas.filter(idea => (idea.status as any) === 'completed').length}
                 </div>
               </CardContent>
             </Card>
@@ -259,7 +253,7 @@ export default function MyIdeasPage() {
               {filteredIdeas.map((idea, index) => (
                 <Card 
                   key={idea.id} 
-                  className="group hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 animate-fade-in"
+                  className="group hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 animate-fade-in flex flex-col h-full"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <CardHeader className="pb-3">
@@ -279,28 +273,31 @@ export default function MyIdeasPage() {
                     </CardDescription>
                   </CardHeader>
                   
-                  <CardContent>
-                    {/* Stats */}
-                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>{idea.commentCount || 0}</span>
+                  <CardContent className="flex-1 flex flex-col">
+                    {/* 上部コンテンツ */}
+                    <div className="flex-1">
+                      {/* Stats */}
+                      <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                        <div className="flex items-center gap-1">
+                          <MessageSquare className="h-4 w-4" />
+                          <span>{idea.commentCount || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(idea.created_at).toLocaleDateString('ja-JP')}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 text-xs">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(idea.created_at).toLocaleDateString('ja-JP')}
-                      </div>
+
+                      {/* Deadline */}
+                      {idea.deadline && (
+                        <div className="text-sm text-muted-foreground mb-4">
+                          締切: {new Date(idea.deadline).toLocaleDateString('ja-JP')}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Deadline */}
-                    {idea.deadline && (
-                      <div className="text-sm text-muted-foreground mb-4">
-                        締切: {new Date(idea.deadline).toLocaleDateString('ja-JP')}
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
+                    {/* Actions - 下部固定 */}
+                    <div className="flex gap-2 mt-auto">
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -319,6 +316,9 @@ export default function MyIdeasPage() {
                           <Plus className="h-4 w-4 mr-1" />
                           最終アイデア作成
                         </Button>
+                      ) : (idea.status as any) === 'completed' ? (
+                        // 完成したアイデアは詳細ボタンのみ表示（編集ボタンなし）
+                        <div className="flex-1"></div>
                       ) : idea.status === 'published' ? (
                         <Button 
                           variant="secondary" 
