@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/StableAuthContext'
 
 export default function EmailConfirmed() {
   const [loading, setLoading] = useState(true)
-  const { user, profile, hasCompleteProfile } = useAuth()
+  const { user, hasCompleteProfile } = useAuth()
   const router = useRouter()
 
   useEffect(() => {

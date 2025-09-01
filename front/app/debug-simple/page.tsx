@@ -1,17 +1,18 @@
 "use client"
 
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
+import { useAuth } from '@/contexts/StableAuthContext'
 
 export default function DebugSimplePage() {
-  const { loading, user, error } = useSimpleAuth()
+  const { loading, user } = useAuth()
+  const error = null // StableAuthContextではerrorプロパティはないため
 
   return (
     <div className="container mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-6">シンプル認証デバッグページ</h1>
+      <h1 className="text-2xl font-bold mb-6">認証デバッグページ</h1>
       
       <div className="space-y-4">
         <div className="p-4 border rounded">
-          <h2 className="font-semibold">認証状態 (Simple)</h2>
+          <h2 className="font-semibold">認証状態 (Stable)</h2>
           <p>Loading: {loading ? 'true' : 'false'}</p>
           <p>User: {user ? 'あり' : 'なし'}</p>
           <p>Error: {error || 'なし'}</p>

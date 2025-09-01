@@ -4,13 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertCircle } from 'lucide-react'
 
 interface AuthCodeErrorProps {
-  searchParams: {
+  searchParams: Promise<{
     error?: string
-  }
+  }>
 }
 
-export default function AuthCodeError({ searchParams }: AuthCodeErrorProps) {
-  const errorMessage = searchParams.error ? decodeURIComponent(searchParams.error) : null
+export default async function AuthCodeError({ searchParams }: AuthCodeErrorProps) {
+  const resolvedSearchParams = await searchParams
+  const errorMessage = resolvedSearchParams.error ? decodeURIComponent(resolvedSearchParams.error) : null
   
   const getErrorDescription = (error: string | null) => {
     switch (error) {

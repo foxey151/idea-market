@@ -1,11 +1,13 @@
 -- Migration: 20250128000010_ad_metrics_table
 -- Description: 広告計測テーブルの作成
 -- 作成日: 2025-01-28
+-- DISABLED: 広告機能を無効化
 
 -- =================================================================
--- 広告計測テーブル
+-- 広告計測テーブル（コメントアウト）
 -- =================================================================
 
+/*
 CREATE TABLE IF NOT EXISTS public.ad_metrics (
     id BIGSERIAL PRIMARY KEY,
     ad_id UUID NOT NULL REFERENCES public.ads(id) ON DELETE CASCADE,
@@ -20,3 +22,4 @@ CREATE TABLE IF NOT EXISTS public.ad_metrics (
 CREATE INDEX IF NOT EXISTS idx_ad_metrics_ad_event_ts ON public.ad_metrics(ad_id, event, ts);
 CREATE INDEX IF NOT EXISTS idx_ad_metrics_user ON public.ad_metrics(user_id, ts);
 CREATE INDEX IF NOT EXISTS idx_ad_metrics_ts ON public.ad_metrics(ts DESC);
+*/

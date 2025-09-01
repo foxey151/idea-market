@@ -58,7 +58,7 @@ export function ResetPasswordForm() {
   useEffect(() => {
     const checkTokenValidity = async () => {
       try {
-        let debugMessages = []
+        const debugMessages = []
         
         // URLの状態をログ
         const currentUrl = window.location.href

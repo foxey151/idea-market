@@ -69,7 +69,7 @@ export function StableAuthProvider({ children }: { children: React.ReactNode }) 
 
         // 認証状態の監視開始
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (event, session) => {
+          (event: unknown, session: any) => {
             if (!mountedRef.current) return
             
             setSession(session)
