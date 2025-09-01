@@ -1,12 +1,16 @@
 {
     "mcpServers": {
-        "supabase": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@modelcontextprotocol/server-postgres",
-                "postgresql://postgres.imjqecithlgsjhhkbkbn:ideaMarketandQueue@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres"
-            ]
+      "supabase": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@supabase/mcp-server-supabase@latest",
+          "--read-only",
+          "--project-ref=imjqecithlgsjhhkbkbn"
+        ],
+        "env": {
+          "SUPABASE_ACCESS_TOKEN": "sbp_889c9ec0ff1ab71066129e784e50c030824e2c4f"
         }
+      }
     }
-}
+  }

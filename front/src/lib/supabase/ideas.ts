@@ -5,6 +5,16 @@ type Idea = Database['public']['Tables']['ideas']['Row']
 type IdeaInsert = Database['public']['Tables']['ideas']['Insert']
 type IdeaUpdate = Database['public']['Tables']['ideas']['Update']
 
+// コメント数取得用のヘルパー関数
+export const getCommentCount = async (ideaId: string) => {
+  const { count, error } = await supabase
+    .from('comments')
+    .select('*', { count: 'exact', head: true })
+    .eq('idea_id', ideaId)
+  
+  return { count: count || 0, error }
+}
+
 // アイデア作成
 export const createIdea = async (ideaData: Omit<IdeaInsert, 'id' | 'created_at' | 'updated_at'>) => {
   const { data, error } = await supabase
@@ -25,8 +35,7 @@ export const getIdeas = async (limit = 20, offset = 0) => {
     .from('ideas')
     .select(`
       *,
-      profiles(display_name, role),
-      comments(count)
+      profiles(display_name, role)
     `)
     .eq('status', 'published')
     .order('created_at', { ascending: false })
@@ -41,23 +50,24 @@ export const getIdeaById = async (id: string) => {
     .from('ideas')
     .select(`
       *,
-      profiles(display_name, role),
-      comments(
-        *,
-        profiles(display_name)
-      ),
-      idea_versions(
-        id,
-        type,
-        title,
-        summary,
-        price,
-        is_published,
-        purchase_count
-      )
+      profiles(display_name, role)
     `)
     .eq('id', id)
     .single()
+  
+  return { data, error }
+}
+
+// アイデアのコメント一覧取得
+export const getCommentsByIdeaId = async (ideaId: string) => {
+  const { data, error } = await supabase
+    .from('comments')
+    .select(`
+      *,
+      profiles(display_name)
+    `)
+    .eq('idea_id', ideaId)
+    .order('created_at', { ascending: true })
   
   return { data, error }
 }
@@ -68,8 +78,7 @@ export const getIdeaByCmtNo = async (cmtNo: string) => {
     .from('ideas')
     .select(`
       *,
-      profiles(display_name, role),
-      comments(count)
+      profiles(display_name, role)
     `)
     .eq('mmb_no', cmtNo)
     .eq('status', 'published')
@@ -90,22 +99,7 @@ export const searchIdeas = async (keyword: string, limit = 20, offset = 0) => {
   return { data, error }
 }
 
-// タグでアイデア検索
-export const getIdeasByTag = async (tag: string, limit = 20, offset = 0) => {
-  const { data, error } = await supabase
-    .from('ideas')
-    .select(`
-      *,
-      profiles(display_name, role),
-      comments(count)
-    `)
-    .contains('tags', [tag])
-    .eq('status', 'published')
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
-  
-  return { data, error }
-}
+
 
 // ユーザーのアイデア一覧取得
 export const getUserIdeas = async (userId: string, limit = 20, offset = 0) => {
@@ -113,9 +107,7 @@ export const getUserIdeas = async (userId: string, limit = 20, offset = 0) => {
     .from('ideas')
     .select(`
       *,
-      profiles(display_name, role),
-      comments(count),
-      idea_versions(count)
+      profiles(display_name, role)
     `)
     .eq('author_id', userId)
     .order('created_at', { ascending: false })
@@ -155,8 +147,7 @@ export const getPopularIdeas = async (limit = 10) => {
     .from('ideas')
     .select(`
       *,
-      profiles(display_name, role),
-      comments(count)
+      profiles(display_name, role)
     `)
     .eq('status', 'published')
     .order('created_at', { ascending: false }) // TODO: コメント数でソート
@@ -171,12 +162,29 @@ export const getLatestIdeas = async (limit = 10) => {
     .from('ideas')
     .select(`
       *,
-      profiles(display_name, role),
-      comments(count)
+      profiles(display_name, role)
     `)
     .eq('status', 'published')
     .order('created_at', { ascending: false })
     .limit(limit)
+  
+  return { data, error }
+}
+
+// コメント投稿
+export const createComment = async (ideaId: string, text: string, authorId: string) => {
+  const { data, error } = await supabase
+    .from('comments')
+    .insert([{
+      idea_id: ideaId,
+      text: text,
+      author_id: authorId
+    }])
+    .select(`
+      *,
+      profiles(display_name)
+    `)
+    .single()
   
   return { data, error }
 }

@@ -99,9 +99,9 @@ export type Database = {
           mmb_no: string
           title: string
           summary: string
-          detail: string | null
+          attachments: string[]
           deadline: string | null
-          status: 'draft' | 'published'
+          status: 'draft' | 'published' | 'closed'
           created_at: string
           updated_at: string
         }
@@ -111,9 +111,9 @@ export type Database = {
           mmb_no?: string
           title: string
           summary: string
-          detail?: string | null
+          attachments?: string[]
           deadline?: string | null
-          status?: 'draft' | 'published'
+          status?: 'draft' | 'published' | 'closed'
           created_at?: string
           updated_at?: string
         }
@@ -123,9 +123,9 @@ export type Database = {
           mmb_no?: string
           title?: string
           summary?: string
-          detail?: string | null
+          attachments?: string[]
           deadline?: string | null
-          status?: 'draft' | 'published'
+          status?: 'draft' | 'published' | 'closed'
           created_at?: string
           updated_at?: string
         }

@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS public.ideas (
     mmb_no TEXT NOT NULL UNIQUE, -- MMB-2501280001
     title TEXT NOT NULL,
     summary TEXT NOT NULL,
-    tags TEXT[] NOT NULL DEFAULT '{}',
     attachments TEXT[] NOT NULL DEFAULT '{}', -- ファイルパス配列
     deadline TIMESTAMPTZ, -- 募集締切日時
     status TEXT NOT NULL DEFAULT 'published' CHECK (status IN ('draft', 'published', 'closed')),
@@ -26,7 +25,6 @@ CREATE INDEX IF NOT EXISTS idx_ideas_mmb_no ON public.ideas(mmb_no);
 CREATE INDEX IF NOT EXISTS idx_ideas_created_at ON public.ideas(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ideas_deadline ON public.ideas(deadline);
 CREATE INDEX IF NOT EXISTS idx_ideas_status ON public.ideas(status);
-CREATE INDEX IF NOT EXISTS idx_ideas_tags ON public.ideas USING GIN (tags);
 
 -- 全文検索用インデックス
 CREATE INDEX IF NOT EXISTS idx_ideas_title_trgm ON public.ideas USING GIN (title gin_trgm_ops);

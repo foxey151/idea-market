@@ -1,0 +1,6 @@
+必要なテーブル
+
+user_details
+ads
+comments
+ideas

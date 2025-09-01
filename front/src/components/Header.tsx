@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Menu, X, LogIn, LogOut, User } from "lucide-react";
+import { Search, Menu, X, LogIn, LogOut, User, Lightbulb, ShoppingCart } from "lucide-react";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { useAuth } from "@/contexts/StableAuthContext";
 import {
@@ -54,13 +54,13 @@ const Header = () => {
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/my/ideas" className="flex items-center">
-            <Search className="mr-2 h-4 w-4" />
-            投稿したアイデア
+            <Lightbulb className="mr-2 h-4 w-4" />
+            マイアイデア
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/my/purchases" className="flex items-center">
-            <LogIn className="mr-2 h-4 w-4" />
+            <ShoppingCart className="mr-2 h-4 w-4" />
             購入履歴
           </Link>
         </DropdownMenuItem>

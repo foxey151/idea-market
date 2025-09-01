@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
 import { Button } from "@/components/ui/button"
 import { MessageCircle, Eye, Calendar } from "lucide-react"
 import { searchIdeas, getIdeaByCmtNo } from "@/lib/supabase/ideas"
@@ -14,7 +13,6 @@ interface SearchResult {
   mmb_no: string
   title: string
   summary: string
-  tags: string[]
   created_at: string
   similarity_score?: number
   comment_count?: number
@@ -147,9 +145,9 @@ export function SearchResults() {
                   </CardDescription>
                 </div>
                 {result.similarity_score && (
-                  <Badge variant="outline">
+                  <div className="text-xs text-muted-foreground">
                     関連度: {(result.similarity_score * 100).toFixed(0)}%
-                  </Badge>
+                  </div>
                 )}
               </div>
             </CardHeader>

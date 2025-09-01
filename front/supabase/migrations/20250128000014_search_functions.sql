@@ -9,7 +9,6 @@
 -- アイデア検索関数
 CREATE OR REPLACE FUNCTION public.search_ideas(
     search_query TEXT DEFAULT '',
-    tag_filter TEXT[] DEFAULT '{}',
     limit_count INTEGER DEFAULT 20,
     offset_count INTEGER DEFAULT 0
 )
@@ -17,7 +16,6 @@ RETURNS TABLE (
     id UUID,
     title TEXT,
     summary TEXT,
-    tags TEXT[],
     author_name TEXT,
     created_at TIMESTAMPTZ,
     mmb_no TEXT
@@ -28,7 +26,6 @@ BEGIN
         i.id,
         i.title,
         i.summary,
-        i.tags,
         p.display_name as author_name,
         i.created_at,
         i.mmb_no
@@ -42,10 +39,6 @@ BEGIN
             i.summary ILIKE '%' || search_query || '%' OR
             similarity(i.title, search_query) > 0.3 OR
             similarity(i.summary, search_query) > 0.3
-        )
-        AND (
-            array_length(tag_filter, 1) IS NULL OR
-            i.tags && tag_filter
         )
     ORDER BY 
         CASE 
@@ -123,18 +116,4 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 人気タグ取得関数
-CREATE OR REPLACE FUNCTION public.get_popular_tags(limit_count INTEGER DEFAULT 10)
-RETURNS TABLE (tag TEXT, count BIGINT) AS $$
-BEGIN
-    RETURN QUERY
-    SELECT 
-        unnest(i.tags) as tag,
-        COUNT(*) as count
-    FROM public.ideas i
-    WHERE i.status = 'published'
-    GROUP BY unnest(i.tags)
-    ORDER BY count DESC, tag ASC
-    LIMIT limit_count;
-END;
-$$ LANGUAGE plpgsql;
+

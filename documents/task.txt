@@ -1,3 +1,6 @@
 DB設計書のブラッシュアップ
 migrationファイルの整理
-新規登録の認証エラー
+
+
+
+Invalid API Key 修正
