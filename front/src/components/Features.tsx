@@ -155,51 +155,7 @@ const Features = () => {
           ))}
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center bg-card/30 backdrop-blur-sm rounded-3xl p-12 border border-border/50 shadow-soft">
-          <h3 className="text-3xl font-bold mb-4">
-            <span className="text-foreground">今すぐ始めて、</span>
-            <span className="bg-gradient-primary bg-clip-text text-transparent">未来を創造</span>
-          </h3>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            アイデア投稿から収益化まで、すべて無料で開始できます。<br />
-            あなたの創造性を世界に解き放ちましょう。
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              variant="hero" 
-              size="lg" 
-              className="group px-8 py-6 text-lg font-semibold shadow-glow"
-            >
-              無料登録でスタート
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="px-8 py-6 text-lg font-semibold border-2"
-            >
-              デモを見る
-            </Button>
-          </div>
 
-          <div className="flex items-center justify-center gap-8 mt-8 pt-8 border-t border-border/50">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span className="text-sm text-muted-foreground">初期費用無料</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span className="text-sm text-muted-foreground">手数料業界最安</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span className="text-sm text-muted-foreground">24時間サポート</span>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

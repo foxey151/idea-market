@@ -37,10 +37,6 @@ erDiagram
         uuid ad_id
         text event
     }
-    pages {
-        text slug
-        jsonb content
-    }
     audit_logs {
         bigint id
         uuid actor_id
@@ -57,7 +53,6 @@ erDiagram
 ### その他テーブル
 - **ads：** 検索語に連動して表示
 - **ad_metrics：** impression/click を計測
-- **pages：** 規約/技術/会社情報の CMS
 - **audit_logs：** 作成/更新/削除/権限/決済などの監査
 
 
@@ -76,6 +71,19 @@ CREATE EXTENSION IF NOT EXISTS btree_gin; -- GINインデックス
 CREATE TYPE role AS ENUM ('member','company','admin');
 CREATE TYPE version_type AS ENUM ('X','Y');
 CREATE TYPE purchase_status AS ENUM ('succeeded','refunded','failed');
+
+-- ユーザ詳細情報用のENUM型
+CREATE TYPE account_type_enum AS ENUM ('ordinary','current'); -- 普通・当座
+CREATE TYPE gender_enum AS ENUM ('male','female','other'); -- 男・女・他
+CREATE TYPE prefecture_enum AS ENUM (
+  'hokkaido','aomori','iwate','miyagi','akita','yamagata','fukushima',
+  'ibaraki','tochigi','gunma','saitama','chiba','tokyo','kanagawa',
+  'niigata','toyama','ishikawa','fukui','yamanashi','nagano','gifu',
+  'shizuoka','aichi','mie','shiga','kyoto','osaka','hyogo','nara',
+  'wakayama','tottori','shimane','okayama','hiroshima','yamaguchi',
+  'tokushima','kagawa','ehime','kochi','fukuoka','saga','nagasaki',
+  'kumamoto','oita','miyazaki','kagoshima','okinawa'
+);
 ```
 
 
@@ -100,6 +108,40 @@ CREATE INDEX ON public.profiles(role);
 -- 更新時刻自動更新トリガー
 CREATE TRIGGER trg_profiles_updated_at
   BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
+```
+
+### 3.1.1 ユーザ詳細情報（支払い・個人情報）
+
+```sql
+-- ユーザ詳細情報テーブル（支払い情報・個人情報）
+CREATE TABLE public.user_details (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  -- 基本情報
+  full_name text,
+  email text,
+  -- 銀行情報（支払い用）
+  bank_name text,
+  branch_name text,
+  account_type account_type_enum,
+  account_number text,
+  account_holder text,
+  -- 個人情報
+  gender gender_enum,
+  birth_date date,
+  prefecture prefecture_enum,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(user_id)
+);
+
+-- インデックス
+CREATE INDEX idx_user_details_user ON public.user_details(user_id);
+
+-- 更新時刻自動更新トリガー
+CREATE TRIGGER trg_user_details_updated_at
+  BEFORE UPDATE ON public.user_details
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
 ```
 
@@ -273,20 +315,7 @@ CREATE TABLE public.ad_metrics (
 CREATE INDEX idx_ad_metrics ON public.ad_metrics(ad_id, event, ts);
 ```
 
-### 3.7 CMS（規約・技術・会社情報）
-
-```sql
--- CMSページ管理テーブル
-CREATE TABLE public.pages (
-  slug text PRIMARY KEY, -- 'legal'|'company'|'tech' など
-  content jsonb NOT NULL, -- WYSIWYG 出力
-  draft boolean NOT NULL DEFAULT false,
-  updated_by uuid REFERENCES public.profiles(id),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-```
-
-### 3.8 監査ログ（CSV/TXT エクスポート対象）
+### 3.7 監査ログ（CSV/TXT エクスポート対象）
 
 ```sql
 -- 監査ログテーブル（パーティション対応）
@@ -388,10 +417,127 @@ ALTER TABLE public.idea_versions ENABLE ROW LEVEL SECURITY;
 -- X版は公開、Y版は購入者のみ閲覧可能なポリシーが必要
 ```
 
+### 6.5 user_details（個人情報・支払い情報）
+
+```sql
+ALTER TABLE public.user_details ENABLE ROW LEVEL SECURITY;
+
+-- 自分の情報のみ読み取り・更新可能
+CREATE POLICY p_user_details_self_read ON public.user_details
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY p_user_details_self_insert ON public.user_details
+  FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY p_user_details_self_update ON public.user_details
+  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- 管理者は全てのユーザ詳細情報を閲覧可能
+CREATE POLICY p_user_details_admin_read ON public.user_details
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p 
+      WHERE p.id = auth.uid() AND p.role = 'admin'
+    )
+  );
+```
+
 ---
 
 ## 補足
 
 このドキュメントはSupabase PostgreSQLを使用したアイデアマーケットのDB設計を網羅しています。P0（MVP）フェーズでの実装を想定しており、P1以降では追加機能に合わせたスキーマ拡張が必要です。
 
+## 🚀 Supabaseとの連携について
+
+### 📋 現在の設計状況
+プロジェクトは既にSupabaseを前提とした設計になっています：
+
+- **DB：** PostgreSQL 15（Supabaseマネージド）
+- **認証：** Supabase Auth（Row Level Security有効）
+- **ストレージ：** Supabaseストレージ（ファイルアップロード用）
+
+## 🛠️ Next.jsアプリケーションでのSupabase連携手順
+
+### 1. **📦 Supabaseクライアントのセットアップ**
+
+まず、必要なパッケージをインストールします：
+
+```bash
+yarn add @supabase/supabase-js
+```
+
+環境変数を設定：
+
+```typescript
+// .env.local
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+Supabaseクライアントを作成：
+
+```typescript
+// lib/supabase.ts
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+```
+
+### 2. **🔐 認証機能の実装**
+
+設計書に基づいた認証実装：
+
+```typescript
+// lib/auth.ts
+import { supabase } from './supabase'
+
+// サインアップ
+export const signUp = async (email: string, password: string, role: 'member' | 'company') => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { role }
+    }
+  })
+  return { data, error }
+}
+
+// サインイン
+export const signIn = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
+  return { data, error }
+}
+
+// サインアウト
+export const signOut = async () => {
+  const { error } = await supabase.auth.signOut()
+  return { error }
+}
+```
+
+### 3. **🗃️ データベース操作の実装**
+
+設計書のテーブル構造に基づいたCRUD操作：
+
+```typescript
+// lib/ideas.ts
+import { supabase } from './supabase'
+
+// 当初アイデア作成
+export const createIdea = async (ideaData: {
+  title: string
+  summary: string
+  tags: string[]
+}) => {
+  const { data, error } = await supabase
+    .from('ideas')
+    
 

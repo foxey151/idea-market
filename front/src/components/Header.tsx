@@ -5,11 +5,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Menu, X, LogIn } from "lucide-react";
+import { Search, Menu, X, LogIn, LogOut, User } from "lucide-react";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { useAuth } from "@/contexts/StableAuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { user, profile, signOut, loading } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +29,49 @@ const Header = () => {
       window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
     }
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  // ユーザーメニューコンポーネント
+  const UserMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center space-x-2">
+          <User className="h-4 w-4" />
+          <span className="hidden sm:inline">
+            {profile?.display_name || user?.email?.split('@')[0] || 'ユーザー'}
+          </span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem asChild>
+          <Link href="/profile" className="flex items-center">
+            <User className="mr-2 h-4 w-4" />
+            プロフィール
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/my/ideas" className="flex items-center">
+            <Search className="mr-2 h-4 w-4" />
+            投稿したアイデア
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/my/purchases" className="flex items-center">
+            <LogIn className="mr-2 h-4 w-4" />
+            購入履歴
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+          <LogOut className="mr-2 h-4 w-4" />
+          ログアウト
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -68,12 +122,26 @@ const Header = () => {
                 className="pl-10 w-64 bg-background/50"
               />
             </form>
-            <Button variant="outline" size="sm">
-              <LogIn className="h-4 w-4 mr-2" />
-              ログイン
-            </Button>
-            <Button variant="hero" size="sm">
-              アイデア投稿
+            {loading ? (
+              <Button variant="outline" size="sm" disabled>
+                読み込み中...
+              </Button>
+            ) : user ? (
+              <UserMenu />
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsLoginModalOpen(true)}
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                ログイン
+              </Button>
+            )}
+            <Button variant="hero" size="sm" asChild>
+              <Link href="/ideas/new">
+                アイデア投稿
+              </Link>
             </Button>
           </div>
 
@@ -135,18 +203,60 @@ const Header = () => {
                   サービス案内
                 </Link>
               <div className="flex flex-col space-y-2 pt-4 border-t">
-                <Button variant="outline" size="sm">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  ログイン
-                </Button>
-                <Button variant="hero" size="sm">
-                  アイデア投稿
+                {loading ? (
+                  <Button variant="outline" size="sm" disabled>
+                    読み込み中...
+                  </Button>
+                ) : user ? (
+                  <>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
+                        <User className="h-4 w-4 mr-2" />
+                        プロフィール
+                      </Link>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMenuOpen(false);
+                      }}
+                      className="text-red-600"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      ログアウト
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setIsLoginModalOpen(true);
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    ログイン
+                  </Button>
+                )}
+                <Button variant="hero" size="sm" asChild>
+                  <Link href="/ideas/new" onClick={() => setIsMenuOpen(false)}>
+                    アイデア投稿
+                  </Link>
                 </Button>
               </div>
             </nav>
           </div>
         )}
       </div>
+      
+      {/* Login Modal */}
+      <LoginModal 
+        open={isLoginModalOpen} 
+        onOpenChange={setIsLoginModalOpen} 
+      />
     </header>
   );
 };

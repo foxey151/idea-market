@@ -3,8 +3,16 @@ import "../src/index.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { SimpleAuthProvider } from "@/contexts/SimpleAuthContext";
+import { MinimalAuthProvider } from "@/contexts/MinimalAuthContext";
+import { StableAuthProvider } from "@/contexts/StableAuthContext";
+import ProfileGuard from "@/components/ProfileGuard";
+import EnvCheck from "@/components/EnvCheck";
 
 import { ReactQueryProvider } from "./providers";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "アイデアマーケット",
@@ -28,13 +36,23 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <ReactQueryProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            {children}
-          </TooltipProvider>
-        </ReactQueryProvider>
+        <EnvCheck />
+        <StableAuthProvider>
+          <ReactQueryProvider>
+            <TooltipProvider>
+              {/* ProfileGuardは一時的に無効化 */}
+              {/* <ProfileGuard> */}
+                <Header />
+                <main className="pt-20">
+                  {children}
+                </main>
+                <Footer />
+                <Toaster />
+                <Sonner />
+              {/* </ProfileGuard> */}
+            </TooltipProvider>
+          </ReactQueryProvider>
+        </StableAuthProvider>
       </body>
     </html>
   );
