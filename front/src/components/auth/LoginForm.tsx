@@ -48,7 +48,7 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
   })
 
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+  const handleSocialLogin = async (provider: 'google' /* | 'facebook' */) => {
     try {
       setLoading(true)
       console.log('ソーシャルログイン開始:', provider)
@@ -153,7 +153,8 @@ export function LoginForm() {
                 Googleでログイン
               </Button>
 
-              {/* Facebook ログイン */}
+              {/* Facebook ログイン - 無効化中 */}
+              {/*
               <Button
                 onClick={() => handleSocialLogin('facebook')}
                 disabled={loading}
@@ -165,6 +166,7 @@ export function LoginForm() {
                 </svg>
                 Facebookでログイン
               </Button>
+              */}
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">

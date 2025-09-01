@@ -12,10 +12,11 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { X, Upload } from "lucide-react"
+import { X, Upload, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/StableAuthContext"
 import { supabase } from "@/lib/supabase/client"
+import { uploadFiles, validateFile } from "@/lib/supabase/storage"
 
 // アイデア投稿フォームスキーマ
 const ideaSchema = z.object({
@@ -52,6 +53,8 @@ export function IdeaCreateForm() {
   const { user } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadingFiles, setUploadingFiles] = useState(false)
   
   // 明日の日付を最小値として設定
   const getMinDate = () => {
@@ -90,7 +93,40 @@ export function IdeaCreateForm() {
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
-    setUploadedFiles(prev => [...prev, ...files])
+    
+    // ファイルバリデーション
+    const validFiles: File[] = []
+    const errorMessages: string[] = []
+    
+    files.forEach(file => {
+      const validation = validateFile(file)
+      if (validation.valid) {
+        validFiles.push(file)
+      } else {
+        errorMessages.push(`${file.name}: ${validation.error}`)
+      }
+    })
+    
+    // エラーメッセージ表示
+    if (errorMessages.length > 0) {
+      toast({
+        title: "ファイルエラー",
+        description: errorMessages.join('\n'),
+        variant: "destructive"
+      })
+    }
+    
+    // 有効なファイルのみ追加
+    if (validFiles.length > 0) {
+      setUploadedFiles(prev => [...prev, ...validFiles])
+      toast({
+        title: "ファイルを追加しました",
+        description: `${validFiles.length}件のファイルが選択されました。`
+      })
+    }
+    
+    // ファイル入力をリセット
+    event.target.value = ''
   }
 
   const removeFile = (index: number) => {
@@ -141,11 +177,49 @@ export function IdeaCreateForm() {
         }
       }
 
-      // ファイルアップロード処理（必要に応じて）
+      // ファイルアップロード処理
       let attachments: string[] = []
       if (uploadedFiles.length > 0) {
-        // TODO: Supabase Storageにファイルをアップロード
-        // attachments = await uploadFiles(uploadedFiles)
+        try {
+          setUploadingFiles(true)
+          setUploadProgress(0)
+          
+          console.log('ファイルアップロード開始:', uploadedFiles.length, '件')
+          
+          // 進捗付きアップロード
+          const { data: uploadData, error: uploadError } = await uploadFiles(uploadedFiles)
+          
+          if (uploadError) {
+            throw new Error(`ファイルアップロードエラー: ${uploadError}`)
+          }
+          
+          if (!uploadData) {
+            throw new Error('アップロードデータが空です')
+          }
+          
+          // アップロードされたファイルのパスを取得
+          attachments = uploadData.map(file => file.path)
+          
+          console.log('ファイルアップロード完了:', attachments)
+          
+          setUploadProgress(100)
+          
+          toast({
+            title: "ファイルアップロード完了",
+            description: `${uploadedFiles.length}件のファイルがアップロードされました。`
+          })
+          
+        } catch (error) {
+          console.error('ファイルアップロードエラー:', error)
+          toast({
+            title: "ファイルアップロード失敗",
+            description: error instanceof Error ? error.message : 'ファイルのアップロードに失敗しました。',
+            variant: "destructive"
+          })
+          return // アップロード失敗時は投稿を中止
+        } finally {
+          setUploadingFiles(false)
+        }
       }
 
       // 投稿データの準備
@@ -155,6 +229,7 @@ export function IdeaCreateForm() {
         deadline: data.deadline || null, // 空文字の場合はnullに変換
         status: 'published' as const,
         author_id: user.id,
+        attachments: attachments, // アップロードされたファイルパスを追加
       }
 
       // デバッグ情報
@@ -355,22 +430,87 @@ export function IdeaCreateForm() {
                 </label>
               </div>
 
-              {uploadedFiles.length > 0 && (
+              {/* アップロード進捗表示 */}
+              {uploadingFiles && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">添付ファイル:</p>
-                  {uploadedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
-                      <span className="text-sm">{file.name}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                    <span className="text-sm text-muted-foreground">ファイルをアップロード中...</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground text-center">{uploadProgress}%</p>
+                </div>
+              )}
+              
+              {/* 添付ファイル一覧 */}
+              {uploadedFiles.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">添付ファイル ({uploadedFiles.length})</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setUploadedFiles([])}
+                      disabled={uploadingFiles}
+                    >
+                      すべて削除
+                    </Button>
+                  </div>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {uploadedFiles.map((file, index) => {
+                      const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name)
+                      const fileSize = (file.size / 1024 / 1024).toFixed(2)
+                      
+                      return (
+                        <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
+                              {isImage ? (
+                                <Upload className="h-4 w-4 text-primary" />
+                              ) : (
+                                <span className="text-xs font-bold text-primary">
+                                  {file.name.split('.').pop()?.toUpperCase() || 'FILE'}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{file.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {fileSize} MB {isImage && '・ 画像ファイル'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFile(index)}
+                            disabled={uploadingFiles}
+                            className="text-muted-foreground hover:text-destructive"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  
+                  {/* ファイルサイズ警告 */}
+                  {uploadedFiles.some(file => file.size > 10 * 1024 * 1024) && (
+                    <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm">
+                        <p className="font-medium text-yellow-800">大きなファイルが含まれています</p>
+                        <p className="text-yellow-700">アップロードに時間がかかる場合があります。</p>
+                      </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
@@ -408,8 +548,20 @@ export function IdeaCreateForm() {
               <Button type="button" variant="outline" onClick={() => router.back()}>
                 キャンセル
               </Button>
-              <Button type="submit" disabled={isSubmitting || !supabaseConfigured}>
-                {isSubmitting ? "投稿中..." : "アイデアを投稿する"}
+              <Button type="submit" disabled={isSubmitting || uploadingFiles || !supabaseConfigured}>
+                {uploadingFiles ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ファイルアップロード中...
+                  </>
+                ) : isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    投稿中...
+                  </>
+                ) : (
+                  "アイデアを投稿する"
+                )}
               </Button>
             </div>
           </>

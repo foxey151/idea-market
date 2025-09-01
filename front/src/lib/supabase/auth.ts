@@ -29,7 +29,8 @@ export const signIn = async (email: string, password: string) => {
 }
 
 // ソーシャルログイン
-export const signInWithProvider = async (provider: 'google' | 'facebook') => {
+// Facebookログインは現在無効化されています
+export const signInWithProvider = async (provider: 'google' /* | 'facebook' */) => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {

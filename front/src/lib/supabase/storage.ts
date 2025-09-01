@@ -17,7 +17,10 @@ export const uploadFile = async (
         upsert: false
       })
     
-    if (error) throw error
+    if (error) {
+      console.error('Supabase Storageアップロードエラー:', error)
+      throw error
+    }
     
     // 公開URLを取得
     const { data: urlData } = supabase.storage
@@ -32,7 +35,29 @@ export const uploadFile = async (
       error: null 
     }
   } catch (error) {
-    return { data: null, error }
+    console.error('ファイルアップロードエラー:', error)
+    
+    // エラーメッセージを取得
+    let errorMessage = 'ファイルのアップロードに失敗しました'
+    
+    if (error && typeof error === 'object') {
+      if ('message' in error) {
+        errorMessage = String(error.message)
+        
+        // 特定のエラーメッセージを日本語化
+        if (errorMessage.includes('row-level security') || errorMessage.includes('policy')) {
+          errorMessage = 'Storageへのアクセス権限がありません。ログインしてから再度お試しください。'
+        } else if (errorMessage.includes('413') || errorMessage.includes('too large') || errorMessage.includes('file size')) {
+          errorMessage = 'ファイルサイズが大きすぎます。最大20MBまでのファイルを選択してください。'
+        } else if (errorMessage.includes('Invalid bucket') || errorMessage.includes('not found')) {
+          errorMessage = 'ストレージの設定に問題があります。管理者にお問い合わせください。'
+        } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+          errorMessage = 'ネットワークエラーが発生しました。インターネット接続を確認してください。'
+        }
+      }
+    }
+    
+    return { data: null, error: errorMessage }
   }
 }
 
@@ -48,7 +73,8 @@ export const uploadFiles = async (
     
     const errors = results.filter(result => result.error)
     if (errors.length > 0) {
-      throw new Error(`${errors.length} files failed to upload`)
+      const errorMessages = errors.map(result => result.error).join(', ')
+      throw new Error(`${errors.length}/${files.length}件のファイルアップロードに失敗: ${errorMessages}`)
     }
     
     const uploadedFiles = results
@@ -57,7 +83,8 @@ export const uploadFiles = async (
     
     return { data: uploadedFiles, error: null }
   } catch (error) {
-    return { data: null, error }
+    console.error('複数ファイルアップロードエラー:', error)
+    return { data: null, error: error instanceof Error ? error.message : '複数ファイルのアップロードに失敗しました' }
   }
 }
 

@@ -72,7 +72,7 @@ export function SignupForm() {
     },
   })
 
-  const handleSocialSignup = async (provider: 'google' | 'facebook') => {
+  const handleSocialSignup = async (provider: 'google' /* | 'facebook' */) => {
     try {
       setLoading(true)
       const { error } = await supabase.auth.signInWithOAuth({
@@ -205,7 +205,8 @@ export function SignupForm() {
                 Googleで登録
               </Button>
 
-              {/* Facebook 登録 */}
+              {/* Facebook 登録 - 無効化中 */}
+              {/*
               <Button
                 onClick={() => handleSocialSignup('facebook')}
                 disabled={loading}
@@ -217,6 +218,7 @@ export function SignupForm() {
                 </svg>
                 Facebookで登録
               </Button>
+              */}
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
