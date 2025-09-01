@@ -96,11 +96,11 @@ export type Database = {
         Row: {
           id: string
           author_id: string
-          cmt_no: string
+          mmb_no: string
           title: string
           summary: string
-          tags: string[]
-          attachments: string[]
+          detail: string | null
+          deadline: string | null
           status: 'draft' | 'published'
           created_at: string
           updated_at: string
@@ -108,11 +108,11 @@ export type Database = {
         Insert: {
           id?: string
           author_id: string
-          cmt_no?: string
+          mmb_no?: string
           title: string
           summary: string
-          tags?: string[]
-          attachments?: string[]
+          detail?: string | null
+          deadline?: string | null
           status?: 'draft' | 'published'
           created_at?: string
           updated_at?: string
@@ -120,11 +120,11 @@ export type Database = {
         Update: {
           id?: string
           author_id?: string
-          cmt_no?: string
+          mmb_no?: string
           title?: string
           summary?: string
-          tags?: string[]
-          attachments?: string[]
+          detail?: string | null
+          deadline?: string | null
           status?: 'draft' | 'published'
           created_at?: string
           updated_at?: string
@@ -365,7 +365,7 @@ export type Database = {
         Returns: {
           id: string
           author_id: string
-          cmt_no: string
+          mmb_no: string
           title: string
           summary: string
           tags: string[]
@@ -375,14 +375,14 @@ export type Database = {
           similarity_score: number
         }[]
       }
-      search_idea_by_cmt_no: {
+      search_idea_by_mmb_no: {
         Args: {
           cmt_number: string
         }
         Returns: {
           id: string
           author_id: string
-          cmt_no: string
+          mmb_no: string
           title: string
           summary: string
           tags: string[]
@@ -417,7 +417,7 @@ export type Database = {
         Returns: {
           id: string
           author_id: string
-          cmt_no: string
+          mmb_no: string
           title: string
           summary: string
           tags: string[]
@@ -426,7 +426,7 @@ export type Database = {
           total_purchases: number
         }[]
       }
-      generate_cmt_no: {
+      generate_mmb_no: {
         Args: Record<PropertyKey, never>
         Returns: string
       }

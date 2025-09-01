@@ -24,7 +24,7 @@ export default function IdeasPage() {
       likes: 89,
       comments: 23,
       rating: 4.8,
-      tags: ["AI", "農業", "IoT", "持続可能性"]
+
     },
     {
       id: 2,
@@ -36,8 +36,7 @@ export default function IdeasPage() {
       views: 892,
       likes: 67,
       comments: 18,
-      rating: 4.6,
-      tags: ["ビジネス", "環境", "カフェ", "サステナブル"]
+      rating: 4.6
     },
     {
       id: 3,
@@ -49,8 +48,7 @@ export default function IdeasPage() {
       views: 2156,
       likes: 143,
       comments: 41,
-      rating: 4.9,
-      tags: ["UI/UX", "モバイル", "デザイン", "パターン"]
+      rating: 4.9
     },
     {
       id: 4,
@@ -62,8 +60,7 @@ export default function IdeasPage() {
       views: 756,
       likes: 98,
       comments: 34,
-      rating: 4.7,
-      tags: ["料理", "健康", "発酵", "レシピ"]
+      rating: 4.7
     },
     {
       id: 5,
@@ -75,8 +72,7 @@ export default function IdeasPage() {
       views: 1445,
       likes: 112,
       comments: 29,
-      rating: 4.8,
-      tags: ["リモートワーク", "生産性", "ツール", "効率化"]
+      rating: 4.8
     },
     {
       id: 6,
@@ -88,15 +84,13 @@ export default function IdeasPage() {
       views: 623,
       likes: 45,
       comments: 12,
-      rating: 4.5,
-      tags: ["地域振興", "イベント", "文化", "企画"]
+      rating: 4.5
     }
   ];
 
   const filteredIdeas = ideas.filter(idea =>
     idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    idea.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    idea.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    idea.summary.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getCategoryColor = (category: string) => {
@@ -178,19 +172,6 @@ export default function IdeasPage() {
                 </CardHeader>
                 
                 <CardContent>
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {idea.tags.slice(0, 3).map((tag, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {idea.tags.length > 3 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{idea.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-
                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                     <span>by {idea.author}</span>
                     <span className="font-bold text-primary text-lg">{idea.price}</span>

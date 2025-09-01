@@ -71,7 +71,7 @@ export const getIdeaByCmtNo = async (cmtNo: string) => {
       profiles(display_name, role),
       comments(count)
     `)
-    .eq('cmt_no', cmtNo)
+    .eq('mmb_no', cmtNo)
     .eq('status', 'published')
     .single()
   

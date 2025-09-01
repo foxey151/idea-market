@@ -6,13 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Search, Hash } from "lucide-react"
+import { Search } from "lucide-react"
 
-const POPULAR_TAGS = [
-  "AI", "機械学習", "Web開発", "モバイルアプリ", "UI/UX", "マーケティング",
-  "スタートアップ", "DX", "IoT", "ブロックチェーン", "サステナブル", "ヘルスケア"
-]
+
 
 export function SearchForm() {
   const router = useRouter()
@@ -31,10 +27,7 @@ export function SearchForm() {
     router.push(`/search?${params.toString()}`)
   }
 
-  const handleTagSearch = (tag: string) => {
-    setSearchQuery(tag)
-    setSearchType('keyword')
-  }
+
 
   return (
     <Card>
@@ -54,7 +47,7 @@ export function SearchForm() {
               <Input
                 placeholder={
                   searchType === 'cmt' 
-                    ? "CMT-250115-0001" 
+                    ? "MMB-2501150001" 
                     : "例: AI 教育プラットフォーム"
                 }
                 value={searchQuery}
@@ -78,31 +71,12 @@ export function SearchForm() {
           </div>
         </form>
 
-        {searchType === 'keyword' && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Hash className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">人気のタグ</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {POPULAR_TAGS.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="outline"
-                  className="cursor-pointer hover:bg-accent transition-colors"
-                  onClick={() => handleTagSearch(tag)}
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {searchType === 'cmt' && (
           <div className="text-sm text-muted-foreground">
-            <p>CMT番号の形式: CMT-YYMMDD-XXXX</p>
-            <p>例: CMT-250115-0001（2025年1月15日の1番目）</p>
+            <p>MMB番号の形式: MMB-YYMMDDXXXX</p>
+            <p>例: MMB-2501150001（2025年1月15日の1番目）</p>
           </div>
         )}
       </CardContent>

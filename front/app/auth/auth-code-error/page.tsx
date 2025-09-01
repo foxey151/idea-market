@@ -15,13 +15,38 @@ export default function AuthCodeError({ searchParams }: AuthCodeErrorProps) {
   const getErrorDescription = (error: string | null) => {
     switch (error) {
       case 'no_code':
-        return '認証コードが受信されませんでした。'
+        return 'メール認証リンクが正しく機能していません。メールの有効期限が切れているか、すでに使用済みの可能性があります。新しい認証メールをリクエストしてください。'
+      case 'email_link_invalid':
+        return 'メール認証リンクが無効であるか期限切れです。既にアカウントが登録済みの場合は、ログインページからログインしてください。'
       case 'no_user_data':
         return 'ユーザー情報の取得に失敗しました。'
       case 'unexpected_error':
         return '予期しないエラーが発生しました。'
       default:
         return error || 'ログイン処理中にエラーが発生しました'
+    }
+  }
+
+  const getSuggestedAction = (error: string | null) => {
+    switch (error) {
+      case 'no_code':
+        return {
+          title: '新規登録をやり直す',
+          href: '/signup',
+          description: '新しい認証メールを送信します'
+        }
+      case 'email_link_invalid':
+        return {
+          title: 'ログインページへ',
+          href: '/login',
+          description: '既にアカウントが登録済みの場合はこちら'
+        }
+      default:
+        return {
+          title: 'ログインページへ',
+          href: '/login',
+          description: '既存アカウントでログイン'
+        }
     }
   }
   return (
@@ -46,19 +71,34 @@ export default function AuthCodeError({ searchParams }: AuthCodeErrorProps) {
             {errorMessage && (
               <details className="mt-4 text-xs">
                 <summary className="cursor-pointer">技術的な詳細</summary>
-                <p className="mt-2 p-2 bg-muted rounded text-left break-all">
-                  {errorMessage}
-                </p>
+                <div className="mt-2 p-2 bg-muted rounded text-left">
+                  <p className="break-all mb-2">
+                    <strong>エラー:</strong> {errorMessage}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    現在時刻: {new Date().toLocaleString('ja-JP')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    URL: {typeof window !== 'undefined' ? window.location.href : 'Server-side'}
+                  </p>
+                </div>
               </details>
             )}
           </div>
           <div className="flex flex-col gap-2">
             <Button asChild>
-              <Link href="/">ホームに戻る</Link>
+              <Link href={getSuggestedAction(errorMessage).href}>
+                {getSuggestedAction(errorMessage).title}
+              </Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/contact">お問い合わせ</Link>
+              <Link href="/">ホームに戻る</Link>
             </Button>
+            {(errorMessage === 'no_code' || errorMessage === 'email_link_invalid') && (
+              <p className="text-xs text-muted-foreground text-center">
+                {getSuggestedAction(errorMessage).description}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

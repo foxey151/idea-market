@@ -4,14 +4,14 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+
 import { Button } from "@/components/ui/button"
 import { MessageCircle, Eye, Calendar } from "lucide-react"
 import { searchIdeas, getIdeaByCmtNo } from "@/lib/supabase/ideas"
 
 interface SearchResult {
   id: string
-  cmt_no: string
+  mmb_no: string
   title: string
   summary: string
   tags: string[]
@@ -143,7 +143,7 @@ export function SearchResults() {
                     </Link>
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    CMT番号: {result.cmt_no}
+                    MMB番号: {result.mmb_no}
                   </CardDescription>
                 </div>
                 {result.similarity_score && (
@@ -158,20 +158,7 @@ export function SearchResults() {
                 {result.summary}
               </p>
               
-              {result.tags && result.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {result.tags.slice(0, 5).map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                  {result.tags.length > 5 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{result.tags.length - 5}
-                    </Badge>
-                  )}
-                </div>
-              )}
+
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">

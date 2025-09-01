@@ -259,18 +259,13 @@ export function LoginForm() {
 
               <div className="text-center">
                 <Button
-                  type="button"
                   variant="link"
                   className="text-sm text-muted-foreground"
-                  onClick={() => {
-                    // TODO: パスワードリセット機能を実装
-                    toast({
-                      title: "準備中",
-                      description: "パスワードリセット機能は準備中です"
-                    })
-                  }}
+                  asChild
                 >
-                  パスワードを忘れた方はこちら
+                  <Link href="/forgot-password">
+                    パスワードを忘れた方はこちら
+                  </Link>
                 </Button>
               </div>
 

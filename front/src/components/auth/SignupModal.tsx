@@ -273,7 +273,7 @@ export function SignupModal({ open, onOpenChange }: SignupModalProps) {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="12文字以上で英大小文字・数字・記号を含む"
+                  placeholder="12文字以上で英大小文字・数字・記号(@$!%*?&)を含む"
                   {...register("password")}
                 />
                 <Button
@@ -293,6 +293,18 @@ export function SignupModal({ open, onOpenChange }: SignupModalProps) {
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-xs text-muted-foreground">
+                  パスワードの要件：
+                </p>
+                <ul className="text-xs text-muted-foreground mt-1 space-y-1">
+                  <li>• 12文字以上、128文字以内</li>
+                  <li>• 英大文字を含む</li>
+                  <li>• 英小文字を含む</li>
+                  <li>• 数字を含む</li>
+                  <li>• 記号（@$!%*?&）を含む</li>
+                </ul>
+              </div>
             </div>
 
             {/* パスワード確認 */}

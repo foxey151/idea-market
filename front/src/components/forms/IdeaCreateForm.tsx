@@ -26,7 +26,17 @@ const ideaSchema = z.object({
   summary: z
     .string()
     .min(20, "概要は20文字以上で入力してください")
-    .max(2000, "概要は2000文字以内で入力してください"),
+    .max(300, "概要は300文字以内で入力してください"),
+  deadline: z
+    .string()
+    .optional()
+    .refine((value) => {
+      if (!value) return true // 任意フィールドなので空でもOK
+      const selectedDate = new Date(value)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // 今日の00:00:00に設定
+      return selectedDate > today
+    }, "議論期限は明日以降の日付を選択してください"),
   termsAgreed: z
     .boolean()
     .refine((val) => val === true, "利用規約に同意してください"),
@@ -43,6 +53,13 @@ export function IdeaCreateForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   
+  // 明日の日付を最小値として設定
+  const getMinDate = () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1) // 明日
+    return tomorrow.toISOString().slice(0, 10) // YYYY-MM-DD形式
+  }
+  
   // 環境変数チェック
   const supabaseConfigured = !!(
     process.env.NEXT_PUBLIC_SUPABASE_URL && 
@@ -54,6 +71,7 @@ export function IdeaCreateForm() {
   const defaultValues = {
     title: "",
     summary: "",
+    deadline: "",
     termsAgreed: false,
   }
 
@@ -134,7 +152,7 @@ export function IdeaCreateForm() {
       const ideaInsertData = {
         title: data.title,
         summary: data.summary,
-        tags: [], // tagsフィールドを空配列で設定（DBスキーマに必要）
+        deadline: data.deadline || null, // 空文字の場合はnullに変換
         status: 'published' as const,
         author_id: user.id,
       }
@@ -165,7 +183,7 @@ export function IdeaCreateForm() {
       // CMT番号の表示と成功メッセージ
       toast({
         title: "アイデアを投稿しました！",
-        description: `CMT番号: ${ideaData.cmt_no}が発行されました。`,
+        description: `MMB番号: ${ideaData.mmb_no}が発行されました。`,
       })
 
       // アイデア一覧ページにリダイレクト
@@ -272,15 +290,34 @@ export function IdeaCreateForm() {
               <Label htmlFor="summary">概要 *</Label>
               <Textarea
                 id="summary"
-                placeholder="アイデアの詳細な説明を入力してください（20文字以上）"
+                placeholder="アイデアの簡潔な説明を入力してください（20文字以上、300文字以内）"
                 rows={6}
                 {...register("summary")}
               />
               <div className="text-sm text-muted-foreground">
-                {watch("summary")?.length || 0} / 2000文字
+                {watch("summary")?.length || 0} / 300文字
               </div>
               {errors.summary && (
                 <p className="text-sm text-destructive">{String(errors.summary?.message || '')}</p>
+              )}
+            </div>
+
+            {/* 議論期限 */}
+            <div className="space-y-2">
+              <Label htmlFor="deadline">議論期限（任意）</Label>
+              <Input
+                id="deadline"
+                type="date"
+                min={getMinDate()}
+                {...register("deadline")}
+                className="w-full"
+              />
+              <div className="text-sm text-muted-foreground">
+                議論期限を設定すると、その日付まで他のユーザーからのコメントや意見を受け付けます。
+                設定しない場合は無期限で議論が可能です。
+              </div>
+              {errors.deadline && (
+                <p className="text-sm text-destructive">{String(errors.deadline?.message || '')}</p>
               )}
             </div>
 

@@ -95,35 +95,59 @@ export function StableAuthProvider({ children }: { children: React.ReactNode }) 
     }
   }, [])
 
-  // プロフィール情報は別で管理（無限ループを避ける）
+  // プロフィール情報とユーザー詳細を読み込み
   const loadProfile = useCallback(async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // プロフィール情報を取得
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()
 
-      if (!error && mountedRef.current) {
-        setProfile(data)
-        // プロフィール完了状況をチェック
-        checkProfileCompletion(data)
+      if (profileError || !mountedRef.current) {
+        if (profileError) console.error('プロフィール取得エラー:', profileError)
+        return
       }
+
+      setProfile(profileData)
+
+      // ユーザー詳細情報を取得
+      const { data: userDetailsData, error: userDetailsError } = await supabase
+        .from('user_details')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      // ユーザー詳細情報が存在しない場合は正常（初回ユーザー）
+      if (userDetailsError && userDetailsError.code !== 'PGRST116') {
+        console.error('ユーザー詳細取得エラー:', userDetailsError)
+        setUserDetails(null)
+        setHasCompleteProfile(false)
+        return
+      }
+
+      const details = userDetailsError?.code === 'PGRST116' ? null : userDetailsData
+      setUserDetails(details)
+      checkProfileCompletion(details)
     } catch (error) {
       console.error('プロフィール取得エラー:', error)
+      setProfile(null)
+      setUserDetails(null)
+      setHasCompleteProfile(false)
     }
   }, [])
 
-  // プロフィール完了状況をチェックする関数
-  const checkProfileCompletion = useCallback((profileData: Profile | null) => {
-    if (!profileData) {
+  // ユーザー詳細情報の完了状況をチェックする関数
+  const checkProfileCompletion = useCallback((userDetailsData: any) => {
+    if (!userDetailsData) {
       setHasCompleteProfile(false)
       return
     }
 
-    // 必須フィールドがすべて入力されているかチェック
+    // user_detailsテーブルの必須フィールドがすべて入力されているかチェック
     const requiredFields = [
-      'display_name',
+      'full_name',
       'email',
       'bank_name',
       'branch_name', 
@@ -136,7 +160,7 @@ export function StableAuthProvider({ children }: { children: React.ReactNode }) 
     ]
 
     const isComplete = requiredFields.every(field => {
-      const value = profileData[field as keyof Profile]
+      const value = userDetailsData[field]
       return value !== null && value !== undefined && value !== ''
     })
 
@@ -169,16 +193,30 @@ export function StableAuthProvider({ children }: { children: React.ReactNode }) 
 
   const signUp = async (email: string, password: string, role: 'member' | 'company' = 'member') => {
     try {
-      const { error } = await supabase.auth.signUp({
+      const redirectUrl = `${window.location.origin}/auth/callback?type=signup`
+      console.log('=== SignUp Debug Info ===')
+      console.log('Email:', email)
+      console.log('Role:', role)
+      console.log('Redirect URL:', redirectUrl)
+      console.log('Window origin:', window.location.origin)
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { role },
-          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`,
+          emailRedirectTo: redirectUrl,
         },
       })
+      
+      console.log('SignUp result:', { data, error })
+      if (data?.user) {
+        console.log('User created:', data.user.id, 'Email confirmed:', data.user.email_confirmed_at)
+      }
+      
       return { error }
     } catch (error) {
+      console.error('SignUp exception:', error)
       return { error }
     }
   }
@@ -196,7 +234,9 @@ export function StableAuthProvider({ children }: { children: React.ReactNode }) 
   }
 
   const refreshUserDetails = async () => {
-    // 実装を後で追加
+    if (user?.id) {
+      await loadProfile(user.id)
+    }
   }
 
   const value = {
