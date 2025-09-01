@@ -116,29 +116,87 @@ export const getUserIdeas = async (userId: string, limit = 20, offset = 0) => {
   return { data, error }
 }
 
-// アイデア更新
+// アイデア更新（セキュリティ強化版）
 export const updateIdea = async (id: string, updates: IdeaUpdate) => {
-  const { data, error } = await supabase
-    .from('ideas')
-    .update(updates)
-    .eq('id', id)
-    .select(`
-      *,
-      profiles(display_name, role)
-    `)
-    .single()
-  
-  return { data, error }
+  try {
+    // 現在のユーザーを確認
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return { data: null, error: { message: '認証が必要です' } }
+    }
+
+    // アイデアの所有者確認
+    const { data: ideaCheck, error: checkError } = await supabase
+      .from('ideas')
+      .select('author_id')
+      .eq('id', id)
+      .single()
+
+    if (checkError) {
+      return { data: null, error: checkError }
+    }
+
+    if (!ideaCheck || ideaCheck.author_id !== user.id) {
+      return { data: null, error: { message: '権限がありません' } }
+    }
+
+    // 更新実行
+    const { data, error } = await supabase
+      .from('ideas')
+      .update(updates)
+      .eq('id', id)
+      .eq('author_id', user.id) // 二重チェック
+      .select(`
+        *,
+        profiles(display_name, role)
+      `)
+      .single()
+    
+    return { data, error }
+  } catch (error) {
+    console.error('updateIdea セキュリティエラー:', error)
+    return { data: null, error }
+  }
 }
 
-// アイデア削除
+// アイデア削除（セキュリティ強化版）
 export const deleteIdea = async (id: string) => {
-  const { error } = await supabase
-    .from('ideas')
-    .delete()
-    .eq('id', id)
-  
-  return { error }
+  try {
+    // 現在のユーザーを確認
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return { error: { message: '認証が必要です' } }
+    }
+
+    // アイデアの所有者確認
+    const { data: ideaCheck, error: checkError } = await supabase
+      .from('ideas')
+      .select('author_id')
+      .eq('id', id)
+      .single()
+
+    if (checkError) {
+      return { error: checkError }
+    }
+
+    if (!ideaCheck || ideaCheck.author_id !== user.id) {
+      return { error: { message: '権限がありません' } }
+    }
+
+    // 削除実行
+    const { error } = await supabase
+      .from('ideas')
+      .delete()
+      .eq('id', id)
+      .eq('author_id', user.id) // 二重チェック
+    
+    return { error }
+  } catch (error) {
+    console.error('deleteIdea セキュリティエラー:', error)
+    return { error }
+  }
 }
 
 // 人気のアイデア取得（コメント数順）

@@ -39,6 +39,14 @@ export default function IdeaEditPage() {
   const checkIdeaStatus = async () => {
     try {
       setStatusCheckLoading(true);
+      
+      // 二重認証チェック - ユーザーが存在するかを再確認
+      if (!user?.id) {
+        console.error('認証バイパス検出: ユーザーIDが存在しません');
+        router.push('/login');
+        return;
+      }
+
       const { data: idea, error } = await getIdeaById(ideaId);
 
       if (error) {
@@ -62,8 +70,14 @@ export default function IdeaEditPage() {
         return;
       }
 
-      // 作成者チェック
-      if (idea.author_id !== user?.id) {
+      // 厳密な作成者チェック（文字列比較も含む）
+      if (idea.author_id !== user.id || typeof idea.author_id !== 'string' || typeof user.id !== 'string') {
+        console.error('認証バイパス検出: 作成者IDが一致しません', {
+          ideaAuthor: idea.author_id,
+          userId: user.id,
+          ideaAuthorType: typeof idea.author_id,
+          userIdType: typeof user.id
+        });
         toast({
           title: "権限エラー",
           description: "このアイデアの編集権限がありません。",
