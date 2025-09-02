@@ -102,7 +102,7 @@ export type Database = {
           detail: string | null
           attachments: string[]
           deadline: string | null
-          status: 'published' | 'overdue' | 'completed'
+          status: 'published' | 'overdue' | 'closed'
           created_at: string
           updated_at: string
         }
@@ -115,7 +115,7 @@ export type Database = {
           detail?: string | null
           attachments?: string[]
           deadline?: string | null
-          status?: 'draft' | 'published' | 'closed' | 'overdue' | 'completed'
+          status?: 'draft' | 'published' | 'closed' | 'overdue'
           created_at?: string
           updated_at?: string
         }
@@ -128,7 +128,7 @@ export type Database = {
           detail?: string | null
           attachments?: string[]
           deadline?: string | null
-          status?: 'published' | 'completed' | 'overdue'
+          status?: 'published' | 'closed' | 'overdue'
           created_at?: string
           updated_at?: string
         }

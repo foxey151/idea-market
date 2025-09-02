@@ -143,7 +143,7 @@ export default function FinalIdeaPage() {
       const { data, error } = await updateIdea(ideaId, {
         detail: detail.trim(),
         attachments: attachmentPaths,
-        status: 'completed', // 最終版作成後は完成状態に
+        status: 'closed', // 最終版作成後は終了状態に
         updated_at: new Date().toISOString()
       });
       
