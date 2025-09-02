@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Edit, User, CreditCard, MapPin } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 import {
   getCurrentUserDetails,
   upsertUserDetails,
@@ -67,6 +68,7 @@ const BANK_OPTIONS = [
 
 export default function UserProfileView() {
   const { user, profile, refreshUserDetails, loading: authLoading } = useAuth()
+  const { toast } = useToast()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -197,7 +199,11 @@ export default function UserProfileView() {
     e.preventDefault()
     
     if (!user) {
-      alert('ユーザーが認証されていません')
+      toast({
+        title: 'ユーザーが認証されていません',
+        description: 'ログインしてから再度お試しください。',
+        variant: 'destructive',
+      })
       return
     }
 
@@ -224,18 +230,29 @@ export default function UserProfileView() {
       const { error } = await upsertUserDetails(userDetailsData)
       
       if (error) {
-        alert('プロフィールの更新に失敗しました: ' + error.message)
+        toast({
+          title: 'プロフィールの更新に失敗しました',
+          description: error.message,
+          variant: 'destructive',
+        })
         return
       }
 
       await refreshUserDetails()
       await loadUserDetails()
       
-      alert('プロフィールが正常に更新されました')
+      toast({
+        title: 'プロフィールが正常に更新されました',
+        description: '変更内容が保存されました。',
+      })
       setIsEditing(false)
     } catch (error) {
       console.error('プロフィール更新エラー:', error)
-      alert('プロフィールの更新中にエラーが発生しました')
+      toast({
+        title: 'プロフィールの更新中にエラーが発生しました',
+        description: 'しばらく時間をおいて再度お試しください。',
+        variant: 'destructive',
+      })
     } finally {
       setIsSubmitting(false)
     }

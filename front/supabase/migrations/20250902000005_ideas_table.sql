@@ -12,11 +12,16 @@ CREATE TABLE IF NOT EXISTS public.ideas (
     mmb_no TEXT NOT NULL UNIQUE, -- MMB-2509020001
     title TEXT NOT NULL,
     summary TEXT NOT NULL,
+    detail TEXT, -- アイデアの詳細説明（最終アイデア作成時に使用）
     attachments TEXT[] NOT NULL DEFAULT '{}', -- ファイルパス配列
     deadline TIMESTAMPTZ NOT NULL, -- 募集締切日時（必須化）
     status TEXT NOT NULL DEFAULT 'published' CHECK (status IN ('overdue', 'published', 'closed')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    -- detailカラムにコメントを追加
+    COMMENT ON COLUMN public.ideas.detail IS 'アイデアの詳細説明（最終アイデア作成時に使用）';
+    -- 既存のsummaryカラムにもコメントを追加（明確にするため）
+    COMMENT ON COLUMN public.ideas.summary IS 'アイデアの概要（短い説明）';
 );
 
 -- インデックス
@@ -26,9 +31,11 @@ CREATE INDEX IF NOT EXISTS idx_ideas_created_at ON public.ideas(created_at DESC)
 CREATE INDEX IF NOT EXISTS idx_ideas_deadline ON public.ideas(deadline);
 CREATE INDEX IF NOT EXISTS idx_ideas_status ON public.ideas(status);
 
+
 -- 全文検索用インデックス
 CREATE INDEX IF NOT EXISTS idx_ideas_title_trgm ON public.ideas USING GIN (title gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_ideas_summary_trgm ON public.ideas USING GIN (summary gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_ideas_detail_trgm ON public.ideas USING GIN (detail gin_trgm_ops);
 
 -- 更新時刻自動更新トリガー
 DROP TRIGGER IF EXISTS trg_ideas_updated_at ON public.ideas;
