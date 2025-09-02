@@ -111,6 +111,7 @@
 | `mmb_no` | TEXT | NOT NULL, UNIQUE | MMB-YYMMDNNNN形式の番号 |
 | `title` | TEXT | NOT NULL | タイトル |
 | `summary` | TEXT | NOT NULL | 概要 |
+| `detail` | TEXT | - | 詳細説明 |
 | `attachments` | TEXT[] | NOT NULL, DEFAULT '{}' | 添付ファイルパス配列 |
 | `deadline` | TIMESTAMPTZ | NOT NULL | 募集締切日時（必須化） |
 | `status` | TEXT | NOT NULL, DEFAULT 'published' | ステータス（overdue/published/closed） |
@@ -125,6 +126,7 @@
 - `idx_ideas_status` - ステータス
 - `idx_ideas_title_trgm` - タイトル全文検索
 - `idx_ideas_summary_trgm` - 概要全文検索
+- `idx_ideas_detail_trgm` - 詳細説明全文検索
 
 **トリガー**: 更新時刻自動更新、MMB番号自動生成
 
