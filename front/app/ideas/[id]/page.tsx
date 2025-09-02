@@ -463,7 +463,7 @@ export default function IdeaDetailPage() {
                   <Badge variant={idea.status === 'published' ? 'default' : 'secondary'}>
                     {idea.status === 'published' ? '公開中' : 
                      (idea.status as any) === 'overdue' ? '期限切れ' :
-                     (idea.status as any) === 'completed' ? '完成' : 'その他'}
+                     idea.status === 'closed' ? '完成' : 'その他'}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">

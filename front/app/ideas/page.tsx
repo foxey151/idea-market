@@ -118,6 +118,44 @@ export default function IdeasPage() {
             </Button>
           </div>
 
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  総アイデア数
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{ideas.length}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  公開中
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {ideas.filter(idea => idea.status === 'published').length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  完成
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">
+                  {ideas.filter(idea => idea.status === 'closed').length}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Results count */}
           <div className="mb-6">
             <p className="text-muted-foreground">
@@ -173,8 +211,15 @@ export default function IdeasPage() {
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between mb-2">
-                      <div className="text-xs text-muted-foreground">
-                        {idea.mmb_no}
+                      <div className="flex items-center gap-2">
+                        <div className="text-xs text-muted-foreground">
+                          {idea.mmb_no}
+                        </div>
+                        <Badge variant={idea.status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                          {idea.status === 'published' ? '公開中' : 
+                           (idea.status as any) === 'overdue' ? '期限切れ' :
+                           idea.status === 'closed' ? '完成' : 'その他'}
+                        </Badge>
                       </div>
                       <div className="flex items-center gap-1 text-xs">
                         <Calendar className="h-3 w-3" />

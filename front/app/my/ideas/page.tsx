@@ -97,7 +97,7 @@ export default function MyIdeasPage() {
     const colors = {
       "published": "bg-green-100 text-green-800",
       "overdue": "bg-orange-100 text-orange-800",
-      "completed": "bg-blue-100 text-blue-800"
+      "closed": "bg-blue-100 text-blue-800"
     };
     return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
@@ -106,7 +106,7 @@ export default function MyIdeasPage() {
     const statusMap = {
       "published": "公開中", 
       "overdue": "期限切れ",
-      "completed": "完成"
+      "closed": "完成"
     };
     return statusMap[status as keyof typeof statusMap] || status;
   };
@@ -197,7 +197,7 @@ export default function MyIdeasPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-600">
-                  {ideas.filter(idea => (idea.status as any) === 'completed').length}
+                  {ideas.filter(idea => idea.status === 'closed').length}
                 </div>
               </CardContent>
             </Card>
@@ -316,7 +316,7 @@ export default function MyIdeasPage() {
                           <Plus className="h-4 w-4 mr-1" />
                           最終アイデア作成
                         </Button>
-                      ) : (idea.status as any) === 'completed' ? (
+                      ) : idea.status === 'closed' ? (
                         // 完成したアイデアは詳細ボタンのみ表示（編集ボタンなし）
                         <div className="flex-1"></div>
                       ) : idea.status === 'published' ? (

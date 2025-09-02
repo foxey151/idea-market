@@ -29,7 +29,7 @@ export const createIdea = async (ideaData: Omit<IdeaInsert, 'id' | 'created_at' 
   return { data, error }
 }
 
-// アイデア一覧取得
+// アイデア一覧取得（公開中と完成済みを取得）
 export const getIdeas = async (limit = 20, offset = 0) => {
   const { data, error } = await supabase
     .from('ideas')
@@ -37,7 +37,7 @@ export const getIdeas = async (limit = 20, offset = 0) => {
       *,
       profiles(display_name, role)
     `)
-    .eq('status', 'published')
+    .in('status', ['published', 'closed'])
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
   
