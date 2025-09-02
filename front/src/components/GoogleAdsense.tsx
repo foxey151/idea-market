@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
-    adsbygoogle: any[];
+    adsbygoogle: unknown[]; // anyからunknownに変更
   }
 }
 
@@ -21,10 +21,17 @@ export default function GoogleAdsense({
   fullWidthResponsive = true,
   style = { display: 'block' }
 }: GoogleAdsenseProps) {
-  const insRef = useRef<HTMLElement>(null);
-  const isAdLoaded = useRef(false);
+  const insRef = useRef<HTMLModElement>(null);
+  // const isAdLoaded = useRef(false); // 広告機能無効化のためコメントアウト
 
   useEffect(() => {
+    // 広告機能を無効化：バックエンド処理をコメントアウト
+    // UI表示のためのプレースホルダー表示
+    if (insRef.current) {
+      insRef.current.innerHTML = '<div style="background: #f5f5f5; border: 1px dashed #ccc; padding: 20px; text-align: center; color: #666; font-size: 14px;">広告エリア（無効化中）</div>';
+    }
+    
+    /*
     // 既に広告がロードされている場合はスキップ
     if (isAdLoaded.current) return;
 
@@ -41,6 +48,7 @@ export default function GoogleAdsense({
     } catch (error) {
       console.error('Adsense error:', error);
     }
+    */
   }, []);
 
   return (

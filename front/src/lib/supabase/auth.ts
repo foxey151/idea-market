@@ -7,7 +7,7 @@ type Profile = Database['public']['Tables']['profiles']['Row']
 export const signUp = async (
   email: string, 
   password: string, 
-  role: 'member' | 'company' = 'member'
+  role: 'member' | 'admin' = 'member'
 ) => {
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -80,7 +80,7 @@ export const updateProfile = async (userId: string, updates: Partial<Profile>) =
 }
 
 // プロファイル情報を作成（サインアップ後のトリガー用）
-export const createProfile = async (userId: string, role: 'member' | 'company' = 'member') => {
+export const createProfile = async (userId: string, role: 'member' | 'admin' = 'member') => {
   const { data, error } = await supabase
     .from('profiles')
     .insert([{
@@ -106,4 +106,48 @@ export const resetPassword = async (email: string) => {
 export const updatePassword = async (password: string) => {
   const { error } = await supabase.auth.updateUser({ password })
   return { error }
+}
+
+// 現在のユーザーの管理者権限をチェック
+export const checkAdminPermission = async (): Promise<{ isAdmin: boolean, error: any }> => {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return { isAdmin: false, error: authError || { message: '認証が必要です' } }
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) {
+      return { isAdmin: false, error: profileError }
+    }
+
+    return { isAdmin: profile?.role === 'admin', error: null }
+  } catch (error) {
+    return { isAdmin: false, error }
+  }
+}
+
+// 指定されたユーザーIDの管理者権限をチェック
+export const checkUserAdminPermission = async (userId: string): Promise<{ isAdmin: boolean, error: any }> => {
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single()
+
+    if (error) {
+      return { isAdmin: false, error }
+    }
+
+    return { isAdmin: profile?.role === 'admin', error: null }
+  } catch (error) {
+    return { isAdmin: false, error }
+  }
 }

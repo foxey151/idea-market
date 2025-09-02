@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { useAuth } from "@/contexts/StableAuthContext";
 
-export default function SignupPage() {
+// useSearchParamsを使用する部分を分離
+function SignupPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading } = useAuth();
@@ -39,5 +40,20 @@ export default function SignupPage() {
     <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4">
       <SignupForm />
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">ページを読み込み中...</p>
+        </div>
+      </div>
+    }>
+      <SignupPageContent />
+    </Suspense>
   );
 }

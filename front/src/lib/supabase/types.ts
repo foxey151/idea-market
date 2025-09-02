@@ -115,7 +115,7 @@ export type Database = {
           detail?: string | null
           attachments?: string[]
           deadline?: string | null
-          status?: 'draft' | 'published' | 'closed' | 'overdue'
+          status?: 'draft' | 'published' | 'closed' | 'overdue' | 'completed'
           created_at?: string
           updated_at?: string
         }
@@ -128,7 +128,7 @@ export type Database = {
           detail?: string | null
           attachments?: string[]
           deadline?: string | null
-          status?: 'draft' | 'published' | 'closed' | 'overdue'
+          status?: 'published' | 'completed' | 'overdue'
           created_at?: string
           updated_at?: string
         }
@@ -235,6 +235,7 @@ export type Database = {
           created_at?: string
         }
       }
+      // 広告関連テーブル（型定義はUIのために保持、実際の処理は無効）
       ads: {
         Row: {
           id: string
@@ -445,7 +446,7 @@ export type Database = {
       }
     }
     Enums: {
-      role: 'member' | 'company' | 'admin'
+      role: 'member' | 'admin'
       version_type: 'X' | 'Y'
       purchase_status: 'succeeded' | 'refunded' | 'failed'
       account_type_enum: 'ordinary' | 'current'

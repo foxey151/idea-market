@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS public.purchases (
 
 CREATE INDEX IF NOT EXISTS idx_purchases_buyer ON public.purchases(buyer_id, paid_at);
 
--- 広告管理テーブル
+-- 広告管理テーブル（コメントアウト）
+/*
 CREATE TABLE IF NOT EXISTS public.ads (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
@@ -42,8 +43,10 @@ DROP TRIGGER IF EXISTS trg_ads_updated_at ON public.ads;
 CREATE TRIGGER trg_ads_updated_at
     BEFORE UPDATE ON public.ads
     FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+*/
 
--- 広告計測テーブル
+-- 広告計測テーブル（コメントアウト）
+/*
 CREATE TABLE IF NOT EXISTS public.ad_metrics (
     id BIGSERIAL PRIMARY KEY,
     ad_id UUID NOT NULL REFERENCES public.ads(id) ON DELETE CASCADE,
@@ -55,6 +58,7 @@ CREATE TABLE IF NOT EXISTS public.ad_metrics (
 );
 
 CREATE INDEX IF NOT EXISTS idx_ad_metrics ON public.ad_metrics(ad_id, event, ts);
+*/
 
 -- CMSページ管理テーブル
 CREATE TABLE IF NOT EXISTS public.pages (
