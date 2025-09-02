@@ -32,7 +32,8 @@ type LoginFormData = z.infer<typeof loginSchema>
 export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo') || '/'
+  // 再ログイン時は必ずトップ画面に遷移する
+  const redirectTo = '/'
   
   const [loginMethod, setLoginMethod] = useState<'select' | 'email'>('select')
   const [showPassword, setShowPassword] = useState(false)

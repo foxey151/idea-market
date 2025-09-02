@@ -8,9 +8,9 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type')
   const error_code = searchParams.get('error')
   const error_description = searchParams.get('error_description')
-  const redirectTo = searchParams.get('redirectTo') ?? searchParams.get('next') ?? 
-    (type === 'signup' ? '/auth/email-confirmed' : 
-     type === 'recovery' ? '/reset-password' : '/')
+  // 再ログイン時は必ずトップ画面に遷移する
+  const redirectTo = type === 'signup' ? '/auth/email-confirmed' : 
+                     type === 'recovery' ? '/reset-password' : '/'
   
   console.log('=== Auth Callback Debug Info ===')
   console.log('Full URL:', requestUrl)

@@ -10,7 +10,8 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading } = useAuth();
-  const redirectUrl = searchParams.get('redirect') || '/';
+  // 再ログイン時は必ずトップ画面に遷移する
+  const redirectUrl = '/';
 
   useEffect(() => {
     // ローディング中は何もしない
