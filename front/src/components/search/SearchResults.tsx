@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { MessageCircle, Eye, Calendar } from "lucide-react"
 import { searchIdeas, getIdeaByCmtNo } from "@/lib/supabase/ideas"
 
@@ -132,6 +133,14 @@ export function SearchResults() {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-muted-foreground">{result.mmb_no}</span>
+                    <Badge variant={(result as any).status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                      {(result as any).status === 'published' ? '公開中' : 
+                       (result as any).status === 'overdue' ? '期限切れ' :
+                       (result as any).status === 'closed' ? '完成' : 'その他'}
+                    </Badge>
+                  </div>
                   <CardTitle className="text-lg leading-tight">
                     <Link 
                       href={`/ideas/${result.id}`}
@@ -141,7 +150,7 @@ export function SearchResults() {
                     </Link>
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    MMB番号: {result.mmb_no}
+                    by {(result as any).profiles?.display_name || 'Unknown'}
                   </CardDescription>
                 </div>
                 {result.similarity_score && (

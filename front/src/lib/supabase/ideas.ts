@@ -87,14 +87,22 @@ export const getIdeaByCmtNo = async (cmtNo: string) => {
   return { data, error }
 }
 
-// キーワードでアイデア検索
+// キーワードでアイデア検索（title, summaryの部分一致）
 export const searchIdeas = async (keyword: string, limit = 20, offset = 0) => {
+  if (!keyword.trim()) {
+    return { data: [], error: null }
+  }
+
   const { data, error } = await supabase
-    .rpc('search_ideas_by_keyword', {
-      search_term: keyword,
-      limit_count: limit,
-      offset_count: offset
-    })
+    .from('ideas')
+    .select(`
+      *,
+      profiles(display_name, role)
+    `)
+    .or(`title.ilike.%${keyword}%,summary.ilike.%${keyword}%`)
+    .in('status', ['published', 'closed'])
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
   
   return { data, error }
 }

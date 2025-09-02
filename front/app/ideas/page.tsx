@@ -32,11 +32,21 @@ export default function IdeasPage() {
   }, []);
 
   useEffect(() => {
-    const filtered = ideas.filter(idea =>
-      idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      idea.summary.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredIdeas(filtered);
+    if (!searchTerm.trim()) {
+      setFilteredIdeas(ideas);
+      return;
+    }
+
+    // デバウンス処理
+    const timeoutId = setTimeout(() => {
+      const filtered = ideas.filter(idea =>
+        idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        idea.summary.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredIdeas(filtered);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
   }, [ideas, searchTerm]);
 
   const fetchIdeas = async () => {
