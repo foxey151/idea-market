@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useToast } from '@/hooks/use-toast'
 import {
   getCurrentUserDetails,
   upsertUserDetails,
@@ -65,6 +66,7 @@ const BANK_OPTIONS = [
 
 export default function UserProfileForm() {
   const { user, refreshUserDetails, loading: authLoading } = useAuth()
+  const { toast } = useToast()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -224,7 +226,11 @@ export default function UserProfileForm() {
     e.preventDefault()
     
     if (!user) {
-      alert('ユーザーが認証されていません')
+      toast({
+        title: 'ユーザーが認証されていません',
+        description: 'ログインしてから再度お試しください。',
+        variant: 'destructive',
+      })
       return
     }
 
@@ -251,18 +257,29 @@ export default function UserProfileForm() {
       const { error } = await upsertUserDetails(userDetailsData)
       
       if (error) {
-        alert('プロフィールの保存に失敗しました: ' + error.message)
+        toast({
+          title: 'プロフィールの保存に失敗しました',
+          description: error.message,
+          variant: 'destructive',
+        })
         return
       }
 
       // AuthContextのuserDetailsを更新
       await refreshUserDetails()
       
-      alert('プロフィールが正常に保存されました')
+      toast({
+        title: 'プロフィールが正常に保存されました',
+        description: 'アイデアマーケットをご利用いただけます。',
+      })
       router.push('/')
     } catch (error) {
       console.error('プロフィール保存エラー:', error)
-      alert('プロフィールの保存中にエラーが発生しました')
+      toast({
+        title: 'プロフィールの保存中にエラーが発生しました',
+        description: 'しばらく時間をおいて再度お試しください。',
+        variant: 'destructive',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -341,6 +358,21 @@ export default function UserProfileForm() {
                   </SelectContent>
                 </Select>
                 {errors.bank_name && <p className="text-red-500 text-sm">{errors.bank_name}</p>}
+                
+                {/* その他の銀行名を選択した場合のカスタム入力フィールド */}
+                {formData.bank_name === 'その他' && (
+                  <div className="mt-2">
+                    <Label htmlFor="custom_bank_name">銀行名を入力してください <span className="text-red-500">*</span></Label>
+                    <Input
+                      id="custom_bank_name"
+                      type="text"
+                      value={formData.bank_name === 'その他' ? '' : formData.bank_name}
+                      onChange={(e) => handleInputChange('bank_name', e.target.value)}
+                      placeholder="例：○○銀行"
+                      className={errors.bank_name ? 'border-red-500' : ''}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* 支店名 */}

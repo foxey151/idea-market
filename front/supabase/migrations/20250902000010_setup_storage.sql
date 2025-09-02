@@ -16,13 +16,13 @@ VALUES ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- ストレージポリシーの設定
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'ideas');
+CREATE POLICY "Ideas Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'ideas');
 CREATE POLICY "Authenticated users can upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'ideas' AND auth.role() = 'authenticated');
 CREATE POLICY "Users can update own files" ON storage.objects FOR UPDATE USING (bucket_id = 'ideas' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "Users can delete own files" ON storage.objects FOR DELETE USING (bucket_id = 'ideas' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 -- アバター用ポリシー
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
-CREATE POLICY "Authenticated users can upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+CREATE POLICY "Avatars Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+CREATE POLICY "Authenticated users can upload avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
 CREATE POLICY "Users can update own avatar" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "Users can delete own avatar" ON storage.objects FOR DELETE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
