@@ -446,7 +446,7 @@ export type Database = {
       }
     }
     Enums: {
-      role: 'member' | 'company' | 'admin'
+      role: 'member' | 'admin'
       version_type: 'X' | 'Y'
       purchase_status: 'succeeded' | 'refunded' | 'failed'
       account_type_enum: 'ordinary' | 'current'

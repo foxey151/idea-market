@@ -15,7 +15,7 @@ interface StableAuthContextType {
   loading: boolean
   hasCompleteProfile: boolean
   signIn: (email: string, password: string) => Promise<{ error?: any }>
-  signUp: (email: string, password: string, role?: 'member' | 'company') => Promise<{ error?: any }>
+  signUp: (email: string, password: string, role?: 'member' | 'admin') => Promise<{ error?: any }>
   signOut: () => Promise<void>
   updateProfile: (updates: any) => Promise<{ error?: any }>
   refreshUserDetails: () => Promise<void>
@@ -191,7 +191,7 @@ export function StableAuthProvider({ children }: { children: React.ReactNode }) 
     }
   }
 
-  const signUp = async (email: string, password: string, role: 'member' | 'company' = 'member') => {
+  const signUp = async (email: string, password: string, role: 'member' | 'admin' = 'member') => {
     try {
       const redirectUrl = `${window.location.origin}/auth/callback?type=signup`
       console.log('=== SignUp Debug Info ===')
