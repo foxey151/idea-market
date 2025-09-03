@@ -102,8 +102,8 @@ const Header = () => {
             <Link href="/search" className="text-foreground/80 hover:text-primary transition-colors">
               検索
             </Link>
-            <Link href="/sell" className="text-foreground/80 hover:text-primary transition-colors">
-              アイデア販売
+            <Link href="/about-ideas" className="text-foreground/80 hover:text-primary transition-colors">
+              アイデアとは
             </Link>
             <Link href="/about" className="text-foreground/80 hover:text-primary transition-colors">
               サービス案内
@@ -189,11 +189,11 @@ const Header = () => {
                   検索
                 </Link>
                 <Link
-                  href="/sell"
+                  href="/about-ideas"
                   className="text-foreground/80 hover:text-primary transition-colors py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  アイデア販売
+                  アイデアとは
                 </Link>
                 <Link
                   href="/about"
