@@ -45,9 +45,9 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">利用規約・情報</h3>
             <ul className="space-y-2">
               <li><Link href="/terms" className="text-muted-foreground hover:text-foreground">利用規約</Link></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground">プライバシーポリシー</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground">特定商取引法に基づく表記</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground">会社情報</a></li>
+              <li><Link href="/privacy" className="text-muted-foreground hover:text-foreground">プライバシーポリシー</Link></li>
+              <li><Link href="/commerce" className="text-muted-foreground hover:text-foreground">特定商取引法に基づく表記</Link></li>
+              <li><Link href="/company" className="text-muted-foreground hover:text-foreground">会社情報</Link></li>
             </ul>
           </div>
         </div>

@@ -154,24 +154,7 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
-
-          {/* 管理者情報 */}
-          <div className="mt-8 bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">管理者情報</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-              <div>
-                <span className="font-medium">アクセス権限:</span> 管理者
-              </div>
-              <div>
-                <span className="font-medium">最終ログイン:</span> {new Date().toLocaleString('ja-JP')}
-              </div>
-              <div>
-                <span className="font-medium">システム状態:</span> 
-                <span className="ml-1 text-green-600 font-medium">正常</span>
-              </div>
-            </div>
-          </div>
-                  </div>
+        </div>
         </div>
 
         {/* ログダウンロードモーダル */}
