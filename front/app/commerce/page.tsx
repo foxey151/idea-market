@@ -30,14 +30,10 @@ export default function CommerceLawPage() {
 
               <section>
                 <h2 className="text-xl font-semibold mb-4 text-gray-900">連絡先</h2>
-                <div className="space-y-2">
-                  <p>
-                    <span className="font-medium">電話番号：</span>せせせせせせせせせせせせせせせせせせせせせせせせ
-                  </p>
-                  <p>
-                    <span className="font-medium">メールアドレス：</span>そそそそそそそそそそそそそそそそそそそそそそそそ
-                  </p>
-                </div>
+                <p>
+                  電話番号：せせせせせせせせせせせせせせせせせせせせせせせせ
+メールアドレス：そそそそそそそそそそそそそそそそそそそそそそそそ
+                </p>
               </section>
 
               <section>
@@ -57,7 +53,7 @@ export default function CommerceLawPage() {
               <section>
                 <h2 className="text-xl font-semibold mb-4 text-gray-900">支払時期</h2>
                 <p>
-                  つつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつ。
+                  つつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつつ。
                 </p>
               </section>
 
@@ -84,7 +80,7 @@ export default function CommerceLawPage() {
 
               <div className="mt-8 text-right text-sm text-gray-500">
                 制定日：2024年1月1日<br />
-                最終更新日：2024年1月1日
+                最終更新日：2025/9/3
               </div>
             </div>
           </div>

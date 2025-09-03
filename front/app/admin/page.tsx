@@ -2,12 +2,24 @@
 
 import { AdminGuard } from '@/components/AdminGuard'
 import { LogDownloadModal } from '@/components/admin/LogDownloadModal'
+import { TermsEditModal } from '@/components/admin/TermsEditModal'
+import { DocumentEditor } from '@/components/admin/DocumentEditor'
 // import { LogInputModal } from '@/components/admin/LogInputModal'
 import { useState } from 'react'
 
+type EditableDocument = 'terms' | 'privacy' | 'commerce' | 'company'
+
 export default function AdminPage() {
   const [logModalOpen, setLogModalOpen] = useState(false)
+  const [termsEditModalOpen, setTermsEditModalOpen] = useState(false)
+  const [documentEditorOpen, setDocumentEditorOpen] = useState(false)
+  const [selectedDocument, setSelectedDocument] = useState<EditableDocument | null>(null)
   // const [logInputModalOpen, setLogInputModalOpen] = useState(false)
+
+  const handleDocumentSelect = (documentType: EditableDocument) => {
+    setSelectedDocument(documentType)
+    setDocumentEditorOpen(true)
+  }
 
   return (
     <AdminGuard>
@@ -55,7 +67,7 @@ export default function AdminPage() {
                 </div>
                 <button 
                   className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
-                  disabled
+                  onClick={() => setTermsEditModalOpen(true)}
                 >
                   管理画面
                 </button>
@@ -161,6 +173,20 @@ export default function AdminPage() {
         <LogDownloadModal 
           open={logModalOpen} 
           onOpenChange={setLogModalOpen} 
+        />
+
+        {/* 規約等編集モーダル */}
+        <TermsEditModal 
+          open={termsEditModalOpen} 
+          onOpenChange={setTermsEditModalOpen}
+          onDocumentSelect={handleDocumentSelect}
+        />
+
+        {/* 文書編集画面 */}
+        <DocumentEditor 
+          open={documentEditorOpen} 
+          onOpenChange={setDocumentEditorOpen}
+          documentType={selectedDocument}
         />
 
         {/* ログ入力モーダル（一時的に無効化） */}
