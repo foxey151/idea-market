@@ -60,8 +60,7 @@ export default function AboutPage() {
             <CardContent>
               <ul className="space-y-2 text-sm">
                 <li>• 有償版（Y版）として詳細なアイデアを販売</li>
-                <li>• Stripe決済による安全な取引</li>
-                <li>• 透明性のある売上管理</li>
+                <li>• 一定利益を公益に回すため、比率を公表しています</li>
               </ul>
             </CardContent>
           </Card>
@@ -181,9 +180,9 @@ export default function AboutPage() {
               <div>
                 <h4 className="font-semibold mb-2">お問い合わせ</h4>
                 <div className="space-y-1 text-sm text-muted-foreground">
-                  <p>Email: info@idea-market.com</p>
+                  <p>Email: info@idea-market.net</p>
                   <p>営業時間: 平日 9:00-18:00</p>
-                  <p>サポート: support@idea-market.com</p>
+                  <p>サポート: info@idea-market.net</p>
                 </div>
               </div>
             </div>

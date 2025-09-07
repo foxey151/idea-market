@@ -108,6 +108,9 @@ const Header = () => {
             <Link href="/about" className="text-foreground/80 hover:text-primary transition-colors">
               サービス案内
             </Link>
+            <Link href="/blog" className="text-foreground/80 hover:text-primary transition-colors">
+              ブログ
+            </Link>
           </nav>
 
           {/* Search Bar and Desktop Actions */}
@@ -201,6 +204,13 @@ const Header = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   サービス案内
+                </Link>
+                <Link
+                  href="/blog"
+                  className="text-foreground/80 hover:text-primary transition-colors py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  ブログ
                 </Link>
               <div className="flex flex-col space-y-2 pt-4 border-t">
                 {loading ? (

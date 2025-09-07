@@ -47,7 +47,7 @@ const Hero = () => {
           <div className="animate-fade-in animation-delay-200">
             <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
               あなたのアイデアを世界に届け、収益化しませんか？<br />
-              技術案・事業案・デザイン・レシピまで、すべてのアイデアが価値を持ちます
+              技術案・事業案・デザイン・レシピまで、すべてのアイデアが価値を<br />持ちます
             </p>
           </div>
 
@@ -59,7 +59,7 @@ const Hero = () => {
               </div>
               <h3 className="text-lg font-bold mb-2 text-primary">アイデア売買</h3>
               <p className="text-muted-foreground text-sm">
-                革新的なアイデアを投稿し、企業や個人へ販売できます
+                アイデアを投稿し、企業や個人へ販売できます
               </p>
             </div>
 
@@ -82,6 +82,13 @@ const Hero = () => {
                 膨大なアイデアの中から、あなたのニーズにぴったりのものを発見
               </p>
             </div>
+          </div>
+
+          <div className="text-left animate-fade-in animation-delay-200">
+            <p className="text-lg md:text-lg text-muted-foreground mb-12 leading-relaxed pl-12">
+              アイデアとは何も特許的なものだけではありません。ちょっとした思いつきが他の人からしたら珠玉のものかもしれません。<br />
+              検索者の方へ：ここは知の宝が埋もれているかもしれません
+            </p>
           </div>
 
           {/* Call to Action */}
@@ -115,11 +122,11 @@ const Hero = () => {
               <div className="text-sm text-muted-foreground">活動ユーザー</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-accent mb-2">¥50M+</div>
+              <div className="text-3xl font-bold text-primary mb-2">¥50M+</div>
               <div className="text-sm text-muted-foreground">総取引額</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">98%</div>
+              <div className="text-3xl font-bold text-secondary mb-2">98%</div>
               <div className="text-sm text-muted-foreground">満足度</div>
             </div>
           </div>
