@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export default async function BlogDetailPage({ params }: Props) {
   try {
-    const blog = await getBlog(params.id);
+    const { id } = await params;
+    const blog = await getBlog(id);
 
     // 読了時間の計算（簡易版）
     const readingTime = Math.ceil(blog.content.replace(/<[^>]*>/g, '').length / 400);
@@ -120,7 +121,8 @@ export async function generateStaticParams() {
 // メタデータ生成
 export async function generateMetadata({ params }: Props) {
   try {
-    const blog = await getBlog(params.id);
+    const { id } = await params;
+    const blog = await getBlog(id);
 
     return {
       title: `${blog.title} | アイデアマーケット ブログ`,
