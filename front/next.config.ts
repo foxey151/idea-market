@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["@radix-ui/react-icons"],
   },
+  images: {
+    domains: ['images.microcms-assets.io'],
+  },
 };
 
 export default nextConfig;
