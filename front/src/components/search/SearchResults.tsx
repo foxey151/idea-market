@@ -1,66 +1,72 @@
-"use client"
+'use client';
 
-import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
-import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { MessageCircle, Eye, Calendar } from "lucide-react"
-import { searchIdeas, getIdeaByCmtNo } from "@/lib/supabase/ideas"
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { MessageCircle, Eye, Calendar } from 'lucide-react';
+import { searchIdeas, getIdeaByCmtNo } from '@/lib/supabase/ideas';
 
 interface SearchResult {
-  id: string
-  mmb_no: string
-  title: string
-  summary: string
-  created_at: string
-  similarity_score?: number
-  comment_count?: number
+  id: string;
+  mmb_no: string;
+  title: string;
+  summary: string;
+  created_at: string;
+  similarity_score?: number;
+  comment_count?: number;
 }
 
 export function SearchResults() {
-  const searchParams = useSearchParams()
-  const query = searchParams.get('q')
-  const type = searchParams.get('type') || 'keyword'
-  
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams();
+  const query = searchParams.get('q');
+  const type = searchParams.get('type') || 'keyword';
+
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!query) {
-      setResults([])
-      return
+      setResults([]);
+      return;
     }
 
     const performSearch = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       try {
         if (type === 'cmt') {
           // CMT番号での検索
-          const { data, error } = await getIdeaByCmtNo(query)
-          if (error) throw error
-          setResults(data ? [data] : [])
+          const { data, error } = await getIdeaByCmtNo(query);
+          if (error) throw error;
+          setResults(data ? [data] : []);
         } else {
           // キーワード検索
-          const { data, error } = await searchIdeas(query)
-          if (error) throw error
-          setResults(data || [])
+          const { data, error } = await searchIdeas(query);
+          if (error) throw error;
+          setResults(data || []);
         }
       } catch (err) {
-        console.error('検索エラー:', err)
-        setError('検索中にエラーが発生しました')
-        setResults([])
+        console.error('検索エラー:', err);
+        setError('検索中にエラーが発生しました');
+        setResults([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    performSearch()
-  }, [query, type])
+    performSearch();
+  }, [query, type]);
 
   if (!query) {
     return (
@@ -71,7 +77,7 @@ export function SearchResults() {
           </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (loading) {
@@ -83,7 +89,7 @@ export function SearchResults() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
@@ -93,7 +99,7 @@ export function SearchResults() {
           <p className="text-destructive">{error}</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (results.length === 0) {
@@ -113,36 +119,45 @@ export function SearchResults() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
-          検索結果: {results.length}件
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          検索ワード: 「{query}」
-        </p>
+        <h2 className="text-lg font-semibold">検索結果: {results.length}件</h2>
+        <p className="text-sm text-muted-foreground">検索ワード: 「{query}」</p>
       </div>
 
       <div className="space-y-4">
-        {results.map((result) => (
+        {results.map(result => (
           <Card key={result.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs text-muted-foreground">{result.mmb_no}</span>
-                    <Badge variant={(result as any).status === 'published' ? 'default' : 'secondary'} className="text-xs">
-                      {(result as any).status === 'published' ? '公開中' : 
-                       (result as any).status === 'overdue' ? '期限切れ' :
-                       (result as any).status === 'closed' ? '完成' : 'その他'}
+                    <span className="text-xs text-muted-foreground">
+                      {result.mmb_no}
+                    </span>
+                    <Badge
+                      variant={
+                        (result as any).status === 'published'
+                          ? 'default'
+                          : 'secondary'
+                      }
+                      className="text-xs"
+                    >
+                      {(result as any).status === 'published'
+                        ? '公開中'
+                        : (result as any).status === 'overdue'
+                          ? '期限切れ'
+                          : (result as any).status === 'closed'
+                            ? '完成'
+                            : 'その他'}
                     </Badge>
                   </div>
                   <CardTitle className="text-lg leading-tight">
-                    <Link 
+                    <Link
                       href={`/ideas/${result.id}`}
                       className="hover:text-primary transition-colors"
                     >
@@ -164,8 +179,6 @@ export function SearchResults() {
               <p className="text-muted-foreground mb-4 line-clamp-3">
                 {result.summary}
               </p>
-              
-
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -180,7 +193,7 @@ export function SearchResults() {
                     </div>
                   )}
                 </div>
-                
+
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/ideas/${result.id}`}>
                     <Eye className="h-4 w-4 mr-2" />
@@ -193,5 +206,5 @@ export function SearchResults() {
         ))}
       </div>
     </div>
-  )
+  );
 }

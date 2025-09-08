@@ -1,15 +1,27 @@
-"use client"
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/StableAuthContext'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useToast } from '@/hooks/use-toast'
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/StableAuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 import {
   getCurrentUserDetails,
   upsertUserDetails,
@@ -23,33 +35,33 @@ import {
   type UserDetailsInsert,
   type AccountType,
   type Gender,
-  type Prefecture
-} from '@/lib/supabase/user-details'
+  type Prefecture,
+} from '@/lib/supabase/user-details';
 
 interface FormData {
-  full_name: string
-  email: string
-  bank_name: string
-  branch_name: string
-  account_type: AccountType | ''
-  account_number: string
-  account_holder: string
-  gender: Gender | ''
-  birth_date: string
-  prefecture: Prefecture | ''
+  full_name: string;
+  email: string;
+  bank_name: string;
+  branch_name: string;
+  account_type: AccountType | '';
+  account_number: string;
+  account_holder: string;
+  gender: Gender | '';
+  birth_date: string;
+  prefecture: Prefecture | '';
 }
 
 interface FormErrors {
-  full_name?: string
-  email?: string
-  bank_name?: string
-  branch_name?: string
-  account_type?: string
-  account_number?: string
-  account_holder?: string
-  gender?: string
-  birth_date?: string
-  prefecture?: string
+  full_name?: string;
+  email?: string;
+  bank_name?: string;
+  branch_name?: string;
+  account_type?: string;
+  account_number?: string;
+  account_holder?: string;
+  gender?: string;
+  birth_date?: string;
+  prefecture?: string;
 }
 
 const BANK_OPTIONS = [
@@ -61,15 +73,15 @@ const BANK_OPTIONS = [
   'ゆうちょ銀行',
   '楽天銀行',
   'ジャパンネット銀行',
-  'その他'
-]
+  'その他',
+];
 
 export default function UserProfileForm() {
-  const { user, refreshUserDetails, loading: authLoading } = useAuth()
-  const { toast } = useToast()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { user, refreshUserDetails, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     full_name: '',
     email: '',
@@ -80,41 +92,41 @@ export default function UserProfileForm() {
     account_holder: '',
     gender: '',
     birth_date: '',
-    prefecture: ''
-  })
-  const [errors, setErrors] = useState<FormErrors>({})
+    prefecture: '',
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
 
   // ユーザーが認証されていない場合、ログインページにリダイレクト
   useEffect(() => {
     // 認証状態の読み込み中は何もしない
-    if (authLoading) return
+    if (authLoading) return;
 
     if (!user) {
-      router.push('/login')
-      return
+      router.push('/login');
+      return;
     }
 
     // 既存のユーザー詳細情報を取得
-    loadUserDetails()
-  }, [user, authLoading])
+    loadUserDetails();
+  }, [user, authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // routerのためのuseCallbackで最適化
-  const handleRedirect = () => {
-    router.push('/login')
-  }
+  const _handleRedirect = () => {
+    router.push('/login');
+  };
 
   const loadUserDetails = async () => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('loadUserDetails開始')
+      console.log('loadUserDetails開始');
     }
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const result = await getCurrentUserDetails()
-      
+      const result = await getCurrentUserDetails();
+
       if (result && !result.error && result.data) {
-        const userDetails: UserDetails = result.data
+        const userDetails: UserDetails = result.data;
         if (process.env.NODE_ENV === 'development') {
-          console.log('既存のユーザー詳細情報を読み込み:', userDetails)
+          console.log('既存のユーザー詳細情報を読み込み:', userDetails);
         }
         setFormData({
           full_name: userDetails.full_name || '',
@@ -126,119 +138,119 @@ export default function UserProfileForm() {
           account_holder: userDetails.account_holder || '',
           gender: userDetails.gender || '',
           birth_date: userDetails.birth_date || '',
-          prefecture: userDetails.prefecture || ''
-        })
+          prefecture: userDetails.prefecture || '',
+        });
       } else {
         if (process.env.NODE_ENV === 'development') {
-          console.log('新規ユーザーのため初期値を設定')
+          console.log('新規ユーザーのため初期値を設定');
         }
         // 新規ユーザーの場合、メールアドレスのみ設定
         setFormData(prev => ({
           ...prev,
-          email: user?.email || ''
-        }))
+          email: user?.email || '',
+        }));
       }
     } catch (error) {
-      console.error('ユーザー詳細情報の取得に失敗:', error)
+      console.error('ユーザー詳細情報の取得に失敗:', error);
       // エラーの場合もメールアドレスのみ設定
       setFormData(prev => ({
         ...prev,
-        email: user?.email || ''
-      }))
+        email: user?.email || '',
+      }));
     } finally {
       if (process.env.NODE_ENV === 'development') {
-        console.log('loadUserDetails完了')
+        console.log('loadUserDetails完了');
       }
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
-    }))
-    
+      [field]: value,
+    }));
+
     // エラーをクリア
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
-        [field]: undefined
-      }))
+        [field]: undefined,
+      }));
     }
-  }
+  };
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
+    const newErrors: FormErrors = {};
 
     // 必須項目のチェック
     if (!formData.full_name.trim()) {
-      newErrors.full_name = '氏名は必須です'
+      newErrors.full_name = '氏名は必須です';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'メールアドレスは必須です'
+      newErrors.email = 'メールアドレスは必須です';
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = '正しいメールアドレスを入力してください'
+      newErrors.email = '正しいメールアドレスを入力してください';
     }
 
     if (!formData.bank_name.trim()) {
-      newErrors.bank_name = '銀行名は必須です'
+      newErrors.bank_name = '銀行名は必須です';
     }
 
     if (!formData.branch_name.trim()) {
-      newErrors.branch_name = '支店名は必須です'
+      newErrors.branch_name = '支店名は必須です';
     }
 
     if (!formData.account_type) {
-      newErrors.account_type = '口座種別を選択してください'
+      newErrors.account_type = '口座種別を選択してください';
     }
 
     if (!formData.account_number.trim()) {
-      newErrors.account_number = '口座番号は必須です'
+      newErrors.account_number = '口座番号は必須です';
     } else if (!validateAccountNumber(formData.account_number)) {
-      newErrors.account_number = '口座番号は7-8桁の数字で入力してください'
+      newErrors.account_number = '口座番号は7-8桁の数字で入力してください';
     }
 
     if (!formData.account_holder.trim()) {
-      newErrors.account_holder = '口座名義は必須です'
+      newErrors.account_holder = '口座名義は必須です';
     }
 
     if (!formData.gender) {
-      newErrors.gender = '性別を選択してください'
+      newErrors.gender = '性別を選択してください';
     }
 
     if (!formData.birth_date) {
-      newErrors.birth_date = '生年月日は必須です'
+      newErrors.birth_date = '生年月日は必須です';
     } else if (!validateBirthDate(formData.birth_date)) {
-      newErrors.birth_date = '正しい生年月日を入力してください'
+      newErrors.birth_date = '正しい生年月日を入力してください';
     }
 
     if (!formData.prefecture) {
-      newErrors.prefecture = '居住都道府県を選択してください'
+      newErrors.prefecture = '居住都道府県を選択してください';
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!user) {
       toast({
         title: 'ユーザーが認証されていません',
         description: 'ログインしてから再度お試しください。',
         variant: 'destructive',
-      })
-      return
+      });
+      return;
     }
 
     if (!validateForm()) {
-      return
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       const userDetailsData: UserDetailsInsert = {
         user_id: user.id,
@@ -251,39 +263,39 @@ export default function UserProfileForm() {
         account_holder: formData.account_holder.trim(),
         gender: formData.gender as Gender,
         birth_date: formData.birth_date,
-        prefecture: formData.prefecture as Prefecture
-      }
+        prefecture: formData.prefecture as Prefecture,
+      };
 
-      const { error } = await upsertUserDetails(userDetailsData)
-      
+      const { error } = await upsertUserDetails(userDetailsData);
+
       if (error) {
         toast({
           title: 'プロフィールの保存に失敗しました',
           description: error.message,
           variant: 'destructive',
-        })
-        return
+        });
+        return;
       }
 
       // AuthContextのuserDetailsを更新
-      await refreshUserDetails()
-      
+      await refreshUserDetails();
+
       toast({
         title: 'プロフィールが正常に保存されました',
         description: 'アイデアマーケットをご利用いただけます。',
-      })
-      router.push('/')
+      });
+      router.push('/');
     } catch (error) {
-      console.error('プロフィール保存エラー:', error)
+      console.error('プロフィール保存エラー:', error);
       toast({
         title: 'プロフィールの保存中にエラーが発生しました',
         description: 'しばらく時間をおいて再度お試しください。',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   if (authLoading || isLoading) {
     return (
@@ -293,7 +305,7 @@ export default function UserProfileForm() {
           <p>読み込み中...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -309,65 +321,88 @@ export default function UserProfileForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* 氏名 */}
             <div className="space-y-2">
-              <Label htmlFor="full_name">氏名 <span className="text-red-500">*</span></Label>
+              <Label htmlFor="full_name">
+                氏名 <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="full_name"
                 type="text"
                 value={formData.full_name}
-                onChange={(e) => handleInputChange('full_name', e.target.value)}
+                onChange={e => handleInputChange('full_name', e.target.value)}
                 placeholder="山田 太郎"
                 className={errors.full_name ? 'border-red-500' : ''}
               />
-              {errors.full_name && <p className="text-red-500 text-sm">{errors.full_name}</p>}
+              {errors.full_name && (
+                <p className="text-red-500 text-sm">{errors.full_name}</p>
+              )}
             </div>
 
             {/* メールアドレス */}
             <div className="space-y-2">
-              <Label htmlFor="email">メールアドレス <span className="text-red-500">*</span></Label>
+              <Label htmlFor="email">
+                メールアドレス <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                onChange={e => handleInputChange('email', e.target.value)}
                 placeholder="example@email.com"
                 className={errors.email ? 'border-red-500' : ''}
               />
-              {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email}</p>
+              )}
             </div>
 
             {/* 銀行情報 */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">銀行情報</h3>
-              
+
               {/* 銀行名 */}
               <div className="space-y-2">
-                <Label htmlFor="bank_name">銀行名 <span className="text-red-500">*</span></Label>
+                <Label htmlFor="bank_name">
+                  銀行名 <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   value={formData.bank_name}
-                  onValueChange={(value) => handleInputChange('bank_name', value)}
+                  onValueChange={value => handleInputChange('bank_name', value)}
                 >
-                  <SelectTrigger className={errors.bank_name ? 'border-red-500' : ''}>
+                  <SelectTrigger
+                    className={errors.bank_name ? 'border-red-500' : ''}
+                  >
                     <SelectValue placeholder="銀行を選択してください" />
                   </SelectTrigger>
                   <SelectContent>
-                    {BANK_OPTIONS.map((bank) => (
+                    {BANK_OPTIONS.map(bank => (
                       <SelectItem key={bank} value={bank}>
                         {bank}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.bank_name && <p className="text-red-500 text-sm">{errors.bank_name}</p>}
-                
+                {errors.bank_name && (
+                  <p className="text-red-500 text-sm">{errors.bank_name}</p>
+                )}
+
                 {/* その他の銀行名を選択した場合のカスタム入力フィールド */}
                 {formData.bank_name === 'その他' && (
                   <div className="mt-2">
-                    <Label htmlFor="custom_bank_name">銀行名を入力してください <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="custom_bank_name">
+                      銀行名を入力してください{' '}
+                      <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="custom_bank_name"
                       type="text"
-                      value={formData.bank_name === 'その他' ? '' : formData.bank_name}
-                      onChange={(e) => handleInputChange('bank_name', e.target.value)}
+                      value={
+                        formData.bank_name === 'その他'
+                          ? ''
+                          : formData.bank_name
+                      }
+                      onChange={e =>
+                        handleInputChange('bank_name', e.target.value)
+                      }
                       placeholder="例：○○銀行"
                       className={errors.bank_name ? 'border-red-500' : ''}
                     />
@@ -377,123 +412,185 @@ export default function UserProfileForm() {
 
               {/* 支店名 */}
               <div className="space-y-2">
-                <Label htmlFor="branch_name">支店名 <span className="text-red-500">*</span></Label>
+                <Label htmlFor="branch_name">
+                  支店名 <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="branch_name"
                   type="text"
                   value={formData.branch_name}
-                  onChange={(e) => handleInputChange('branch_name', e.target.value)}
+                  onChange={e =>
+                    handleInputChange('branch_name', e.target.value)
+                  }
                   placeholder="本店"
                   className={errors.branch_name ? 'border-red-500' : ''}
                 />
-                {errors.branch_name && <p className="text-red-500 text-sm">{errors.branch_name}</p>}
+                {errors.branch_name && (
+                  <p className="text-red-500 text-sm">{errors.branch_name}</p>
+                )}
               </div>
 
               {/* 口座種別 */}
               <div className="space-y-3">
-                <Label>口座種別 <span className="text-red-500">*</span></Label>
+                <Label>
+                  口座種別 <span className="text-red-500">*</span>
+                </Label>
                 <RadioGroup
                   value={formData.account_type}
-                  onValueChange={(value) => handleInputChange('account_type', value)}
+                  onValueChange={value =>
+                    handleInputChange('account_type', value)
+                  }
                   className="flex gap-6"
                 >
-                  {ACCOUNT_TYPE_OPTIONS.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2">
+                  {ACCOUNT_TYPE_OPTIONS.map(option => (
+                    <div
+                      key={option.value}
+                      className="flex items-center space-x-2"
+                    >
                       <RadioGroupItem value={option.value} id={option.value} />
                       <Label htmlFor={option.value}>{option.label}</Label>
                     </div>
                   ))}
                 </RadioGroup>
-                {errors.account_type && <p className="text-red-500 text-sm">{errors.account_type}</p>}
+                {errors.account_type && (
+                  <p className="text-red-500 text-sm">{errors.account_type}</p>
+                )}
               </div>
 
               {/* 口座番号 */}
               <div className="space-y-2">
-                <Label htmlFor="account_number">口座番号 <span className="text-red-500">*</span></Label>
+                <Label htmlFor="account_number">
+                  口座番号 <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="account_number"
                   type="text"
                   value={formData.account_number}
-                  onChange={(e) => handleInputChange('account_number', e.target.value.replace(/\D/g, ''))}
+                  onChange={e =>
+                    handleInputChange(
+                      'account_number',
+                      e.target.value.replace(/\D/g, '')
+                    )
+                  }
                   placeholder="1234567"
                   maxLength={8}
                   className={errors.account_number ? 'border-red-500' : ''}
                 />
-                <p className="text-sm text-gray-500">7-8桁の数字で入力してください</p>
-                {errors.account_number && <p className="text-red-500 text-sm">{errors.account_number}</p>}
+                <p className="text-sm text-gray-500">
+                  7-8桁の数字で入力してください
+                </p>
+                {errors.account_number && (
+                  <p className="text-red-500 text-sm">
+                    {errors.account_number}
+                  </p>
+                )}
               </div>
 
               {/* 口座名義 */}
               <div className="space-y-2">
-                <Label htmlFor="account_holder">口座名義 <span className="text-red-500">*</span></Label>
+                <Label htmlFor="account_holder">
+                  口座名義 <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="account_holder"
                   type="text"
                   value={formData.account_holder}
-                  onChange={(e) => handleInputChange('account_holder', e.target.value)}
+                  onChange={e =>
+                    handleInputChange('account_holder', e.target.value)
+                  }
                   placeholder="ヤマダ タロウ"
                   className={errors.account_holder ? 'border-red-500' : ''}
                 />
-                <p className="text-sm text-gray-500">カタカナで入力してください</p>
-                {errors.account_holder && <p className="text-red-500 text-sm">{errors.account_holder}</p>}
+                <p className="text-sm text-gray-500">
+                  カタカナで入力してください
+                </p>
+                {errors.account_holder && (
+                  <p className="text-red-500 text-sm">
+                    {errors.account_holder}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* 個人情報 */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">個人情報</h3>
-              
+
               {/* 性別 */}
               <div className="space-y-3">
-                <Label>性別 <span className="text-red-500">*</span></Label>
+                <Label>
+                  性別 <span className="text-red-500">*</span>
+                </Label>
                 <RadioGroup
                   value={formData.gender}
-                  onValueChange={(value) => handleInputChange('gender', value)}
+                  onValueChange={value => handleInputChange('gender', value)}
                   className="flex gap-6"
                 >
-                  {GENDER_OPTIONS.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2">
+                  {GENDER_OPTIONS.map(option => (
+                    <div
+                      key={option.value}
+                      className="flex items-center space-x-2"
+                    >
                       <RadioGroupItem value={option.value} id={option.value} />
                       <Label htmlFor={option.value}>{option.label}</Label>
                     </div>
                   ))}
                 </RadioGroup>
-                {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
+                {errors.gender && (
+                  <p className="text-red-500 text-sm">{errors.gender}</p>
+                )}
               </div>
 
               {/* 生年月日 */}
               <div className="space-y-2">
-                <Label htmlFor="birth_date">生年月日 <span className="text-red-500">*</span></Label>
+                <Label htmlFor="birth_date">
+                  生年月日 <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="birth_date"
                   type="date"
                   value={formData.birth_date}
-                  onChange={(e) => handleInputChange('birth_date', e.target.value)}
+                  onChange={e =>
+                    handleInputChange('birth_date', e.target.value)
+                  }
                   max={new Date().toISOString().split('T')[0]}
                   className={errors.birth_date ? 'border-red-500' : ''}
                 />
-                {errors.birth_date && <p className="text-red-500 text-sm">{errors.birth_date}</p>}
+                {errors.birth_date && (
+                  <p className="text-red-500 text-sm">{errors.birth_date}</p>
+                )}
               </div>
 
               {/* 居住都道府県 */}
               <div className="space-y-2">
-                <Label htmlFor="prefecture">居住都道府県 <span className="text-red-500">*</span></Label>
+                <Label htmlFor="prefecture">
+                  居住都道府県 <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   value={formData.prefecture}
-                  onValueChange={(value) => handleInputChange('prefecture', value)}
+                  onValueChange={value =>
+                    handleInputChange('prefecture', value)
+                  }
                 >
-                  <SelectTrigger className={errors.prefecture ? 'border-red-500' : ''}>
+                  <SelectTrigger
+                    className={errors.prefecture ? 'border-red-500' : ''}
+                  >
                     <SelectValue placeholder="都道府県を選択してください" />
                   </SelectTrigger>
                   <SelectContent>
-                    {PREFECTURE_OPTIONS.map((prefecture) => (
-                      <SelectItem key={prefecture.value} value={prefecture.value}>
+                    {PREFECTURE_OPTIONS.map(prefecture => (
+                      <SelectItem
+                        key={prefecture.value}
+                        value={prefecture.value}
+                      >
                         {prefecture.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.prefecture && <p className="text-red-500 text-sm">{errors.prefecture}</p>}
+                {errors.prefecture && (
+                  <p className="text-red-500 text-sm">{errors.prefecture}</p>
+                )}
               </div>
             </div>
 
@@ -512,5 +609,5 @@ export default function UserProfileForm() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

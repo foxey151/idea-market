@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { IdeaCreateForm } from "@/components/forms/IdeaCreateForm";
-import { useAuth } from "@/contexts/StableAuthContext";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { IdeaCreateForm } from '@/components/forms/IdeaCreateForm';
+import { useAuth } from '@/contexts/StableAuthContext';
 
 export default function IdeaCreatePage() {
   const router = useRouter();
@@ -23,7 +23,9 @@ export default function IdeaCreatePage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">
-            {loading ? "認証状態を確認中..." : "ログインページにリダイレクト中..."}
+            {loading
+              ? '認証状態を確認中...'
+              : 'ログインページにリダイレクト中...'}
           </p>
         </div>
       </div>

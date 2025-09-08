@@ -1,4 +1,9 @@
-import { getBlogsByCategory, Blog, getCategories, Category } from '@/lib/microcms';
+import {
+  getBlogsByCategory,
+  Blog,
+  getCategories,
+  Category,
+} from '@/lib/microcms';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,13 +38,13 @@ export default async function CategoryBlogPage({ params }: Props) {
               </Link>
             </Button>
           </div>
-          
+
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             <span className="bg-gradient-primary bg-clip-text text-transparent">
               {currentCategory.name}
             </span>
           </h1>
-          
+
           {currentCategory.description && (
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               {currentCategory.description}
@@ -50,7 +55,10 @@ export default async function CategoryBlogPage({ params }: Props) {
         {/* ブログ記事一覧 */}
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {blogs.map((blog: Blog) => (
-            <Card key={blog.id} className="group hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+            <Card
+              key={blog.id}
+              className="group hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+            >
               {blog.image && (
                 <div className="relative overflow-hidden">
                   <Image
@@ -63,7 +71,7 @@ export default async function CategoryBlogPage({ params }: Props) {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
               )}
-              
+
               <CardHeader>
                 <CardTitle className="text-lg group-hover:text-primary transition-colors duration-300">
                   <Link href={`/blog/${blog.id}`} className="line-clamp-2">
@@ -78,7 +86,7 @@ export default async function CategoryBlogPage({ params }: Props) {
                     <Calendar className="h-4 w-4 mr-2" />
                     {new Date(blog.publishedAt).toLocaleDateString('ja-JP')}
                   </div>
-                  
+
                   <Button variant="ghost" size="sm" asChild>
                     <Link href={`/blog/${blog.id}`} className="group/btn">
                       読む
@@ -97,14 +105,14 @@ export default async function CategoryBlogPage({ params }: Props) {
             <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
               <Calendar className="h-12 w-12 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">このカテゴリには記事がありません</h3>
+            <h3 className="text-xl font-semibold mb-2">
+              このカテゴリには記事がありません
+            </h3>
             <p className="text-muted-foreground mb-6">
               新しい記事が公開されるまでお待ちください
             </p>
             <Button variant="outline" asChild>
-              <Link href="/blog">
-                他のカテゴリを見る
-              </Link>
+              <Link href="/blog">他のカテゴリを見る</Link>
             </Button>
           </div>
         )}
@@ -132,7 +140,7 @@ export async function generateMetadata({ params }: Props) {
     const { id } = await params;
     const { contents: categories } = await getCategories();
     const category = categories.find((cat: Category) => cat.id === id);
-    
+
     if (!category) {
       return {
         title: 'カテゴリが見つかりません',
@@ -143,7 +151,7 @@ export async function generateMetadata({ params }: Props) {
       title: `${category.name} - ブログ | アイデアマーケット`,
       description: category.description || `${category.name}に関する記事一覧`,
     };
-  } catch (error) {
+  } catch {
     return {
       title: 'ブログカテゴリ | アイデアマーケット',
       description: 'カテゴリ別ブログ記事一覧',

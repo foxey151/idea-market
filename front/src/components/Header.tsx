@@ -1,24 +1,33 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Menu, X, LogIn, LogOut, User, Lightbulb, ShoppingCart } from "lucide-react";
-import { LoginModal } from "@/components/auth/LoginModal";
-import { useAuth } from "@/contexts/StableAuthContext";
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Search,
+  Menu,
+  X,
+  LogIn,
+  LogOut,
+  User,
+  Lightbulb,
+  ShoppingCart,
+} from 'lucide-react';
+import { LoginModal } from '@/components/auth/LoginModal';
+import { useAuth } from '@/contexts/StableAuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { user, profile, signOut, loading } = useAuth();
 
@@ -38,7 +47,11 @@ const Header = () => {
   const UserMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center space-x-2"
+        >
           <User className="h-4 w-4" />
           <span className="hidden sm:inline">
             {profile?.display_name || user?.email?.split('@')[0] || 'ユーザー'}
@@ -80,11 +93,11 @@ const Header = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 group">
             <div className="relative">
-              <Image 
-                src="/logo.avif" 
-                alt="アイデアマーケット Logo" 
-                width={32} 
-                height={32} 
+              <Image
+                src="/logo.avif"
+                alt="アイデアマーケット Logo"
+                width={32}
+                height={32}
                 className="transition-transform group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-md scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -96,19 +109,34 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/ideas" className="text-foreground/80 hover:text-primary transition-colors">
+            <Link
+              href="/ideas"
+              className="text-foreground/80 hover:text-primary transition-colors"
+            >
               アイデア一覧
             </Link>
-            <Link href="/search" className="text-foreground/80 hover:text-primary transition-colors">
+            <Link
+              href="/search"
+              className="text-foreground/80 hover:text-primary transition-colors"
+            >
               検索
             </Link>
-            <Link href="/about-ideas" className="text-foreground/80 hover:text-primary transition-colors">
+            <Link
+              href="/about-ideas"
+              className="text-foreground/80 hover:text-primary transition-colors"
+            >
               アイデアとは
             </Link>
-            <Link href="/about" className="text-foreground/80 hover:text-primary transition-colors">
+            <Link
+              href="/about"
+              className="text-foreground/80 hover:text-primary transition-colors"
+            >
               サービス案内
             </Link>
-            <Link href="/blog" className="text-foreground/80 hover:text-primary transition-colors">
+            <Link
+              href="/blog"
+              className="text-foreground/80 hover:text-primary transition-colors"
+            >
               ブログ
             </Link>
           </nav>
@@ -121,7 +149,7 @@ const Header = () => {
                 type="text"
                 placeholder="アイデアを検索..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="pl-10 w-64 bg-background/50"
               />
             </form>
@@ -132,8 +160,8 @@ const Header = () => {
             ) : user ? (
               <UserMenu />
             ) : (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => setIsLoginModalOpen(true)}
               >
@@ -142,9 +170,7 @@ const Header = () => {
               </Button>
             )}
             <Button variant="hero" size="sm" asChild>
-              <Link href="/ideas/new">
-                アイデア投稿
-              </Link>
+              <Link href="/ideas/new">アイデア投稿</Link>
             </Button>
           </div>
 
@@ -155,7 +181,11 @@ const Header = () => {
             className="md:hidden"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
 
@@ -167,7 +197,7 @@ const Header = () => {
               type="text"
               placeholder="アイデアを検索..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="pl-10 bg-background/50"
             />
           </form>
@@ -177,41 +207,41 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden mt-4 p-4 bg-card rounded-lg border shadow-soft animate-fade-in">
             <nav className="flex flex-col space-y-4">
-                              <Link
-                  href="/ideas"
-                  className="text-foreground/80 hover:text-primary transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  アイデア一覧
-                </Link>
-                <Link
-                  href="/search"
-                  className="text-foreground/80 hover:text-primary transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  検索
-                </Link>
-                <Link
-                  href="/about-ideas"
-                  className="text-foreground/80 hover:text-primary transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  アイデアとは
-                </Link>
-                <Link
-                  href="/about"
-                  className="text-foreground/80 hover:text-primary transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  サービス案内
-                </Link>
-                <Link
-                  href="/blog"
-                  className="text-foreground/80 hover:text-primary transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  ブログ
-                </Link>
+              <Link
+                href="/ideas"
+                className="text-foreground/80 hover:text-primary transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                アイデア一覧
+              </Link>
+              <Link
+                href="/search"
+                className="text-foreground/80 hover:text-primary transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                検索
+              </Link>
+              <Link
+                href="/about-ideas"
+                className="text-foreground/80 hover:text-primary transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                アイデアとは
+              </Link>
+              <Link
+                href="/about"
+                className="text-foreground/80 hover:text-primary transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                サービス案内
+              </Link>
+              <Link
+                href="/blog"
+                className="text-foreground/80 hover:text-primary transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                ブログ
+              </Link>
               <div className="flex flex-col space-y-2 pt-4 border-t">
                 {loading ? (
                   <Button variant="outline" size="sm" disabled>
@@ -220,13 +250,16 @@ const Header = () => {
                 ) : user ? (
                   <>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
                         <User className="h-4 w-4 mr-2" />
                         プロフィール
                       </Link>
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => {
                         handleSignOut();
@@ -239,8 +272,8 @@ const Header = () => {
                     </Button>
                   </>
                 ) : (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       setIsLoginModalOpen(true);
@@ -261,12 +294,9 @@ const Header = () => {
           </div>
         )}
       </div>
-      
+
       {/* Login Modal */}
-      <LoginModal 
-        open={isLoginModalOpen} 
-        onOpenChange={setIsLoginModalOpen} 
-      />
+      <LoginModal open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen} />
     </header>
   );
 };

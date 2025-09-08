@@ -1,17 +1,19 @@
-import { supabase } from './client'
-import type { Database } from './types'
+import { supabase } from './client';
+import type { Database } from './types';
 
 // ユーザ詳細情報の型エイリアス
-export type UserDetails = Database['public']['Tables']['user_details']['Row']
-export type UserDetailsInsert = Database['public']['Tables']['user_details']['Insert']
-export type UserDetailsUpdate = Database['public']['Tables']['user_details']['Update']
+export type UserDetails = Database['public']['Tables']['user_details']['Row'];
+export type UserDetailsInsert =
+  Database['public']['Tables']['user_details']['Insert'];
+export type UserDetailsUpdate =
+  Database['public']['Tables']['user_details']['Update'];
 
 // 口座種別の型
-export type AccountType = Database['public']['Enums']['account_type_enum']
+export type AccountType = Database['public']['Enums']['account_type_enum'];
 // 性別の型
-export type Gender = Database['public']['Enums']['gender_enum']
+export type Gender = Database['public']['Enums']['gender_enum'];
 // 都道府県の型
-export type Prefecture = Database['public']['Enums']['prefecture_enum']
+export type Prefecture = Database['public']['Enums']['prefecture_enum'];
 
 // =================================================================
 // ユーザ詳細情報の取得
@@ -27,15 +29,15 @@ export async function getUserDetails(userId: string) {
     .from('user_details')
     .select('*')
     .eq('user_id', userId)
-    .single()
+    .single();
 
   if (error && error.code !== 'PGRST116') {
     // PGRST116 = No rows found (レコードが存在しない場合)
-    console.error('ユーザ詳細情報の取得に失敗:', error)
-    return { data: null, error }
+    console.error('ユーザ詳細情報の取得に失敗:', error);
+    return { data: null, error };
   }
 
-  return { data: error?.code === 'PGRST116' ? null : data, error: null }
+  return { data: error?.code === 'PGRST116' ? null : data, error: null };
 }
 
 /**
@@ -44,27 +46,30 @@ export async function getUserDetails(userId: string) {
  */
 export async function getCurrentUserDetails() {
   try {
-    const { data: user, error: authError } = await supabase.auth.getUser()
-    
+    const { data: user, error: authError } = await supabase.auth.getUser();
+
     if (authError) {
-      console.error('認証エラー:', authError)
-      return { data: null, error: authError }
+      console.error('認証エラー:', authError);
+      return { data: null, error: authError };
     }
-    
+
     if (!user.user) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('ユーザーがログインしていません')
+        console.log('ユーザーがログインしていません');
       }
-      return { data: null, error: { message: 'ユーザーがログインしていません' } }
+      return {
+        data: null,
+        error: { message: 'ユーザーがログインしていません' },
+      };
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('現在のユーザー:', user.user.id)
+      console.log('現在のユーザー:', user.user.id);
     }
-    return getUserDetails(user.user.id)
+    return getUserDetails(user.user.id);
   } catch (error) {
-    console.error('getCurrentUserDetailsでエラー:', error)
-    return { data: null, error }
+    console.error('getCurrentUserDetailsでエラー:', error);
+    return { data: null, error };
   }
 }
 
@@ -83,31 +88,29 @@ async function ensureProfileExists(userId: string) {
     .from('profiles')
     .select('id')
     .eq('id', userId)
-    .single()
+    .single();
 
   if (selectError && selectError.code !== 'PGRST116') {
     // PGRST116以外のエラーは実際のエラー
-    console.error('プロフィール確認エラー:', selectError)
-    throw selectError
+    console.error('プロフィール確認エラー:', selectError);
+    throw selectError;
   }
 
   if (!profile) {
     // プロフィールが存在しない場合は作成
-    const { error: insertError } = await supabase
-      .from('profiles')
-      .insert({
-        id: userId,
-        role: 'member',
-        display_name: 'ユーザー'
-      })
+    const { error: insertError } = await supabase.from('profiles').insert({
+      id: userId,
+      role: 'member',
+      display_name: 'ユーザー',
+    });
 
     if (insertError) {
-      console.error('プロフィール作成エラー:', insertError)
-      throw insertError
+      console.error('プロフィール作成エラー:', insertError);
+      throw insertError;
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('プロフィールを作成しました:', userId)
+      console.log('プロフィールを作成しました:', userId);
     }
   }
 }
@@ -123,20 +126,20 @@ async function ensureProfileExists(userId: string) {
  */
 export async function upsertUserDetails(userDetails: UserDetailsInsert) {
   // まず、profilesテーブルにレコードが存在することを確認
-  await ensureProfileExists(userDetails.user_id)
-  
+  await ensureProfileExists(userDetails.user_id);
+
   const { data, error } = await supabase
     .from('user_details')
     .upsert(userDetails, { onConflict: 'user_id' })
     .select()
-    .single()
+    .single();
 
   if (error) {
-    console.error('ユーザ詳細情報の保存に失敗:', error)
-    return { data: null, error }
+    console.error('ユーザ詳細情報の保存に失敗:', error);
+    return { data: null, error };
   }
 
-  return { data, error: null }
+  return { data, error: null };
 }
 
 /**
@@ -146,20 +149,20 @@ export async function upsertUserDetails(userDetails: UserDetailsInsert) {
  */
 export async function createUserDetails(userDetails: UserDetailsInsert) {
   // まず、profilesテーブルにレコードが存在することを確認
-  await ensureProfileExists(userDetails.user_id)
-  
+  await ensureProfileExists(userDetails.user_id);
+
   const { data, error } = await supabase
     .from('user_details')
     .insert(userDetails)
     .select()
-    .single()
+    .single();
 
   if (error) {
-    console.error('ユーザ詳細情報の作成に失敗:', error)
-    return { data: null, error }
+    console.error('ユーザ詳細情報の作成に失敗:', error);
+    return { data: null, error };
   }
 
-  return { data, error: null }
+  return { data, error: null };
 }
 
 /**
@@ -168,23 +171,26 @@ export async function createUserDetails(userDetails: UserDetailsInsert) {
  * @param updates 更新データ
  * @returns 更新されたユーザ詳細情報
  */
-export async function updateUserDetails(userId: string, updates: UserDetailsUpdate) {
+export async function updateUserDetails(
+  userId: string,
+  updates: UserDetailsUpdate
+) {
   const { data, error } = await supabase
     .from('user_details')
     .update({
       ...updates,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('user_id', userId)
     .select()
-    .single()
+    .single();
 
   if (error) {
-    console.error('ユーザ詳細情報の更新に失敗:', error)
-    return { data: null, error }
+    console.error('ユーザ詳細情報の更新に失敗:', error);
+    return { data: null, error };
   }
 
-  return { data, error: null }
+  return { data, error: null };
 }
 
 /**
@@ -193,12 +199,12 @@ export async function updateUserDetails(userId: string, updates: UserDetailsUpda
  * @returns 更新されたユーザ詳細情報
  */
 export async function updateCurrentUserDetails(updates: UserDetailsUpdate) {
-  const { data: user } = await supabase.auth.getUser()
+  const { data: user } = await supabase.auth.getUser();
   if (!user.user) {
-    return { data: null, error: { message: 'ユーザーがログインしていません' } }
+    return { data: null, error: { message: 'ユーザーがログインしていません' } };
   }
 
-  return updateUserDetails(user.user.id, updates)
+  return updateUserDetails(user.user.id, updates);
 }
 
 // =================================================================
@@ -214,14 +220,14 @@ export async function deleteUserDetails(userId: string) {
   const { error } = await supabase
     .from('user_details')
     .delete()
-    .eq('user_id', userId)
+    .eq('user_id', userId);
 
   if (error) {
-    console.error('ユーザ詳細情報の削除に失敗:', error)
-    return { error }
+    console.error('ユーザ詳細情報の削除に失敗:', error);
+    return { error };
   }
 
-  return { error: null }
+  return { error: null };
 }
 
 // =================================================================
@@ -236,19 +242,21 @@ export async function deleteUserDetails(userId: string) {
 export async function getProfileWithDetails(userId: string) {
   const { data, error } = await supabase
     .from('profiles')
-    .select(`
+    .select(
+      `
       *,
       user_details (*)
-    `)
+    `
+    )
     .eq('id', userId)
-    .single()
+    .single();
 
   if (error) {
-    console.error('プロファイルの取得に失敗:', error)
-    return { data: null, error }
+    console.error('プロファイルの取得に失敗:', error);
+    return { data: null, error };
   }
 
-  return { data, error: null }
+  return { data, error: null };
 }
 
 /**
@@ -256,12 +264,12 @@ export async function getProfileWithDetails(userId: string) {
  * @returns プロファイルとユーザ詳細情報
  */
 export async function getCurrentProfileWithDetails() {
-  const { data: user } = await supabase.auth.getUser()
+  const { data: user } = await supabase.auth.getUser();
   if (!user.user) {
-    return { data: null, error: { message: 'ユーザーがログインしていません' } }
+    return { data: null, error: { message: 'ユーザーがログインしていません' } };
   }
 
-  return getProfileWithDetails(user.user.id)
+  return getProfileWithDetails(user.user.id);
 }
 
 // =================================================================
@@ -274,8 +282,8 @@ export async function getCurrentProfileWithDetails() {
  * @returns バリデーション結果
  */
 export function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 /**
@@ -284,8 +292,8 @@ export function validateEmail(email: string): boolean {
  * @returns バリデーション結果
  */
 export function validateAccountNumber(accountNumber: string): boolean {
-  const accountRegex = /^\d{7,8}$/
-  return accountRegex.test(accountNumber)
+  const accountRegex = /^\d{7,8}$/;
+  return accountRegex.test(accountNumber);
 }
 
 /**
@@ -294,16 +302,16 @@ export function validateAccountNumber(accountNumber: string): boolean {
  * @returns バリデーション結果
  */
 export function validateBirthDate(birthDate: string): boolean {
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateRegex.test(birthDate)) {
-    return false
+    return false;
   }
 
-  const date = new Date(birthDate)
-  const today = new Date()
-  
+  const date = new Date(birthDate);
+  const today = new Date();
+
   // 有効な日付かつ今日より前の日付であることを確認
-  return date instanceof Date && !isNaN(date.getTime()) && date <= today
+  return date instanceof Date && !isNaN(date.getTime()) && date <= today;
 }
 
 // =================================================================
@@ -315,8 +323,8 @@ export function validateBirthDate(birthDate: string): boolean {
  */
 export const ACCOUNT_TYPE_OPTIONS = [
   { value: 'ordinary' as AccountType, label: '普通預金' },
-  { value: 'current' as AccountType, label: '当座預金' }
-] as const
+  { value: 'current' as AccountType, label: '当座預金' },
+] as const;
 
 /**
  * 性別の選択肢
@@ -324,8 +332,8 @@ export const ACCOUNT_TYPE_OPTIONS = [
 export const GENDER_OPTIONS = [
   { value: 'male' as Gender, label: '男性' },
   { value: 'female' as Gender, label: '女性' },
-  { value: 'other' as Gender, label: 'その他' }
-] as const
+  { value: 'other' as Gender, label: 'その他' },
+] as const;
 
 /**
  * 都道府県の選択肢
@@ -377,5 +385,5 @@ export const PREFECTURE_OPTIONS = [
   { value: 'oita' as Prefecture, label: '大分県' },
   { value: 'miyazaki' as Prefecture, label: '宮崎県' },
   { value: 'kagoshima' as Prefecture, label: '鹿児島県' },
-  { value: 'okinawa' as Prefecture, label: '沖縄県' }
-] as const
+  { value: 'okinawa' as Prefecture, label: '沖縄県' },
+] as const;

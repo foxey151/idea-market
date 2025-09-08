@@ -1,12 +1,19 @@
-import { Metadata } from "next"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Users, Lightbulb, TrendingUp, Shield } from "lucide-react"
+import { Metadata } from 'next';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Users, Lightbulb, TrendingUp, Shield } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: "サービス案内 | アイデアマーケット",
-  description: "アイデアマーケットは、革新的なアイデアを売買できるプラットフォームです。",
-}
+  title: 'サービス案内 | アイデアマーケット',
+  description:
+    'アイデアマーケットは、革新的なアイデアを売買できるプラットフォームです。',
+};
 
 export default function AboutPage() {
   return (
@@ -68,7 +75,9 @@ export default function AboutPage() {
 
         {/* 特徴 */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">プラットフォームの特徴</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            プラットフォームの特徴
+          </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <Card>
               <CardHeader className="text-center">
@@ -113,7 +122,10 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold text-center mb-12">利用方法</h2>
           <div className="space-y-8">
             <div className="flex flex-col md:flex-row items-center gap-6">
-              <Badge variant="outline" className="text-lg px-4 py-2 flex-shrink-0">
+              <Badge
+                variant="outline"
+                className="text-lg px-4 py-2 flex-shrink-0"
+              >
                 STEP 1
               </Badge>
               <div className="flex-1">
@@ -125,7 +137,10 @@ export default function AboutPage() {
             </div>
 
             <div className="flex flex-col md:flex-row items-center gap-6">
-              <Badge variant="outline" className="text-lg px-4 py-2 flex-shrink-0">
+              <Badge
+                variant="outline"
+                className="text-lg px-4 py-2 flex-shrink-0"
+              >
                 STEP 2
               </Badge>
               <div className="flex-1">
@@ -137,7 +152,10 @@ export default function AboutPage() {
             </div>
 
             <div className="flex flex-col md:flex-row items-center gap-6">
-              <Badge variant="outline" className="text-lg px-4 py-2 flex-shrink-0">
+              <Badge
+                variant="outline"
+                className="text-lg px-4 py-2 flex-shrink-0"
+              >
                 STEP 3
               </Badge>
               <div className="flex-1">
@@ -149,7 +167,10 @@ export default function AboutPage() {
             </div>
 
             <div className="flex flex-col md:flex-row items-center gap-6">
-              <Badge variant="outline" className="text-lg px-4 py-2 flex-shrink-0">
+              <Badge
+                variant="outline"
+                className="text-lg px-4 py-2 flex-shrink-0"
+              >
                 STEP 4
               </Badge>
               <div className="flex-1">
@@ -190,5 +211,5 @@ export default function AboutPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

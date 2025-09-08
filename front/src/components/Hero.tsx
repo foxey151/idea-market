@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, TrendingUp, Search } from "lucide-react";
-import Image from "next/image";
-import heroBackground from "@/assets/hero-background.jpg";
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Sparkles, TrendingUp, Search } from 'lucide-react';
+import Image from 'next/image';
+import heroBackground from '@/assets/hero-background.jpg';
 
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
-        <Image 
-          src={heroBackground} 
-          alt="Hero background" 
+        <Image
+          src={heroBackground}
+          alt="Hero background"
           fill
           className="object-cover opacity-20"
           priority
         />
         <div className="absolute inset-0 bg-gradient-hero opacity-30" />
       </div>
-      
+
       {/* Background Gradients */}
       <div className="absolute inset-0 bg-gradient-subtle" />
-      
+
       {/* Animated Background Elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-glow-pulse" />
       <div className="absolute bottom-32 right-16 w-48 h-48 bg-accent/10 rounded-full blur-3xl animate-glow-pulse animation-delay-1000" />
@@ -46,8 +46,11 @@ const Hero = () => {
 
           <div className="animate-fade-in animation-delay-200">
             <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-              あなたのアイデアを世界に届け、収益化しませんか？<br />
-              技術案・事業案・デザイン・レシピまで、すべてのアイデアが価値を<br />持ちます
+              あなたのアイデアを世界に届け、収益化しませんか？
+              <br />
+              技術案・事業案・デザイン・レシピまで、すべてのアイデアが価値を
+              <br />
+              持ちます
             </p>
           </div>
 
@@ -57,7 +60,9 @@ const Hero = () => {
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold mb-2 text-primary">アイデア売買</h3>
+              <h3 className="text-lg font-bold mb-2 text-primary">
+                アイデア売買
+              </h3>
               <p className="text-muted-foreground text-sm">
                 アイデアを投稿し、企業や個人へ販売できます
               </p>
@@ -67,7 +72,9 @@ const Hero = () => {
               <div className="w-12 h-12 bg-gradient-secondary rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <TrendingUp className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold mb-2 text-secondary">アイデア換金</h3>
+              <h3 className="text-lg font-bold mb-2 text-secondary">
+                アイデア換金
+              </h3>
               <p className="text-muted-foreground text-sm">
                 優れたアイデアを適正価格で収益化し、継続的な収入を得られます
               </p>
@@ -77,7 +84,9 @@ const Hero = () => {
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <Search className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold mb-2 text-accent">アイデア検索</h3>
+              <h3 className="text-lg font-bold mb-2 text-accent">
+                アイデア検索
+              </h3>
               <p className="text-muted-foreground text-sm">
                 膨大なアイデアの中から、あなたのニーズにぴったりのものを発見
               </p>
@@ -86,25 +95,26 @@ const Hero = () => {
 
           <div className="text-left animate-fade-in animation-delay-200">
             <p className="text-lg md:text-lg text-muted-foreground mb-12 leading-relaxed pl-12">
-              アイデアとは何も特許的なものだけではありません。ちょっとした思いつきが他の人からしたら珠玉のものかもしれません。<br />
+              アイデアとは何も特許的なものだけではありません。ちょっとした思いつきが他の人からしたら珠玉のものかもしれません。
+              <br />
               検索者の方へ：ここは知の宝が埋もれているかもしれません
             </p>
           </div>
 
           {/* Call to Action */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in animation-delay-600">
-            <Button 
-              variant="hero" 
-              size="lg" 
+            <Button
+              variant="hero"
+              size="lg"
               className="group px-8 py-6 text-lg font-semibold shadow-glow hover:shadow-elegant transition-all duration-300"
             >
               無料でアイデア投稿
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            
-            <Button 
-              variant="outline" 
-              size="lg" 
+
+            <Button
+              variant="outline"
+              size="lg"
               className="px-8 py-6 text-lg font-semibold border-2 hover:bg-primary/5"
             >
               アイデアを探す
@@ -114,11 +124,15 @@ const Hero = () => {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-border/50 animate-fade-in animation-delay-800">
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">10,000+</div>
+              <div className="text-3xl font-bold text-primary mb-2">
+                10,000+
+              </div>
               <div className="text-sm text-muted-foreground">登録アイデア</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-secondary mb-2">5,000+</div>
+              <div className="text-3xl font-bold text-secondary mb-2">
+                5,000+
+              </div>
               <div className="text-sm text-muted-foreground">活動ユーザー</div>
             </div>
             <div className="text-center">

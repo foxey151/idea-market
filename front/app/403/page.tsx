@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, ArrowLeft } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Shield, ArrowLeft } from 'lucide-react';
 
 export default function ForbiddenPage() {
   const router = useRouter();
@@ -22,18 +22,15 @@ export default function ForbiddenPage() {
             このページにアクセスする権限がありません。
           </p>
           <div className="space-y-2">
-            <Button 
-              onClick={() => router.back()} 
-              variant="outline" 
+            <Button
+              onClick={() => router.back()}
+              variant="outline"
               className="w-full flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
               前のページに戻る
             </Button>
-            <Button 
-              onClick={() => router.push('/')} 
-              className="w-full"
-            >
+            <Button onClick={() => router.push('/')} className="w-full">
               ホームページに戻る
             </Button>
           </div>

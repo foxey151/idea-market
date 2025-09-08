@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useRef } from 'react';
 
@@ -15,11 +15,11 @@ interface GoogleAdsenseProps {
   style?: React.CSSProperties;
 }
 
-export default function GoogleAdsense({ 
-  adSlot, 
-  adFormat = "auto", 
+export default function GoogleAdsense({
+  adSlot,
+  adFormat = 'auto',
   fullWidthResponsive = true,
-  style = { display: 'block' }
+  style = { display: 'block' },
 }: GoogleAdsenseProps) {
   const insRef = useRef<HTMLModElement>(null);
   // const isAdLoaded = useRef(false); // 広告機能無効化のためコメントアウト
@@ -28,9 +28,10 @@ export default function GoogleAdsense({
     // 広告機能を無効化：バックエンド処理をコメントアウト
     // UI表示のためのプレースホルダー表示
     if (insRef.current) {
-      insRef.current.innerHTML = '<div style="background: #f5f5f5; border: 1px dashed #ccc; padding: 20px; text-align: center; color: #666; font-size: 14px;">広告エリア（無効化中）</div>';
+      insRef.current.innerHTML =
+        '<div style="background: #f5f5f5; border: 1px dashed #ccc; padding: 20px; text-align: center; color: #666; font-size: 14px;">広告エリア（無効化中）</div>';
     }
-    
+
     /*
     // 既に広告がロードされている場合はスキップ
     if (isAdLoaded.current) return;

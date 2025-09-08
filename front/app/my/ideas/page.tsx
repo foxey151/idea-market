@@ -1,17 +1,27 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Header from "@/components/Header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/StableAuthContext";
-import { getUserIdeas, getCommentCount, updateOverdueIdeas } from "@/lib/supabase/ideas";
-import { Database } from "@/lib/supabase/types";
-import { Search, Plus, MessageSquare, Edit, Calendar } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Header from '@/components/Header';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/StableAuthContext';
+import {
+  getUserIdeas,
+  getCommentCount,
+  updateOverdueIdeas,
+} from '@/lib/supabase/ideas';
+import { Database } from '@/lib/supabase/types';
+import { Search, Plus, MessageSquare, Edit, Calendar } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 type Idea = Database['public']['Tables']['ideas']['Row'] & {
   profiles: {
@@ -24,7 +34,7 @@ type Idea = Database['public']['Tables']['ideas']['Row'] & {
 export default function MyIdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [filteredIdeas, setFilteredIdeas] = useState<Idea[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -37,12 +47,13 @@ export default function MyIdeasPage() {
     if (user) {
       fetchMyIdeas();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const filtered = ideas.filter(idea =>
-      idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      idea.summary.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = ideas.filter(
+      idea =>
+        idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        idea.summary.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredIdeas(filtered);
   }, [ideas, searchTerm]);
@@ -52,18 +63,18 @@ export default function MyIdeasPage() {
 
     try {
       setLoading(true);
-      
+
       // まず期限切れアイデアのステータスを更新
       await updateOverdueIdeas(user.id);
-      
+
       const { data, error } = await getUserIdeas(user.id, 50, 0);
-      
+
       if (error) {
         console.error('アイデア取得エラー:', error);
         toast({
-          title: "エラー",
-          description: "アイデアの取得に失敗しました。",
-          variant: "destructive",
+          title: 'エラー',
+          description: 'アイデアの取得に失敗しました。',
+          variant: 'destructive',
         });
         return;
       }
@@ -76,7 +87,7 @@ export default function MyIdeasPage() {
             return { ...idea, commentCount: count };
           })
         );
-        
+
         setIdeas(ideasWithCommentCount);
       } else {
         setIdeas([]);
@@ -84,9 +95,9 @@ export default function MyIdeasPage() {
     } catch (error) {
       console.error('予期しないエラー:', error);
       toast({
-        title: "エラー",
-        description: "予期しないエラーが発生しました。",
-        variant: "destructive",
+        title: 'エラー',
+        description: '予期しないエラーが発生しました。',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -95,18 +106,18 @@ export default function MyIdeasPage() {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      "published": "bg-green-100 text-green-800",
-      "overdue": "bg-orange-100 text-orange-800",
-      "closed": "bg-blue-100 text-blue-800"
+      published: 'bg-green-100 text-green-800',
+      overdue: 'bg-orange-100 text-orange-800',
+      closed: 'bg-blue-100 text-blue-800',
     };
-    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
+    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
   const getStatusText = (status: string) => {
     const statusMap = {
-      "published": "公開中", 
-      "overdue": "期限切れ",
-      "closed": "完成"
+      published: '公開中',
+      overdue: '期限切れ',
+      closed: '完成',
     };
     return statusMap[status as keyof typeof statusMap] || status;
   };
@@ -130,7 +141,7 @@ export default function MyIdeasPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
           {/* Header Section */}
@@ -145,7 +156,7 @@ export default function MyIdeasPage() {
                 あなたが投稿したアイデアの管理
               </p>
             </div>
-            <Button 
+            <Button
               onClick={() => router.push('/ideas/new')}
               className="flex items-center gap-2 mt-4 md:mt-0"
             >
@@ -160,7 +171,7 @@ export default function MyIdeasPage() {
             <Input
               placeholder="アイデアを検索..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -233,13 +244,14 @@ export default function MyIdeasPage() {
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📝</div>
               <h3 className="text-xl font-semibold mb-2">
-                {searchTerm ? "検索結果が見つかりません" : "まだアイデアがありません"}
+                {searchTerm
+                  ? '検索結果が見つかりません'
+                  : 'まだアイデアがありません'}
               </h3>
               <p className="text-muted-foreground mb-6">
-                {searchTerm 
-                  ? "別のキーワードで検索してみてください" 
-                  : "最初のアイデアを投稿してみましょう"
-                }
+                {searchTerm
+                  ? '別のキーワードで検索してみてください'
+                  : '最初のアイデアを投稿してみましょう'}
               </p>
               {!searchTerm && (
                 <Button onClick={() => router.push('/ideas/new')}>
@@ -251,8 +263,8 @@ export default function MyIdeasPage() {
             /* Ideas Grid */
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredIdeas.map((idea, index) => (
-                <Card 
-                  key={idea.id} 
+                <Card
+                  key={idea.id}
                   className="group hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 animate-fade-in flex flex-col h-full"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
@@ -272,7 +284,7 @@ export default function MyIdeasPage() {
                       {idea.summary}
                     </CardDescription>
                   </CardHeader>
-                  
+
                   <CardContent className="flex-1 flex flex-col">
                     {/* 上部コンテンツ */}
                     <div className="flex-1">
@@ -284,32 +296,35 @@ export default function MyIdeasPage() {
                         </div>
                         <div className="flex items-center gap-1 text-xs">
                           <Calendar className="h-3 w-3" />
-                          {new Date(idea.created_at).toLocaleDateString('ja-JP')}
+                          {new Date(idea.created_at).toLocaleDateString(
+                            'ja-JP'
+                          )}
                         </div>
                       </div>
 
                       {/* Deadline */}
                       {idea.deadline && (
                         <div className="text-sm text-muted-foreground mb-4">
-                          締切: {new Date(idea.deadline).toLocaleDateString('ja-JP')}
+                          締切:{' '}
+                          {new Date(idea.deadline).toLocaleDateString('ja-JP')}
                         </div>
                       )}
                     </div>
 
                     {/* Actions - 下部固定 */}
                     <div className="flex gap-2 mt-auto">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="flex-1"
                         onClick={() => handleViewIdea(idea.id)}
                       >
                         詳細
                       </Button>
                       {(idea.status as any) === 'overdue' ? (
-                        <Button 
-                          variant="default" 
-                          size="sm" 
+                        <Button
+                          variant="default"
+                          size="sm"
                           className="flex-1 bg-orange-500 hover:bg-orange-600"
                           onClick={() => handleCreateFinalIdea(idea.id)}
                         >
@@ -320,9 +335,9 @@ export default function MyIdeasPage() {
                         // 完成したアイデアは詳細ボタンのみ表示（編集ボタンなし）
                         <div className="flex-1"></div>
                       ) : idea.status === 'published' ? (
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           className="flex-1"
                           onClick={() => handleEditIdea(idea.id)}
                         >
@@ -330,9 +345,9 @@ export default function MyIdeasPage() {
                           編集
                         </Button>
                       ) : (
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           className="flex-1"
                           disabled
                           title="このアイデアは編集できません"

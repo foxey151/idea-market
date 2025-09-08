@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Hero from "@/components/Hero";
-import Features from "@/components/Features";
+import Hero from '@/components/Hero';
+import Features from '@/components/Features';
 
 export default function HomePage() {
   return (

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { IdeaEditForm } from "@/components/forms/IdeaEditForm";
-import { useAuth } from "@/contexts/StableAuthContext";
-import { getIdeaById } from "@/lib/supabase/ideas";
-import { toast } from "@/hooks/use-toast";
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { IdeaEditForm } from '@/components/forms/IdeaEditForm';
+import { useAuth } from '@/contexts/StableAuthContext';
+import { getIdeaById } from '@/lib/supabase/ideas';
+import { toast } from '@/hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +14,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 export default function IdeaEditPage() {
   const router = useRouter();
@@ -25,21 +25,10 @@ export default function IdeaEditPage() {
   const [showStatusError, setShowStatusError] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
 
-  useEffect(() => {
-    if (!user && !loading) {
-      router.push(`/login?redirect=${encodeURIComponent(`/ideas/${ideaId}/edit`)}`);
-      return;
-    }
-
-    if (user && ideaId) {
-      checkIdeaStatus();
-    }
-  }, [user, loading, router, ideaId]);
-
-  const checkIdeaStatus = async () => {
+  const checkIdeaStatus = useCallback(async () => {
     try {
       setStatusCheckLoading(true);
-      
+
       // 二重認証チェック - ユーザーが存在するかを再確認
       if (!user?.id) {
         console.error('認証バイパス検出: ユーザーIDが存在しません');
@@ -52,9 +41,9 @@ export default function IdeaEditPage() {
       if (error) {
         console.error('アイデア取得エラー:', error);
         toast({
-          title: "エラー",
-          description: "アイデアの取得に失敗しました。",
-          variant: "destructive",
+          title: 'エラー',
+          description: 'アイデアの取得に失敗しました。',
+          variant: 'destructive',
         });
         router.push('/ideas');
         return;
@@ -62,26 +51,30 @@ export default function IdeaEditPage() {
 
       if (!idea) {
         toast({
-          title: "エラー",
-          description: "アイデアが見つかりませんでした。",
-          variant: "destructive",
+          title: 'エラー',
+          description: 'アイデアが見つかりませんでした。',
+          variant: 'destructive',
         });
         router.push('/ideas');
         return;
       }
 
       // 厳密な作成者チェック（文字列比較も含む）
-      if (idea.author_id !== user.id || typeof idea.author_id !== 'string' || typeof user.id !== 'string') {
+      if (
+        idea.author_id !== user.id ||
+        typeof idea.author_id !== 'string' ||
+        typeof user.id !== 'string'
+      ) {
         console.error('認証バイパス検出: 作成者IDが一致しません', {
           ideaAuthor: idea.author_id,
           userId: user.id,
           ideaAuthorType: typeof idea.author_id,
-          userIdType: typeof user.id
+          userIdType: typeof user.id,
         });
         toast({
-          title: "権限エラー",
-          description: "このアイデアの編集権限がありません。",
-          variant: "destructive",
+          title: '権限エラー',
+          description: 'このアイデアの編集権限がありません。',
+          variant: 'destructive',
         });
         router.push('/ideas');
         return;
@@ -97,15 +90,28 @@ export default function IdeaEditPage() {
     } catch (error) {
       console.error('予期しないエラー:', error);
       toast({
-        title: "エラー",
-        description: "予期しないエラーが発生しました。",
-        variant: "destructive",
+        title: 'エラー',
+        description: '予期しないエラーが発生しました。',
+        variant: 'destructive',
       });
       router.push('/ideas');
     } finally {
       setStatusCheckLoading(false);
     }
-  };
+  }, [user, router, ideaId]);
+
+  useEffect(() => {
+    if (!user && !loading) {
+      router.push(
+        `/login?redirect=${encodeURIComponent(`/ideas/${ideaId}/edit`)}`
+      );
+      return;
+    }
+
+    if (user && ideaId) {
+      checkIdeaStatus();
+    }
+  }, [user, loading, router, ideaId, checkIdeaStatus]);
 
   const handleStatusErrorClose = () => {
     setShowStatusError(false);
@@ -119,7 +125,9 @@ export default function IdeaEditPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">
-            {loading ? "認証状態を確認中..." : "ログインページにリダイレクト中..."}
+            {loading
+              ? '認証状態を確認中...'
+              : 'ログインページにリダイレクト中...'}
           </p>
         </div>
       </div>

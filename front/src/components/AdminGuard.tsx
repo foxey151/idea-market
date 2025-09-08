@@ -1,46 +1,46 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { checkAdminPermission } from '@/lib/supabase/auth'
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { checkAdminPermission } from '@/lib/supabase/auth';
 
 interface AdminGuardProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function AdminGuard({ children }: AdminGuardProps) {
-  const [isChecking, setIsChecking] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const router = useRouter()
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const checkPermission = async () => {
       try {
-        const { isAdmin: adminStatus, error } = await checkAdminPermission()
-        
+        const { isAdmin: adminStatus, error } = await checkAdminPermission();
+
         if (error) {
-          console.error('管理者権限チェックエラー:', error)
-          router.push('/403')
-          return
+          console.error('管理者権限チェックエラー:', error);
+          router.push('/403');
+          return;
         }
 
         if (!adminStatus) {
-          console.log('管理者権限がありません')
-          router.push('/403')
-          return
+          console.log('管理者権限がありません');
+          router.push('/403');
+          return;
         }
 
-        setIsAdmin(true)
+        setIsAdmin(true);
       } catch (error) {
-        console.error('管理者権限チェックで予期しないエラー:', error)
-        router.push('/403')
+        console.error('管理者権限チェックで予期しないエラー:', error);
+        router.push('/403');
       } finally {
-        setIsChecking(false)
+        setIsChecking(false);
       }
-    }
+    };
 
-    checkPermission()
-  }, [router])
+    checkPermission();
+  }, [router]);
 
   if (isChecking) {
     return (
@@ -50,12 +50,12 @@ export function AdminGuard({ children }: AdminGuardProps) {
           <p className="text-gray-600">権限を確認中...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!isAdmin) {
-    return null
+    return null;
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }

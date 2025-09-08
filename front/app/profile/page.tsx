@@ -1,21 +1,21 @@
-"use client"
+'use client';
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/StableAuthContext'
-import UserProfileForm from '@/components/forms/UserProfileForm'
-import UserProfileView from '@/components/forms/UserProfileView'
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/StableAuthContext';
+import UserProfileForm from '@/components/forms/UserProfileForm';
+import UserProfileView from '@/components/forms/UserProfileView';
 
 export default function ProfilePage() {
-  const { user, hasCompleteProfile, loading } = useAuth()
-  const router = useRouter()
+  const { user, hasCompleteProfile, loading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!user && !loading) {
-      router.push('/login?redirect=' + encodeURIComponent('/profile'))
-      return
+      router.push('/login?redirect=' + encodeURIComponent('/profile'));
+      return;
     }
-  }, [user, loading, router])
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -25,7 +25,7 @@ export default function ProfilePage() {
           <p>読み込み中...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // 認証されていない場合は何も表示しない（リダイレクト中）
@@ -37,10 +37,10 @@ export default function ProfilePage() {
           <p>ログインページにリダイレクト中...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // プロフィールが完了している場合は確認・編集画面を表示
   // まだ登録していない場合は登録フォームを表示
-  return hasCompleteProfile ? <UserProfileView /> : <UserProfileForm />
+  return hasCompleteProfile ? <UserProfileView /> : <UserProfileForm />;
 }

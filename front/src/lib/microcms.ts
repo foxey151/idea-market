@@ -1,7 +1,9 @@
 import { createClient } from 'microcms-js-sdk';
 
 if (!process.env.MICROCMS_SERVICE_DOMAIN || !process.env.MICROCMS_API_KEY) {
-  throw new Error('microCMS環境変数が設定されていません。MICROCMS_SERVICE_DOMAINとMICROCMS_API_KEYを設定してください。');
+  throw new Error(
+    'microCMS環境変数が設定されていません。MICROCMS_SERVICE_DOMAINとMICROCMS_API_KEYを設定してください。'
+  );
 }
 
 export const client = createClient({
@@ -57,7 +59,9 @@ export async function getBlogs() {
     return response;
   } catch (error) {
     console.error('microCMSからのデータ取得に失敗しました:', error);
-    throw new Error('ブログデータの取得に失敗しました。microCMSの設定を確認してください。');
+    throw new Error(
+      'ブログデータの取得に失敗しました。microCMSの設定を確認してください。'
+    );
   }
 }
 
@@ -74,7 +78,9 @@ export async function getCategories() {
     return response;
   } catch (error) {
     console.error('microCMSからのカテゴリデータ取得に失敗しました:', error);
-    throw new Error('カテゴリデータの取得に失敗しました。microCMSの設定を確認してください。');
+    throw new Error(
+      'カテゴリデータの取得に失敗しました。microCMSの設定を確認してください。'
+    );
   }
 }
 
@@ -92,7 +98,9 @@ export async function getBlogsByCategory(categoryId: string) {
     return response;
   } catch (error) {
     console.error('microCMSからのブログデータ取得に失敗しました:', error);
-    throw new Error('ブログデータの取得に失敗しました。microCMSの設定を確認してください。');
+    throw new Error(
+      'ブログデータの取得に失敗しました。microCMSの設定を確認してください。'
+    );
   }
 }
 
@@ -106,6 +114,8 @@ export async function getBlog(id: string) {
     return response;
   } catch (error) {
     console.error('microCMSからのデータ取得に失敗しました:', error);
-    throw new Error('ブログ記事の取得に失敗しました。記事が存在しないか、microCMSの設定を確認してください。');
+    throw new Error(
+      'ブログ記事の取得に失敗しました。記事が存在しないか、microCMSの設定を確認してください。'
+    );
   }
 }

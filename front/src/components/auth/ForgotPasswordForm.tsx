@@ -1,33 +1,39 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { resetPassword } from "@/lib/supabase/auth"
-import { Mail, ArrowLeft, CheckCircle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { resetPassword } from '@/lib/supabase/auth';
+import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 // フォームスキーマ
 const forgotPasswordSchema = z.object({
   email: z
     .string()
-    .min(1, "メールアドレスは必須です")
-    .email("正しいメールアドレス形式で入力してください"),
-})
+    .min(1, 'メールアドレスは必須です')
+    .email('正しいメールアドレス形式で入力してください'),
+});
 
-type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export function ForgotPasswordForm() {
-  const [loading, setLoading] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [submittedEmail, setSubmittedEmail] = useState("")
-  const { toast } = useToast()
+  const [loading, setLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const { toast } = useToast();
 
   const {
     register,
@@ -35,37 +41,38 @@ export function ForgotPasswordForm() {
     formState: { errors },
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
-  })
+  });
 
   const handleResetPassword = async (data: ForgotPasswordFormData) => {
     try {
-      setLoading(true)
-      const { error } = await resetPassword(data.email)
-      
+      setLoading(true);
+      const { error } = await resetPassword(data.email);
+
       if (error) {
         toast({
-          title: "エラー",
-          description: error.message || "パスワードリセットリクエストの送信に失敗しました",
-          variant: "destructive"
-        })
+          title: 'エラー',
+          description:
+            error.message || 'パスワードリセットリクエストの送信に失敗しました',
+          variant: 'destructive',
+        });
       } else {
-        setSubmittedEmail(data.email)
-        setIsSubmitted(true)
+        setSubmittedEmail(data.email);
+        setIsSubmitted(true);
         toast({
-          title: "送信完了",
-          description: "パスワードリセットのメールを送信しました"
-        })
+          title: '送信完了',
+          description: 'パスワードリセットのメールを送信しました',
+        });
       }
-    } catch (error) {
+    } catch {
       toast({
-        title: "エラー",
-        description: "パスワードリセットリクエストの送信に失敗しました",
-        variant: "destructive"
-      })
+        title: 'エラー',
+        description: 'パスワードリセットリクエストの送信に失敗しました',
+        variant: 'destructive',
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (isSubmitted) {
     return (
@@ -75,7 +82,9 @@ export function ForgotPasswordForm() {
             <div className="flex items-center justify-center mb-4">
               <Link href="/" className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">I</span>
+                  <span className="text-primary-foreground font-bold text-sm">
+                    I
+                  </span>
                 </div>
                 <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                   アイデアマーケット
@@ -98,18 +107,18 @@ export function ForgotPasswordForm() {
                 再度お試しください。
               </p>
             </div>
-            
+
             <Button
               onClick={() => {
-                setIsSubmitted(false)
-                setSubmittedEmail("")
+                setIsSubmitted(false);
+                setSubmittedEmail('');
               }}
               variant="outline"
               className="w-full"
             >
               別のメールアドレスで試す
             </Button>
-            
+
             <div className="text-center">
               <Button variant="link" className="text-sm" asChild>
                 <Link href="/login">ログインページに戻る</Link>
@@ -118,7 +127,7 @@ export function ForgotPasswordForm() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -128,7 +137,9 @@ export function ForgotPasswordForm() {
           <div className="flex items-center justify-center mb-4">
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">I</span>
+                <span className="text-primary-foreground font-bold text-sm">
+                  I
+                </span>
               </div>
               <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 アイデアマーケット
@@ -141,7 +152,10 @@ export function ForgotPasswordForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(handleResetPassword)} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(handleResetPassword)}
+            className="space-y-4"
+          >
             {/* 戻るボタン */}
             <Button
               type="button"
@@ -165,19 +179,17 @@ export function ForgotPasswordForm() {
                   type="email"
                   placeholder="your@email.com"
                   className="pl-10"
-                  {...register("email")}
+                  {...register('email')}
                 />
               </div>
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'メール送信中...' : 'パスワードリセットメールを送信'}
             </Button>
 
@@ -191,5 +203,5 @@ export function ForgotPasswordForm() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,31 +1,32 @@
-import type { Metadata } from "next";
-import Script from "next/script"; // UI表示のためにインポートは保持
-import "../src/index.css";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import type { Metadata } from 'next';
+// import Script from 'next/script'; // 現在未使用
+import '../src/index.css';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 // import { AuthProvider } from "@/contexts/AuthContext"; // 使用されていないためコメントアウト
 // import { SimpleAuthProvider } from "@/contexts/SimpleAuthContext"; // 使用されていないためコメントアウト
 // import { MinimalAuthProvider } from "@/contexts/MinimalAuthContext"; // 使用されていないためコメントアウト
-import { StableAuthProvider } from "@/contexts/StableAuthContext";
+import { StableAuthProvider } from '@/contexts/StableAuthContext';
 // import ProfileGuard from "@/components/ProfileGuard"; // 一時的に無効化中
-import EnvCheck from "@/components/EnvCheck";
+import EnvCheck from '@/components/EnvCheck';
 
-import { ReactQueryProvider } from "./providers";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { ReactQueryProvider } from './providers';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: "アイデアマーケット",
-  description: "アイデアを価値に変える革新的なマーケットプラットフォーム。技術案・事業案・デザイン・レシピまで、あらゆるアイデアを売買・収益化できます。",
+  title: 'アイデアマーケット',
+  description:
+    'アイデアを価値に変える革新的なマーケットプラットフォーム。技術案・事業案・デザイン・レシピまで、あらゆるアイデアを売買・収益化できます。',
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.png", type: "image/png" },
-      { url: "/logo.avif", type: "image/avif" },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png' },
+      { url: '/logo.avif', type: 'image/avif' },
     ],
-    shortcut: "/favicon.ico",
-    apple: "/logo.avif",
+    shortcut: '/favicon.ico',
+    apple: '/logo.avif',
   },
 };
 
@@ -53,13 +54,11 @@ export default function RootLayout({
             <TooltipProvider>
               {/* ProfileGuardは一時的に無効化 */}
               {/* <ProfileGuard> */}
-                <Header />
-                <main className="pt-20">
-                  {children}
-                </main>
-                <Footer />
-                <Toaster />
-                <Sonner />
+              <Header />
+              <main className="pt-20">{children}</main>
+              <Footer />
+              <Toaster />
+              <Sonner />
               {/* </ProfileGuard> */}
             </TooltipProvider>
           </ReactQueryProvider>

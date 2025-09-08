@@ -6,26 +6,27 @@
 
 テーブルごとに整理されたマイグレーション構造：
 
-| ファイル名 | 説明 |
-|-----------|------|
-| `20250128000001_extensions_and_enums.sql` | PostgreSQL拡張機能とENUM型の初期設定 |
-| `20250128000002_profiles_table.sql` | プロファイルテーブル |
-| `20250128000003_user_details_table.sql` | ユーザー詳細情報テーブル（支払い・個人情報） |
-| `20250128000004_cmt_counters_table.sql` | CMT番号管理テーブル |
-| `20250128000005_ideas_table.sql` | アイデアテーブル |
-| `20250128000006_idea_versions_table.sql` | アイデアバージョンテーブル（X版/Y版） |
-| `20250128000007_comments_table.sql` | コメントテーブル |
-| `20250128000008_purchases_table.sql` | 購入履歴テーブル |
-| `20250128000009_ads_table.sql` | 広告管理テーブル |
-| `20250128000010_ad_metrics_table.sql` | 広告計測テーブル |
-| `20250128000011_pages_table.sql` | CMSページ管理テーブル |
-| `20250128000012_audit_logs_table.sql` | 監査ログテーブル（パーティション対応） |
-| `20250128000013_rls_policies.sql` | Row Level Security (RLS) ポリシー |
-| `20250128000014_search_functions.sql` | 検索機能とインデックス |
+| ファイル名                                | 説明                                         |
+| ----------------------------------------- | -------------------------------------------- |
+| `20250128000001_extensions_and_enums.sql` | PostgreSQL拡張機能とENUM型の初期設定         |
+| `20250128000002_profiles_table.sql`       | プロファイルテーブル                         |
+| `20250128000003_user_details_table.sql`   | ユーザー詳細情報テーブル（支払い・個人情報） |
+| `20250128000004_cmt_counters_table.sql`   | CMT番号管理テーブル                          |
+| `20250128000005_ideas_table.sql`          | アイデアテーブル                             |
+| `20250128000006_idea_versions_table.sql`  | アイデアバージョンテーブル（X版/Y版）        |
+| `20250128000007_comments_table.sql`       | コメントテーブル                             |
+| `20250128000008_purchases_table.sql`      | 購入履歴テーブル                             |
+| `20250128000009_ads_table.sql`            | 広告管理テーブル                             |
+| `20250128000010_ad_metrics_table.sql`     | 広告計測テーブル                             |
+| `20250128000011_pages_table.sql`          | CMSページ管理テーブル                        |
+| `20250128000012_audit_logs_table.sql`     | 監査ログテーブル（パーティション対応）       |
+| `20250128000013_rls_policies.sql`         | Row Level Security (RLS) ポリシー            |
+| `20250128000014_search_functions.sql`     | 検索機能とインデックス                       |
 
 ## 🏗️ テーブル構造概要
 
 ### コアテーブル
+
 - **profiles**: ユーザープロファイル（基本情報）
 - **user_details**: ユーザー詳細情報（支払い・個人情報）
 - **ideas**: アイデア情報（当初版）
@@ -33,12 +34,14 @@
 - **comments**: アイデアへのコメント
 
 ### ビジネステーブル
+
 - **purchases**: 購入履歴
 - **ads**: 広告管理
 - **ad_metrics**: 広告効果測定
 - **pages**: CMS ページ管理
 
 ### システムテーブル
+
 - **cmt_counters**: CMT番号自動生成
 - **audit_logs**: 監査ログ（パーティション対応）
 
@@ -101,9 +104,11 @@ supabase db push
 ## 🔧 メンテナンス
 
 ### バックアップ
+
 マイグレーション実行前のバックアップは `migrations_backup/` ディレクトリに保存されています。
 
 ### ロールバック
+
 問題が発生した場合は、バックアップファイルを使用してロールバックできます。
 
 ## 🏷️ バージョン履歴

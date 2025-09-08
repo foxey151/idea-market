@@ -1,51 +1,49 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
-  })
+  });
 
   // 環境変数の存在確認
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Supabase環境変数が設定されていません')
-    return supabaseResponse
+    console.error('Supabase環境変数が設定されていません');
+    return supabaseResponse;
   }
 
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
       },
-    }
-  )
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options: _options }) =>
+          request.cookies.set(name, value)
+        );
+        supabaseResponse = NextResponse.next({
+          request,
+        });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options)
+        );
+      },
+    },
+  });
 
   try {
     // ユーザーセッションを更新
     const {
       data: { user },
-      error: authError
-    } = await supabase.auth.getUser()
+      error: authError,
+    } = await supabase.auth.getUser();
 
     // 認証エラーがある場合はログに記録
     if (authError) {
-      console.error('認証エラー:', authError)
+      console.error('認証エラー:', authError);
     }
 
     // 認証が必要なページのリスト（より詳細な定義）
@@ -55,23 +53,26 @@ export async function updateSession(request: NextRequest) {
       '/admin',
       '/ideas/new',
       '/ideas/[id]/edit',
-      '/ideas/[id]/final'
-    ]
+      '/ideas/[id]/final',
+    ];
 
     // 編集ページの動的ルートもチェック
-    const editPagePattern = /^\/ideas\/[^\/]+\/edit$/
-    const finalPagePattern = /^\/ideas\/[^\/]+\/final$/
-    
+    const editPagePattern = /^\/ideas\/[^\/]+\/edit$/;
+    const finalPagePattern = /^\/ideas\/[^\/]+\/final$/;
+
     // 認証が必要なページかどうかをチェック（より厳密に）
-    const isProtectedPath = protectedPaths.some(path => 
-      request.nextUrl.pathname.startsWith(path)
-    ) || editPagePattern.test(request.nextUrl.pathname) || 
-       finalPagePattern.test(request.nextUrl.pathname)
+    const isProtectedPath =
+      protectedPaths.some(path => request.nextUrl.pathname.startsWith(path)) ||
+      editPagePattern.test(request.nextUrl.pathname) ||
+      finalPagePattern.test(request.nextUrl.pathname);
 
     // セキュリティヘッダーを追加
-    supabaseResponse.headers.set('X-Frame-Options', 'DENY')
-    supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff')
-    supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+    supabaseResponse.headers.set('X-Frame-Options', 'DENY');
+    supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff');
+    supabaseResponse.headers.set(
+      'Referrer-Policy',
+      'strict-origin-when-cross-origin'
+    );
 
     if (
       !user &&
@@ -81,12 +82,15 @@ export async function updateSession(request: NextRequest) {
       !request.nextUrl.pathname.startsWith('/auth/')
     ) {
       // ログインが必要なページに未認証でアクセスした場合、ログインページにリダイレクト
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      url.searchParams.set('redirect', encodeURIComponent(request.nextUrl.pathname))
-      
-      console.log('未認証アクセスをブロック:', request.nextUrl.pathname)
-      return NextResponse.redirect(url)
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.searchParams.set(
+        'redirect',
+        encodeURIComponent(request.nextUrl.pathname)
+      );
+
+      console.log('未認証アクセスをブロック:', request.nextUrl.pathname);
+      return NextResponse.redirect(url);
     }
 
     // 管理者ページの追加チェック
@@ -96,22 +100,21 @@ export async function updateSession(request: NextRequest) {
         .from('profiles')
         .select('role')
         .eq('id', user.id)
-        .single()
+        .single();
 
       if (!profile || profile.role !== 'admin') {
         // 管理者権限がない場合は403ページにリダイレクト
-        const url = request.nextUrl.clone()
-        url.pathname = '/403'
-        return NextResponse.redirect(url)
+        const url = request.nextUrl.clone();
+        url.pathname = '/403';
+        return NextResponse.redirect(url);
       }
     }
-
   } catch (error) {
-    console.error('ミドルウェアでエラー:', error)
+    console.error('ミドルウェアでエラー:', error);
     // エラーが発生した場合も処理を続行（可用性を優先）
   }
 
   // IMPORTANT: supabaseResponseを返す必要があります
   // これによってcookieが正しく設定されます
-  return supabaseResponse
+  return supabaseResponse;
 }

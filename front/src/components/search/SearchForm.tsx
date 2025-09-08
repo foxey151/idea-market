@@ -1,33 +1,41 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search } from "lucide-react"
-
-
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Search } from 'lucide-react';
 
 export function SearchForm() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
-  const [searchType, setSearchType] = useState('keyword')
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [searchType, setSearchType] = useState('keyword');
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!searchQuery.trim()) return
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
 
-    const params = new URLSearchParams()
-    params.set('q', searchQuery.trim())
-    params.set('type', searchType)
-    
-    router.push(`/search?${params.toString()}`)
-  }
+    const params = new URLSearchParams();
+    params.set('q', searchQuery.trim());
+    params.set('type', searchType);
 
-
+    router.push(`/search?${params.toString()}`);
+  };
 
   return (
     <Card>
@@ -46,12 +54,12 @@ export function SearchForm() {
             <div className="flex-1">
               <Input
                 placeholder={
-                  searchType === 'cmt' 
-                    ? "MMB-2501150001" 
-                    : "例: AI 教育プラットフォーム"
+                  searchType === 'cmt'
+                    ? 'MMB-2501150001'
+                    : '例: AI 教育プラットフォーム'
                 }
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="text-base"
               />
             </div>
@@ -71,8 +79,6 @@ export function SearchForm() {
           </div>
         </form>
 
-
-
         {searchType === 'cmt' && (
           <div className="text-sm text-muted-foreground">
             <p>MMB番号の形式: MMB-YYMMDDXXXX</p>
@@ -81,5 +87,5 @@ export function SearchForm() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

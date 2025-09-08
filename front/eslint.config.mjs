@@ -1,6 +1,6 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { FlatCompat } from '@eslint/eslintrc';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -10,21 +10,46 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
+  ...compat.plugins('prettier'),
   {
     rules: {
-      // any型の使用を許可
-      "@typescript-eslint/no-explicit-any": "off",
-      // 未使用変数の警告を緩和
-      "@typescript-eslint/no-unused-vars": "warn",
-      // 空のobject typeを許可
-      "@typescript-eslint/no-empty-object-type": "off",
-      // React Hooksの依存配列の警告を緩和
-      "react-hooks/exhaustive-deps": "warn",
-      // Next.jsのimgタグ警告を緩和
-      "@next/next/no-img-element": "warn",
-      // a11yのaltタグ警告を緩和
-      "jsx-a11y/alt-text": "warn",
+      // TypeScript strict rules
+      '@typescript-eslint/no-explicit-any': 'warn', // any型は警告（段階的に修正）
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-empty-object-type': 'error',
+
+      // React strict rules
+      'react-hooks/exhaustive-deps': 'error',
+      'react/jsx-key': 'error',
+      'react/no-array-index-key': 'warn',
+      'react/no-unescaped-entities': 'error',
+
+      // Next.js strict rules
+      '@next/next/no-img-element': 'error',
+      '@next/next/no-sync-scripts': 'error',
+
+      // Accessibility strict rules
+      'jsx-a11y/alt-text': 'error',
+      'jsx-a11y/aria-props': 'error',
+      'jsx-a11y/aria-proptypes': 'error',
+      'jsx-a11y/aria-unsupported-elements': 'error',
+
+      // General code quality
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-debugger': 'error',
+      'no-alert': 'error',
+      'prefer-const': 'error',
+      'no-var': 'error',
+
+      // Prettier integration
+      'prettier/prettier': 'error',
     },
   },
 ];

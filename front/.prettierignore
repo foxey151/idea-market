@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+
+# Generated files
+*.tsbuildinfo
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# Git
+.git/
+
+# Yarn
+.yarn/
+yarn-error.log
+
+# Cache
+.cache/
+
+# Supabase
+supabase/migrations/*.sql

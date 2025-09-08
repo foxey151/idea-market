@@ -3,7 +3,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Eye } from 'lucide-react';
+import { getBlogViewCount } from '@/lib/supabase/blog-views';
+import { BlogViewTracker } from '@/components/BlogViewTracker';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -13,12 +15,18 @@ export default async function BlogDetailPage({ params }: Props) {
   try {
     const { id } = await params;
     const blog = await getBlog(id);
+    const viewCount = await getBlogViewCount(id);
 
     // 読了時間の計算（簡易版）
-    const readingTime = Math.ceil(blog.content.replace(/<[^>]*>/g, '').length / 400);
+    const readingTime = Math.ceil(
+      blog.content.replace(/<[^>]*>/g, '').length / 400
+    );
 
     return (
       <div className="min-h-screen bg-gradient-subtle">
+        {/* 閲覧数記録コンポーネント */}
+        <BlogViewTracker blogId={id} />
+
         <div className="container mx-auto px-4 py-8">
           {/* 戻るボタン */}
           <div className="mb-8">
@@ -36,7 +44,7 @@ export default async function BlogDetailPage({ params }: Props) {
               <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
                 {blog.title}
               </h1>
-              
+
               <div className="flex items-center justify-center gap-6 text-muted-foreground">
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2" />
@@ -44,14 +52,19 @@ export default async function BlogDetailPage({ params }: Props) {
                     {new Date(blog.publishedAt).toLocaleDateString('ja-JP', {
                       year: 'numeric',
                       month: 'long',
-                      day: 'numeric'
+                      day: 'numeric',
                     })}
                   </time>
                 </div>
-                
+
                 <div className="flex items-center">
-                  <Clock className="h-4 w-4 mr-2" />
-                  約{readingTime}分で読めます
+                  <Clock className="h-4 w-4 mr-2" />約{readingTime}分で読めます
+                </div>
+
+                {/* 閲覧数を追加 */}
+                <div className="flex items-center">
+                  <Eye className="h-4 w-4 mr-2" />
+                  {viewCount.view_count.toLocaleString()}回閲覧
                 </div>
               </div>
             </header>
@@ -100,7 +113,7 @@ export default async function BlogDetailPage({ params }: Props) {
         </div>
       </div>
     );
-  } catch (error) {
+  } catch {
     notFound();
   }
 }
@@ -113,7 +126,7 @@ export async function generateStaticParams() {
     return blogs.map((blog: Blog) => ({
       id: blog.id,
     }));
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -135,7 +148,7 @@ export async function generateMetadata({ params }: Props) {
         publishedTime: blog.publishedAt,
       },
     };
-  } catch (error) {
+  } catch {
     return {
       title: 'ブログ記事が見つかりません | アイデアマーケット',
     };

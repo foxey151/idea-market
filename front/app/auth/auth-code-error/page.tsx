@@ -1,32 +1,42 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle } from 'lucide-react'
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { AlertCircle } from 'lucide-react';
 
 interface AuthCodeErrorProps {
   searchParams: Promise<{
-    error?: string
-  }>
+    error?: string;
+  }>;
 }
 
-export default async function AuthCodeError({ searchParams }: AuthCodeErrorProps) {
-  const resolvedSearchParams = await searchParams
-  const errorMessage = resolvedSearchParams.error ? decodeURIComponent(resolvedSearchParams.error) : null
-  
+export default async function AuthCodeError({
+  searchParams,
+}: AuthCodeErrorProps) {
+  const resolvedSearchParams = await searchParams;
+  const errorMessage = resolvedSearchParams.error
+    ? decodeURIComponent(resolvedSearchParams.error)
+    : null;
+
   const getErrorDescription = (error: string | null) => {
     switch (error) {
       case 'no_code':
-        return 'メール認証リンクが正しく機能していません。メールの有効期限が切れているか、すでに使用済みの可能性があります。新しい認証メールをリクエストしてください。'
+        return 'メール認証リンクが正しく機能していません。メールの有効期限が切れているか、すでに使用済みの可能性があります。新しい認証メールをリクエストしてください。';
       case 'email_link_invalid':
-        return 'メール認証リンクが無効であるか期限切れです。既にアカウントが登録済みの場合は、ログインページからログインしてください。'
+        return 'メール認証リンクが無効であるか期限切れです。既にアカウントが登録済みの場合は、ログインページからログインしてください。';
       case 'no_user_data':
-        return 'ユーザー情報の取得に失敗しました。'
+        return 'ユーザー情報の取得に失敗しました。';
       case 'unexpected_error':
-        return '予期しないエラーが発生しました。'
+        return '予期しないエラーが発生しました。';
       default:
-        return error || 'ログイン処理中にエラーが発生しました'
+        return error || 'ログイン処理中にエラーが発生しました';
     }
-  }
+  };
 
   const getSuggestedAction = (error: string | null) => {
     switch (error) {
@@ -34,22 +44,22 @@ export default async function AuthCodeError({ searchParams }: AuthCodeErrorProps
         return {
           title: '新規登録をやり直す',
           href: '/signup',
-          description: '新しい認証メールを送信します'
-        }
+          description: '新しい認証メールを送信します',
+        };
       case 'email_link_invalid':
         return {
           title: 'ログインページへ',
           href: '/login',
-          description: '既にアカウントが登録済みの場合はこちら'
-        }
+          description: '既にアカウントが登録済みの場合はこちら',
+        };
       default:
         return {
           title: 'ログインページへ',
           href: '/login',
-          description: '既存アカウントでログイン'
-        }
+          description: '既存アカウントでログイン',
+        };
     }
-  }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -80,7 +90,10 @@ export default async function AuthCodeError({ searchParams }: AuthCodeErrorProps
                     現在時刻: {new Date().toLocaleString('ja-JP')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    URL: {typeof window !== 'undefined' ? window.location.href : 'Server-side'}
+                    URL:{' '}
+                    {typeof window !== 'undefined'
+                      ? window.location.href
+                      : 'Server-side'}
                   </p>
                 </div>
               </details>
@@ -95,7 +108,8 @@ export default async function AuthCodeError({ searchParams }: AuthCodeErrorProps
             <Button variant="outline" asChild>
               <Link href="/">ホームに戻る</Link>
             </Button>
-            {(errorMessage === 'no_code' || errorMessage === 'email_link_invalid') && (
+            {(errorMessage === 'no_code' ||
+              errorMessage === 'email_link_invalid') && (
               <p className="text-xs text-muted-foreground text-center">
                 {getSuggestedAction(errorMessage).description}
               </p>
@@ -104,5 +118,5 @@ export default async function AuthCodeError({ searchParams }: AuthCodeErrorProps
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
