@@ -22,6 +22,18 @@ export default async function BlogDetailPage({ params }: Props) {
       blog.content.replace(/<[^>]*>/g, '').length / 400
     );
 
+    // コンテンツの改行を適切に処理 - MicroCMSの各種パターンに対応
+    const processedContent = blog.content
+      .replace(/<p><\/p>/g, '<br>') // 空のpタグを改行に変換
+      .replace(/<p>\s*<\/p>/g, '<br>') // 空白のみのpタグを改行に変換
+      .replace(/<p>&nbsp;<\/p>/g, '<br>') // &nbsp;のみのpタグを改行に変換
+      .replace(/<p><br><\/p>/g, '<br>') // brタグのみのpタグを改行に変換
+      .replace(/<p><br\/><\/p>/g, '<br>') // 自己終了brタグのpタグを改行に変換
+      .replace(/(<\/p>)\s*(<p>)/g, '$1<br>$2') // 連続するpタグ間に改行を追加
+      .replace(/\r\n/g, '\n') // Windows改行を統一
+      .replace(/\r/g, '\n') // Mac改行を統一
+      .replace(/\n/g, '<br>'); // 残りの改行をBRタグに変換
+
     return (
       <div className="min-h-screen bg-gradient-subtle">
         {/* 閲覧数記録コンポーネント */}
@@ -86,17 +98,22 @@ export default async function BlogDetailPage({ params }: Props) {
             {/* 記事本文 */}
             <div className="bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 p-8 md:p-12 shadow-soft">
               <div
-                className="prose prose-lg max-w-none 
-                  prose-headings:text-foreground 
-                  prose-p:text-foreground/90 
-                  prose-a:text-primary 
-                  prose-strong:text-foreground
-                  prose-code:text-primary
-                  prose-pre:bg-muted
-                  prose-blockquote:border-primary
-                  prose-img:rounded-lg
-                  prose-img:shadow-soft"
-                dangerouslySetInnerHTML={{ __html: blog.content }}
+                className="text-foreground/90 leading-relaxed
+                  [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:text-foreground
+                  [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-3 [&_h2]:text-foreground
+                  [&_h3]:text-lg [&_h3]:font-medium [&_h3]:mb-2 [&_h3]:text-foreground
+                  [&_p]:mb-4 [&_p]:leading-relaxed
+                  [&_a]:text-primary [&_a]:hover:underline
+                  [&_strong]:font-semibold [&_strong]:text-foreground
+                  [&_em]:italic
+                  [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4
+                  [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-4
+                  [&_li]:mb-1
+                  [&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:mb-4
+                  [&_code]:bg-muted [&_code]:px-1 [&_code]:rounded [&_code]:text-primary
+                  [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-4
+                  [&_img]:rounded-lg [&_img]:shadow-soft [&_img]:mb-4"
+                dangerouslySetInnerHTML={{ __html: processedContent }}
               />
             </div>
 
@@ -137,12 +154,18 @@ export async function generateMetadata({ params }: Props) {
     const { id } = await params;
     const blog = await getBlog(id);
 
+    // HTMLタグと改行コードを除去してメタデータ用のテキストを生成
+    const cleanText = blog.content
+      .replace(/<[^>]*>/g, '')
+      .replace(/\n|\r\n|\r/g, ' ')
+      .substring(0, 160);
+
     return {
       title: `${blog.title} | アイデアマーケット ブログ`,
-      description: blog.content.replace(/<[^>]*>/g, '').substring(0, 160),
+      description: cleanText,
       openGraph: {
         title: blog.title,
-        description: blog.content.replace(/<[^>]*>/g, '').substring(0, 160),
+        description: cleanText,
         images: blog.image ? [blog.image.url] : [],
         type: 'article',
         publishedTime: blog.publishedAt,
