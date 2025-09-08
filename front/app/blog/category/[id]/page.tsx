@@ -7,13 +7,14 @@ import { Calendar, ArrowRight, ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export default async function CategoryBlogPage({ params }: Props) {
-  const { contents: blogs } = await getBlogsByCategory(params.id);
+  const { id } = await params;
+  const { contents: blogs } = await getBlogsByCategory(id);
   const { contents: categories } = await getCategories();
-  const currentCategory = categories.find((cat: Category) => cat.id === params.id);
+  const currentCategory = categories.find((cat: Category) => cat.id === id);
 
   if (!currentCategory) {
     notFound();
@@ -128,8 +129,9 @@ export async function generateStaticParams() {
 // メタデータの生成
 export async function generateMetadata({ params }: Props) {
   try {
+    const { id } = await params;
     const { contents: categories } = await getCategories();
-    const category = categories.find((cat: Category) => cat.id === params.id);
+    const category = categories.find((cat: Category) => cat.id === id);
     
     if (!category) {
       return {
