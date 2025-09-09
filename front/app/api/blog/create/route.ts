@@ -5,7 +5,6 @@ interface BlogCreateRequest {
   title: string;
   content: string;
   publishedAt?: string;
-  status?: 'PUBLISH' | 'DRAFT';
   category?: string;
 }
 
@@ -41,13 +40,12 @@ export async function POST(request: NextRequest) {
     
     // リクエストボディのバリデーション
     console.log('バリデーション開始...');
-    const { title, content, publishedAt, status, category } = body;
+    const { title, content, publishedAt, category } = body;
     
     console.log('フィールド値:', {
       title: title ? `"${title}" (${title.length}文字)` : 'undefined/null',
       content: content ? `${content.length}文字のHTMLコンテンツ` : 'undefined/null',
       publishedAt: publishedAt || 'undefined/null',
-      status: status || 'DRAFT',
       category: category || 'undefined/null',
     });
     
@@ -73,7 +71,6 @@ export async function POST(request: NextRequest) {
     const createData: any = {
       title,
       content,
-      status: status || 'DRAFT',
     };
     
     // publishedAtが提供されている場合のみ追加

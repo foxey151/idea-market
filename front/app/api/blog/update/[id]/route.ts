@@ -5,7 +5,6 @@ interface BlogPatchRequest {
   title?: string;
   content?: string;
   publishedAt?: string;
-  status?: 'PUBLISH' | 'DRAFT';
 }
 
 // ブログ記事の更新
