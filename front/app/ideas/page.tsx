@@ -14,17 +14,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { getIdeas, getCommentCount } from '@/lib/supabase/ideas';
-import { Database } from '@/lib/supabase/types';
 import { Search, Filter, MessageSquare, Calendar } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-
-type Idea = Database['public']['Tables']['ideas']['Row'] & {
-  profiles: {
-    display_name: string;
-    role: string;
-  } | null;
-  commentCount?: number;
-};
+import { Idea } from '@/types/ideas';
 
 export default function IdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([]);

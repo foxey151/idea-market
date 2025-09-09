@@ -10,12 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, ArrowRight, ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import { BlogCategoryPageProps } from '@/types/blog';
 
-type Props = {
-  params: Promise<{ id: string }>;
-};
-
-export default async function CategoryBlogPage({ params }: Props) {
+export default async function CategoryBlogPage({ params }: BlogCategoryPageProps) {
   const { id } = await params;
   const { contents: blogs } = await getBlogsByCategory(id);
   const { contents: categories } = await getCategories();
@@ -135,7 +132,7 @@ export async function generateStaticParams() {
 }
 
 // メタデータの生成
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: BlogCategoryPageProps) {
   try {
     const { id } = await params;
     const { contents: categories } = await getCategories();

@@ -25,19 +25,19 @@ const Features = () => {
       icon: MessageSquare,
       title: 'コラボレーション機能',
       description:
-        'LINE風のコメント機能で、アイデアをリアルタイムでブラッシュアップ',
+        'LINE風のコメント機能で、アイデアをブラッシュアップ',
       gradient: 'bg-gradient-primary',
     },
     {
       icon: Shield,
       title: '安全な取引システム',
-      description: 'エスクローシステムで安心・安全な売買を実現',
+      description: '安心・安全な売買を実現',
       gradient: 'bg-gradient-secondary',
     },
     {
       icon: Zap,
       title: '瞬時の検索・発見',
-      description: 'AI搭載の検索エンジンで、求めるアイデアを瞬時に発見',
+      description: '求めるアイデアを瞬時に発見',
       gradient: 'bg-primary',
     },
     {

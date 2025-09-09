@@ -122,16 +122,10 @@ const Header = () => {
               検索
             </Link>
             <Link
-              href="/about-ideas"
-              className="text-foreground/80 hover:text-primary transition-colors"
-            >
-              アイデアとは
-            </Link>
-            <Link
               href="/about"
               className="text-foreground/80 hover:text-primary transition-colors"
             >
-              サービス案内
+              アイデアマーケットについて
             </Link>
             <Link
               href="/blog"

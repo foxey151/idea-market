@@ -8,12 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
-
-interface AuthCodeErrorProps {
-  searchParams: Promise<{
-    error?: string;
-  }>;
-}
+import { AuthCodeErrorProps } from '@/types/auth';
 
 export default async function AuthCodeError({
   searchParams,

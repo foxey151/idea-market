@@ -16,18 +16,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getIdeaById, updateIdea } from '@/lib/supabase/ideas';
-import { Database } from '@/lib/supabase/types';
 import { Calendar, User, Clock, Upload, X, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/StableAuthContext';
 import GoogleAdsense from '@/components/GoogleAdsense';
-
-type IdeaDetail = Database['public']['Tables']['ideas']['Row'] & {
-  profiles: {
-    display_name: string;
-    role: string;
-  } | null;
-};
+import { IdeaDetail } from '@/types/ideas';
 
 export default function FinalIdeaPage() {
   const [idea, setIdea] = useState<IdeaDetail | null>(null);

@@ -31,7 +31,6 @@ import {
   createComment,
   deleteIdea,
 } from '@/lib/supabase/ideas';
-import { Database } from '@/lib/supabase/types';
 import {
   Calendar,
   Edit,
@@ -58,23 +57,7 @@ import {
   // DialogTrigger, // 現在未使用
 } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-
-type IdeaDetail = Database['public']['Tables']['ideas']['Row'] & {
-  profiles: {
-    display_name: string;
-    role: string;
-  } | null;
-};
-
-type Comment = {
-  id: string;
-  text: string;
-  author_id: string;
-  created_at: string;
-  profiles: {
-    display_name: string;
-  } | null;
-};
+import { IdeaDetail, Comment, AttachmentInfo } from '@/types/ideas';
 
 export default function IdeaDetailPage() {
   const [idea, setIdea] = useState<IdeaDetail | null>(null);
@@ -82,9 +65,7 @@ export default function IdeaDetailPage() {
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
-  const [attachmentUrls, setAttachmentUrls] = useState<
-    { path: string; url: string; isImage: boolean; fileName: string }[]
-  >([]);
+  const [attachmentUrls, setAttachmentUrls] = useState<AttachmentInfo[]>([]);
   const [loadingAttachments, setLoadingAttachments] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
     null

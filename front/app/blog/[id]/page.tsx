@@ -6,12 +6,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Clock, Eye } from 'lucide-react';
 import { getBlogViewCount } from '@/lib/supabase/blog-views';
 import { BlogViewTracker } from '@/components/BlogViewTracker';
+import { BlogDetailPageProps } from '@/types/blog';
 
-type Props = {
-  params: Promise<{ id: string }>;
-};
-
-export default async function BlogDetailPage({ params }: Props) {
+export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   try {
     const { id } = await params;
     const blog = await getBlog(id);
@@ -149,7 +146,7 @@ export async function generateStaticParams() {
 }
 
 // メタデータ生成
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: BlogDetailPageProps) {
   try {
     const { id } = await params;
     const blog = await getBlog(id);

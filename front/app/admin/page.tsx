@@ -6,8 +6,7 @@ import { TermsEditModal } from '@/components/admin/TermsEditModal';
 import { DocumentEditor } from '@/components/admin/DocumentEditor';
 // import { LogInputModal } from '@/components/admin/LogInputModal'
 import { useState } from 'react';
-
-type EditableDocument = 'terms' | 'privacy' | 'commerce' | 'company';
+import { EditableDocument } from '@/types/admin';
 
 export default function AdminPage() {
   const [logModalOpen, setLogModalOpen] = useState(false);
