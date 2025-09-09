@@ -71,7 +71,6 @@ export default function BlogEditForm({ blog }: BlogEditFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [formDataToSubmit, setFormDataToSubmit] = useState<BlogEditFormData | null>(null);
-  const [updateMethod, setUpdateMethod] = useState<'PUT' | 'PATCH'>('PUT');
   // HTMLエディターは削除し、常時編集可能なビジュアルエディターのみ使用
   const editableRef = useRef<HTMLDivElement>(null);
 
@@ -262,35 +261,29 @@ export default function BlogEditForm({ blog }: BlogEditFormProps) {
       // JSONの妥当性を事前チェック
       console.log('送信するリクエストボディ:', requestBody);
       
-      // 選択されたHTTPメソッドでAPIリクエストを送信
-      console.log('使用するHTTPメソッド:', updateMethod);
+      // PATCHメソッドで変更されたフィールドのみを送信
+      let finalRequestBody: any = {};
       
-      // PATCHの場合は変更されたフィールドのみを送信
-      let finalRequestBody: any = requestBody;
-      if (updateMethod === 'PATCH') {
-        finalRequestBody = {};
-        
-        // 変更されたフィールドのみを含める
-        if (formDataToSubmit.title !== blog.title) {
-          finalRequestBody.title = formDataToSubmit.title;
-        }
-        if (formDataToSubmit.content !== blog.content) {
-          finalRequestBody.content = formDataToSubmit.content;
-        }
-        if (formDataToSubmit.publishedAt !== blog.publishedAt.split('T')[0]) {
-          finalRequestBody.publishedAt = new Date(formDataToSubmit.publishedAt).toISOString();
-        }
-        
-        console.log('PATCH用の差分データ:', finalRequestBody);
-        console.log('変更検出:', {
-          titleChanged: formDataToSubmit.title !== blog.title,
-          contentChanged: formDataToSubmit.content !== blog.content,
-          publishedAtChanged: formDataToSubmit.publishedAt !== blog.publishedAt.split('T')[0],
-        });
+      // 変更されたフィールドのみを含める
+      if (formDataToSubmit.title !== blog.title) {
+        finalRequestBody.title = formDataToSubmit.title;
       }
+      if (formDataToSubmit.content !== blog.content) {
+        finalRequestBody.content = formDataToSubmit.content;
+      }
+      if (formDataToSubmit.publishedAt !== blog.publishedAt.split('T')[0]) {
+        finalRequestBody.publishedAt = new Date(formDataToSubmit.publishedAt).toISOString();
+      }
+      
+      console.log('PATCH用の差分データ:', finalRequestBody);
+      console.log('変更検出:', {
+        titleChanged: formDataToSubmit.title !== blog.title,
+        contentChanged: formDataToSubmit.content !== blog.content,
+        publishedAtChanged: formDataToSubmit.publishedAt !== blog.publishedAt.split('T')[0],
+      });
 
       const response = await fetch(`/api/blog/update/${blog.id}`, {
-        method: updateMethod,
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -390,27 +383,18 @@ export default function BlogEditForm({ blog }: BlogEditFormProps) {
   const copyHttpRequest = async () => {
     if (!formDataToSubmit) return;
     
-    let requestBodyData: any;
-    if (updateMethod === 'PATCH') {
-      requestBodyData = {};
-      if (formDataToSubmit.title !== blog.title) {
-        requestBodyData.title = formDataToSubmit.title;
-      }
-      if (formDataToSubmit.content !== blog.content) {
-        requestBodyData.content = formDataToSubmit.content;
-      }
-      if (formDataToSubmit.publishedAt !== blog.publishedAt.split('T')[0]) {
-        requestBodyData.publishedAt = new Date(formDataToSubmit.publishedAt).toISOString();
-      }
-    } else {
-      requestBodyData = {
-        title: formDataToSubmit.title,
-        content: formDataToSubmit.content,
-        publishedAt: new Date(formDataToSubmit.publishedAt).toISOString(),
-      };
+    let requestBodyData: any = {};
+    if (formDataToSubmit.title !== blog.title) {
+      requestBodyData.title = formDataToSubmit.title;
+    }
+    if (formDataToSubmit.content !== blog.content) {
+      requestBodyData.content = formDataToSubmit.content;
+    }
+    if (formDataToSubmit.publishedAt !== blog.publishedAt.split('T')[0]) {
+      requestBodyData.publishedAt = new Date(formDataToSubmit.publishedAt).toISOString();
     }
     
-    const httpRequestString = `${updateMethod} /api/blog/update/${blog.id}
+    const httpRequestString = `PATCH /api/blog/update/${blog.id}
 Content-Type: application/json
 
 ${JSON.stringify(requestBodyData, null, 2)}`;
@@ -453,42 +437,6 @@ ${JSON.stringify(requestBodyData, null, 2)}`;
           </p>
         </div>
         
-        {/* HTTPメソッド選択 */}
-        <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">HTTPメソッド:</span>
-            <div className="flex gap-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="updateMethod"
-                  value="PUT"
-                  checked={updateMethod === 'PUT'}
-                  onChange={(e) => setUpdateMethod(e.target.value as 'PUT' | 'PATCH')}
-                  className="text-blue-600"
-                />
-                <span className="text-sm text-blue-700 dark:text-blue-300">PUT (完全更新)</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="updateMethod"
-                  value="PATCH"
-                  checked={updateMethod === 'PATCH'}
-                  onChange={(e) => setUpdateMethod(e.target.value as 'PUT' | 'PATCH')}
-                  className="text-blue-600"
-                />
-                <span className="text-sm text-blue-700 dark:text-blue-300">PATCH (部分更新)</span>
-              </label>
-            </div>
-          </div>
-          <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-            {updateMethod === 'PUT' 
-              ? '🔄 すべてのフィールドを送信して完全更新を行います'
-              : '🎯 変更されたフィールドのみを送信して部分更新を行います'
-            }
-          </p>
-        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -782,27 +730,18 @@ ${JSON.stringify(requestBodyData, null, 2)}`;
                 <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900/50 relative">
                   <pre className="text-xs font-mono text-slate-700 dark:text-slate-300 overflow-x-auto">
 {(() => {
-  let requestBodyData: any;
-  if (updateMethod === 'PATCH') {
-    requestBodyData = {};
-    if (formDataToSubmit.title !== blog.title) {
-      requestBodyData.title = formDataToSubmit.title;
-    }
-    if (formDataToSubmit.content !== blog.content) {
-      requestBodyData.content = formDataToSubmit.content;
-    }
-    if (formDataToSubmit.publishedAt !== blog.publishedAt.split('T')[0]) {
-      requestBodyData.publishedAt = new Date(formDataToSubmit.publishedAt).toISOString();
-    }
-  } else {
-    requestBodyData = {
-      title: formDataToSubmit.title,
-      content: formDataToSubmit.content,
-      publishedAt: new Date(formDataToSubmit.publishedAt).toISOString(),
-    };
+  let requestBodyData: any = {};
+  if (formDataToSubmit.title !== blog.title) {
+    requestBodyData.title = formDataToSubmit.title;
+  }
+  if (formDataToSubmit.content !== blog.content) {
+    requestBodyData.content = formDataToSubmit.content;
+  }
+  if (formDataToSubmit.publishedAt !== blog.publishedAt.split('T')[0]) {
+    requestBodyData.publishedAt = new Date(formDataToSubmit.publishedAt).toISOString();
   }
   
-  return `${updateMethod} /api/blog/update/${blog.id}
+  return `PATCH /api/blog/update/${blog.id}
 Content-Type: application/json
 
 ${JSON.stringify(requestBodyData, null, 2)}`;
