@@ -10,6 +10,7 @@ import {
   Calendar,
   Eye,
   TrendingUp,
+  Plus,
 } from 'lucide-react';
 
 export default async function BlogPage() {
@@ -27,15 +28,30 @@ export default async function BlogPage() {
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto px-4 py-16">
         {/* ヘッダーセクション */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-primary bg-clip-text text-transparent">
-              ブログ
-            </span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            最新の記事や人気記事をチェックして、興味のあるトピックを深く学びましょう
-          </p>
+        <div className="mb-16">
+          <div className="flex justify-between items-start mb-8">
+            <div className="flex-1"></div>
+            <div className="text-center flex-1">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                <span className="bg-gradient-primary bg-clip-text text-transparent">
+                  ブログ
+                </span>
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                最新の記事や人気記事をチェックして、興味のあるトピックを深く学びましょう
+              </p>
+            </div>
+            
+            {/* 新規投稿ボタン */}
+            <div className="flex-1 flex justify-end">
+              <Button asChild>
+                <Link href="/blog/new">
+                  <Plus className="w-4 h-4 mr-2" />
+                  新規投稿
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* 人気記事セクション */}

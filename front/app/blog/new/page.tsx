@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import { Category } from '@/lib/microcms';
 import { 
   ArrowLeft, 
   Save, 
@@ -28,12 +30,14 @@ import Link from 'next/link';
 interface BlogCreateData {
   title: string;
   content: string;
+  category?: string;
   publishedAt?: string;
 }
 
 export default function BlogNewPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState<BlogCreateData>({
     title: '',
     content: '',
@@ -41,11 +45,47 @@ export default function BlogNewPage() {
   const [preview, setPreview] = useState(false);
   const editableRef = useRef<HTMLDivElement>(null);
 
+  // カテゴリデータを取得
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        console.log('カテゴリ取得開始');
+        const response = await fetch('/api/categories');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('カテゴリ取得成功:', data);
+        
+        setCategories(data.contents || []);
+      } catch (error) {
+        console.error('カテゴリの取得に失敗しました:', error);
+        toast({
+          title: 'エラー',
+          description: 'カテゴリの取得に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const handleSubmit = async () => {
     if (!formData.title.trim() || !formData.content.trim()) {
       toast({
         title: 'エラー',
         description: 'タイトルと内容は必須です',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.category) {
+      toast({
+        title: 'エラー',
+        description: 'カテゴリの選択は必須です',
         variant: 'destructive',
       });
       return;
@@ -58,6 +98,7 @@ export default function BlogNewPage() {
         ...formData,
         status: 'PUBLISH',
         publishedAt: new Date().toISOString(),
+        ...(formData.category && { category: formData.category }),
       };
 
       console.log('送信データ:', submitData);
@@ -291,6 +332,39 @@ export default function BlogNewPage() {
                     placeholder="記事のタイトルを入力してください"
                     className="text-lg"
                   />
+                </div>
+
+                {/* カテゴリ */}
+                <div className="space-y-2">
+                  <Label htmlFor="category">カテゴリ *</Label>
+                  <Select
+                    value={formData.category || ''}
+                    onValueChange={(value) => handleInputChange('category', value)}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="カテゴリを選択してください" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{category.name}</span>
+                            {category.description && (
+                              <span className="text-xs text-muted-foreground line-clamp-1">
+                                {category.description}
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {categories.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      カテゴリを読み込み中...
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -533,6 +607,15 @@ export default function BlogNewPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-500">文字数:</span>
                     <span>{formData.content?.length || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">カテゴリ:</span>
+                    <span className={!formData.category ? "text-red-500" : ""}>
+                      {formData.category 
+                        ? categories.find(cat => cat.id === formData.category)?.name || '不明'
+                        : '未選択（必須）'
+                      }
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">ステータス:</span>

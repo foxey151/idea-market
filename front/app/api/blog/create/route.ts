@@ -86,12 +86,15 @@ export async function POST(request: NextRequest) {
     console.log('microCMSに送信するデータ:', createData);
     
     // microCMSにブログ記事を作成
+    if (!client) {
+      console.error('❌ microCMSクライアントが初期化されていません。');
+      throw new Error('microCMSクライアントが初期化されていません。');
+    }
     console.log('microCMSへのPOSTリクエスト開始...');
     const response = await client.create({
       endpoint: 'blogs',
       content: createData,
     });
-    
     console.log('✅ microCMSレスポンス:', response);
     console.log('作成されたブログID:', response.id);
     console.groupEnd();

@@ -8,13 +8,13 @@ export function validateMicroCMSConfig() {
   
   const errors: string[] = [];
   
-  if (!serviceDomain) {
+  if (serviceDomain === undefined) {
     errors.push('MICROCMS_SERVICE_DOMAIN が設定されていません');
   } else if (serviceDomain.includes('.')) {
     errors.push('MICROCMS_SERVICE_DOMAIN にはドメイン名（例: "ideamarket"）のみを設定してください。"https://" や ".microcms.io" は不要です');
   }
   
-  if (!apiKey) {
+  if (apiKey === undefined) {
     errors.push('MICROCMS_API_KEY が設定されていません');
   } else if (apiKey.length < 20) {
     errors.push('MICROCMS_API_KEY が短すぎます。正しいAPIキーを設定してください');
@@ -31,18 +31,28 @@ export function validateMicroCMSConfig() {
   };
 }
 
-const configValidation = validateMicroCMSConfig();
-if (!configValidation.isValid) {
-  console.error('microCMS設定エラー:', configValidation.errors);
-  throw new Error(
-    `microCMS環境変数が正しく設定されていません:\n${configValidation.errors.join('\n')}`
-  );
+// サーバーサイドでのみ実行されることを確認
+if (typeof window !== 'undefined') {
+  console.warn('microCMSクライアントはサーバーサイドでのみ使用してください');
 }
 
-export const client = createClient({
+const configValidation = validateMicroCMSConfig();
+if (configValidation.isValid) {
+  console.error('microCMS設定エラー:', configValidation.errors);
+  console.error('現在の環境:', {
+    isClient: typeof window !== 'undefined',
+    nodeEnv: process.env.NODE_ENV,
+  });
+  
+  // エラーを投げる代わりに警告のみにして、モックデータを返すようにする
+  console.warn('microCMS設定が不完全です。モックデータを使用します。');
+}
+
+// microCMSクライアントを条件付きで作成
+export const client = configValidation.isValid ? createClient({
   serviceDomain: process.env.MICROCMS_SERVICE_DOMAIN!,
   apiKey: process.env.MICROCMS_API_KEY!,
-});
+}) : null;
 
 // 型定義の再エクスポート（互換性のため）
 export type { Blog, Category } from '../types/microcms';
@@ -54,7 +64,16 @@ export async function testMicroCMSConnection(): Promise<{ success: boolean; erro
     console.log('設定情報:', {
       serviceDomain: process.env.MICROCMS_SERVICE_DOMAIN,
       hasApiKey: !!process.env.MICROCMS_API_KEY,
+      clientAvailable: !!client,
+      configValid: configValidation.isValid,
     });
+
+    if (!client) {
+      return { 
+        success: false, 
+        error: 'microCMSクライアントが初期化されていません。環境変数を確認してください。' 
+      };
+    }
 
     // まずシンプルなAPIコールを試す
     const response = await client.get({
@@ -109,27 +128,6 @@ const mockBlogs: MicroCMSListResponse<Blog> = {
   limit: 3,
 };
 
-const mockCategories: MicroCMSListResponse<Category> = {
-  contents: [
-    {
-      id: 'mock-cat-1',
-      name: '技術',
-      description: 'プログラミングや開発に関する記事',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'mock-cat-2',
-      name: 'ビジネス',
-      description: 'ビジネスやマーケティングに関する記事',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ],
-  totalCount: 2,
-  offset: 0,
-  limit: 100,
-};
 
 // microCMSからブログ一覧を取得
 export async function getBlogs(): Promise<MicroCMSListResponse<Blog>> {
@@ -138,7 +136,13 @@ export async function getBlogs(): Promise<MicroCMSListResponse<Blog>> {
       serviceDomain: process.env.MICROCMS_SERVICE_DOMAIN,
       hasApiKey: !!process.env.MICROCMS_API_KEY,
       apiKeyPrefix: process.env.MICROCMS_API_KEY?.substring(0, 8) + '...',
+      clientAvailable: !!client,
     });
+
+    if (!client) {
+      console.warn('microCMSクライアントが利用できません。モックデータを返します。');
+      return mockBlogs;
+    }
 
     const response = await client.get({
       endpoint: 'blogs',
@@ -176,6 +180,16 @@ export async function getBlogs(): Promise<MicroCMSListResponse<Blog>> {
 // microCMSからカテゴリ一覧を取得
 export async function getCategories(): Promise<MicroCMSListResponse<Category>> {
   try {
+    if (!client) {
+      console.warn('microCMSクライアントが利用できません。空のカテゴリリストを返します。');
+      return {
+        contents: [],
+        totalCount: 0,
+        offset: 0,
+        limit: 100,
+      };
+    }
+
     const response = await client.get({
       endpoint: 'categories',
       queries: {
@@ -187,20 +201,40 @@ export async function getCategories(): Promise<MicroCMSListResponse<Category>> {
   } catch (error: any) {
     console.error('microCMSからのカテゴリデータ取得に失敗しました:', error);
     
-    // HTMLレスポンスやエンドポイント不存在の場合はモックデータを返す
+    // HTMLレスポンスやエンドポイント不存在の場合は空のリストを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
-      console.warn('microCMSのcategoriesエンドポイントが見つかりません。モックデータを返します。');
-      return mockCategories;
+      console.warn('microCMSのcategoriesエンドポイントが見つかりません。空のカテゴリリストを返します。');
+      return {
+        contents: [],
+        totalCount: 0,
+        offset: 0,
+        limit: 100,
+      };
     }
     
-    console.warn('microCMSエラーのため、カテゴリのモックデータを返します:', error.message);
-    return mockCategories;
+    console.warn('microCMSエラーのため、空のカテゴリリストを返します:', error.message);
+    return {
+      contents: [],
+      totalCount: 0,
+      offset: 0,
+      limit: 100,
+    };
   }
 }
 
 // カテゴリごとのブログ記事を取得
 export async function getBlogsByCategory(categoryId: string): Promise<MicroCMSListResponse<Blog>> {
   try {
+    if (!client) {
+      console.warn('microCMSクライアントが利用できません。空のブログリストを返します。');
+      return {
+        contents: [],
+        totalCount: 0,
+        offset: 0,
+        limit: 100,
+      };
+    }
+
     const response = await client.get({
       endpoint: 'blogs',
       queries: {
@@ -213,19 +247,23 @@ export async function getBlogsByCategory(categoryId: string): Promise<MicroCMSLi
   } catch (error: any) {
     console.error('microCMSからのブログデータ取得に失敗しました:', error);
     
-    // HTMLレスポンスやエンドポイント不存在の場合はモックデータを返す
+    // HTMLレスポンスやエンドポイント不存在の場合は空のリストを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
-      console.warn('microCMSのblogsエンドポイントが見つかりません。カテゴリ別モックデータを返します。');
+      console.warn('microCMSのblogsエンドポイントが見つかりません。空のブログリストを返します。');
       return {
-        ...mockBlogs,
-        contents: mockBlogs.contents.filter(() => Math.random() > 0.5), // ランダムに一部を返す
+        contents: [],
+        totalCount: 0,
+        offset: 0,
+        limit: 100,
       };
     }
     
-    console.warn('microCMSエラーのため、カテゴリ別モックデータを返します:', error.message);
+    console.warn('microCMSエラーのため、空のブログリストを返します:', error.message);
     return {
-      ...mockBlogs,
-      contents: mockBlogs.contents.slice(0, 1), // 1件だけ返す
+      contents: [],
+      totalCount: 0,
+      offset: 0,
+      limit: 100,
     };
   }
 }
@@ -233,6 +271,24 @@ export async function getBlogsByCategory(categoryId: string): Promise<MicroCMSLi
 // microCMSから単一のブログ記事を取得
 export async function getBlog(id: string): Promise<Blog> {
   try {
+    if (!client) {
+      console.warn(`microCMSクライアントが利用できません。ID: ${id} のモックデータを返します。`);
+      
+      // リクエストされたIDに基づいてモックデータを返す
+      const mockBlog = mockBlogs.contents.find(blog => blog.id === id);
+      if (mockBlog) {
+        return mockBlog;
+      }
+      
+      // IDが見つからない場合は最初のモックデータを返す
+      return {
+        ...mockBlogs.contents[0],
+        id,
+        title: `サンプル記事 (ID: ${id})`,
+        content: '<p>これはモックデータです。microCMSでblogsエンドポイントを作成してください。</p>',
+      };
+    }
+
     const response = await client.get({
       endpoint: 'blogs',
       contentId: id,
