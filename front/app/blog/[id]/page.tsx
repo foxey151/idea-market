@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock, Eye } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Eye, Edit } from 'lucide-react';
 import { getBlogViewCount } from '@/lib/supabase/blog-views';
 import { BlogViewTracker } from '@/components/BlogViewTracker';
 import { BlogDetailPageProps } from '@/types/blog';
@@ -37,12 +37,20 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
         <BlogViewTracker blogId={id} />
 
         <div className="container mx-auto px-4 py-8">
-          {/* 戻るボタン */}
-          <div className="mb-8">
+          {/* 戻るボタンと編集ボタン */}
+          <div className="mb-8 flex justify-between items-center">
             <Button variant="ghost" asChild>
               <Link href="/blog" className="group">
                 <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                 ブログ一覧に戻る
+              </Link>
+            </Button>
+            
+            {/* 編集ボタン（全ユーザー利用可能） */}
+            <Button variant="outline" asChild>
+              <Link href={`/blog/edit/${id}`} className="group">
+                <Edit className="h-4 w-4 mr-2" />
+                記事を編集
               </Link>
             </Button>
           </div>
