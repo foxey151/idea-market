@@ -90,7 +90,8 @@ export default function TermsPage() {
             </div>
 
             <div className="mt-8 text-right text-sm text-gray-500">
-              制定日：2024年1月1日<br />
+              制定日：2024年1月1日
+              <br />
               最終更新日：{new Date().toLocaleDateString('ja-JP')}
             </div>
           </div>

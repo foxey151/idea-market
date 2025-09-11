@@ -1,9 +1,7 @@
 // 一般ページ・静的ページ関連の型定義
 
 /** ホームページのProps型 */
-export type HomePageProps = {
-  // ホームページは引数なし
-};
+export type HomePageProps = Record<string, never>;
 
 /** 検索ページのProps型 */
 export type SearchPageProps = {
@@ -15,44 +13,28 @@ export type SearchPageProps = {
 };
 
 /** 利用規約ページのProps型 */
-export type TermsPageProps = {
-  // 利用規約ページは引数なし
-};
+export type TermsPageProps = Record<string, never>;
 
 /** プライバシーポリシーページのProps型 */
-export type PrivacyPageProps = {
-  // プライバシーポリシーページは引数なし
-};
+export type PrivacyPageProps = Record<string, never>;
 
 /** 会社概要ページのProps型 */
-export type CompanyPageProps = {
-  // 会社概要ページは引数なし
-};
+export type CompanyPageProps = Record<string, never>;
 
 /** コマースページのProps型 */
-export type CommercePageProps = {
-  // コマースページは引数なし
-};
+export type CommercePageProps = Record<string, never>;
 
 /** About ページのProps型 */
-export type AboutPageProps = {
-  // Aboutページは引数なし
-};
+export type AboutPageProps = Record<string, never>;
 
 /** 403エラーページのProps型 */
-export type ForbiddenPageProps = {
-  // 403ページは引数なし
-};
+export type ForbiddenPageProps = Record<string, never>;
 
 /** テストページのProps型 */
-export type TestPageProps = {
-  // テストページは引数なし
-};
+export type TestPageProps = Record<string, never>;
 
 /** デバッグページのProps型 */
-export type DebugPageProps = {
-  // デバッグページは引数なし
-};
+export type DebugPageProps = Record<string, never>;
 
 /** 検索結果型 */
 export interface SearchResult {

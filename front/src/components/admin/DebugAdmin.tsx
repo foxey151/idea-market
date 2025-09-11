@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { checkAdminStatus, getPageContent, updatePageContent } from '@/lib/supabase/ideas';
+import {
+  checkAdminStatus,
+  getPageContent,
+  updatePageContent,
+} from '@/lib/supabase/ideas';
 import { supabase } from '@/lib/supabase/client';
 
 export function DebugAdmin() {
@@ -22,7 +26,10 @@ export function DebugAdmin() {
       setLoading(true);
 
       // 現在のユーザー情報
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
       setUserInfo({ user, error: userError });
 
       // 管理者権限チェック
@@ -40,10 +47,9 @@ export function DebugAdmin() {
         setUserInfo((prev: any) => ({
           ...prev,
           profile,
-          profileError
+          profileError,
         }));
       }
-
     } catch (error) {
       console.error('Debug error:', error);
     } finally {
@@ -64,7 +70,6 @@ export function DebugAdmin() {
 
       console.log('All pages content:', { allData, allError });
       setPagesContent(allData || []);
-
     } catch (error) {
       console.error('Page content test error:', error);
     } finally {
@@ -84,7 +89,6 @@ export function DebugAdmin() {
       if (!error) {
         await testPageContentAccess(); // 再取得
       }
-
     } catch (error) {
       console.error('Create test content error:', error);
     } finally {
@@ -125,10 +129,18 @@ export function DebugAdmin() {
             <Button onClick={checkUserStatus} disabled={loading}>
               ユーザー情報再確認
             </Button>
-            <Button onClick={testPageContentAccess} disabled={loading} variant="outline">
+            <Button
+              onClick={testPageContentAccess}
+              disabled={loading}
+              variant="outline"
+            >
               ページコンテンツテスト
             </Button>
-            <Button onClick={createTestContent} disabled={loading} variant="outline">
+            <Button
+              onClick={createTestContent}
+              disabled={loading}
+              variant="outline"
+            >
               テストコンテンツ作成
             </Button>
           </div>
@@ -152,7 +164,11 @@ export function DebugAdmin() {
                   </div>
                   <div className="text-sm bg-gray-50 p-2 rounded max-h-32 overflow-y-auto">
                     {content.content ? (
-                      <div dangerouslySetInnerHTML={{ __html: content.content.substring(0, 200) + '...' }} />
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: content.content.substring(0, 200) + '...',
+                        }}
+                      />
                     ) : (
                       <span className="text-gray-500">コンテンツなし</span>
                     )}

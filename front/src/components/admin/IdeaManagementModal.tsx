@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+// import { Badge } from '@/components/ui/badge';
 import { getIdeasWithDetail } from '@/lib/supabase/ideas';
 import { IdeaDetail } from '@/types/ideas';
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +28,6 @@ interface IdeaManagementModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-
 export function IdeaManagementModal({
   open,
   onOpenChange,
@@ -38,7 +37,7 @@ export function IdeaManagementModal({
   const { toast } = useToast();
 
   // アイデア一覧を取得
-  const fetchIdeas = async () => {
+  const fetchIdeas = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await getIdeasWithDetail();
@@ -51,7 +50,7 @@ export function IdeaManagementModal({
       } else {
         setIdeas(data || []);
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'エラー',
@@ -60,42 +59,41 @@ export function IdeaManagementModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     if (open) {
       fetchIdeas();
     }
-  }, [open]);
-
+  }, [open, fetchIdeas]);
 
   // ステータスに応じたバッジの色を返す
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'published':
-        return 'default';
-      case 'closed':
-        return 'secondary';
-      case 'overdue':
-        return 'destructive';
-      default:
-        return 'outline';
-    }
-  };
+  // const getStatusBadgeVariant = (status: string) => {
+  //   switch (status) {
+  //     case 'published':
+  //       return 'default';
+  //     case 'closed':
+  //       return 'secondary';
+  //     case 'overdue':
+  //       return 'destructive';
+  //     default:
+  //       return 'outline';
+  //   }
+  // };
 
   // ステータスを日本語に変換
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'published':
-        return '公開中';
-      case 'closed':
-        return '完了';
-      case 'overdue':
-        return '期限切れ';
-      default:
-        return status;
-    }
-  };
+  // const getStatusText = (status: string) => {
+  //   switch (status) {
+  //     case 'published':
+  //       return '公開中';
+  //     case 'closed':
+  //       return '完了';
+  //     case 'overdue':
+  //       return '期限切れ';
+  //     default:
+  //       return status;
+  //   }
+  // };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -129,7 +127,7 @@ export function IdeaManagementModal({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ideas.map((idea) => (
+                  {ideas.map(idea => (
                     <TableRow key={idea.id}>
                       <TableCell className="font-mono text-sm">
                         {idea.mmb_no}
@@ -151,7 +149,9 @@ export function IdeaManagementModal({
                         {idea.profiles?.display_name || '不明'}
                       </TableCell>
                       <TableCell>
-                        {idea.price ? `${Number(idea.price).toLocaleString()}円` : '未設定'}
+                        {idea.price
+                          ? `${Number(idea.price).toLocaleString()}円`
+                          : '未設定'}
                       </TableCell>
                       <TableCell>
                         {new Date(idea.created_at).toLocaleDateString('ja-JP')}
@@ -175,7 +175,10 @@ export function IdeaManagementModal({
                             variant="outline"
                             className="h-8 text-xs"
                             onClick={() => {
-                              console.log('Navigating to:', `/admin/${idea.id}/submit`);
+                              console.log(
+                                'Navigating to:',
+                                `/admin/${idea.id}/submit`
+                              );
                               window.location.href = `/admin/${idea.id}/submit`;
                             }}
                           >

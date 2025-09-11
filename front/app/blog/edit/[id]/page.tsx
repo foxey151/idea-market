@@ -22,7 +22,7 @@ export default async function BlogEditPage({ params }: BlogDetailPageProps) {
                 記事詳細に戻る
               </Link>
             </Button>
-            
+
             <div className="text-center">
               <h1 className="text-3xl md:text-5xl font-bold mb-6">
                 <span className="bg-gradient-primary bg-clip-text text-transparent">

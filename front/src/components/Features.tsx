@@ -24,8 +24,7 @@ const Features = () => {
     {
       icon: MessageSquare,
       title: 'コラボレーション機能',
-      description:
-        'LINE風のコメント機能で、アイデアをブラッシュアップ',
+      description: 'LINE風のコメント機能で、アイデアをブラッシュアップ',
       gradient: 'bg-gradient-primary',
     },
     {

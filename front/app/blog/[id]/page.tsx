@@ -45,7 +45,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                 ブログ一覧に戻る
               </Link>
             </Button>
-            
+
             {/* 編集ボタン（全ユーザー利用可能） */}
             <Button variant="outline" asChild>
               <Link href={`/blog/edit/${id}`} className="group">

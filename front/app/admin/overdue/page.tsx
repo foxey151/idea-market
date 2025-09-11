@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle, RefreshCw, Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -27,7 +33,9 @@ interface OverdueUpdateResult {
 
 export default function AdminOverduePage() {
   const [updating, setUpdating] = useState(false);
-  const [lastResult, setLastResult] = useState<OverdueUpdateResult | null>(null);
+  const [lastResult, setLastResult] = useState<OverdueUpdateResult | null>(
+    null
+  );
 
   const handleUpdateOverdue = async () => {
     try {
@@ -138,14 +146,18 @@ export default function AdminOverduePage() {
                     実行結果
                   </CardTitle>
                   <CardDescription>
-                    {new Date(lastResult.data?.timestamp || '').toLocaleString('ja-JP')}
+                    {new Date(lastResult.data?.timestamp || '').toLocaleString(
+                      'ja-JP'
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">ステータス:</span>
-                      <Badge variant={lastResult.success ? 'default' : 'destructive'}>
+                      <Badge
+                        variant={lastResult.success ? 'default' : 'destructive'}
+                      >
                         {lastResult.success ? '成功' : '失敗'}
                       </Badge>
                     </div>
@@ -153,7 +165,9 @@ export default function AdminOverduePage() {
                     {lastResult.data && (
                       <>
                         <div className="flex items-center justify-between">
-                          <span className="font-medium">更新されたアイデア数:</span>
+                          <span className="font-medium">
+                            更新されたアイデア数:
+                          </span>
                           <span className="text-lg font-bold text-blue-600">
                             {lastResult.data.updatedCount}件
                           </span>
@@ -161,16 +175,24 @@ export default function AdminOverduePage() {
 
                         {lastResult.data.updatedCount > 0 && (
                           <div className="space-y-2">
-                            <span className="font-medium">更新されたアイデア:</span>
+                            <span className="font-medium">
+                              更新されたアイデア:
+                            </span>
                             <div className="space-y-1 max-h-48 overflow-y-auto">
-                              {lastResult.data.updatedIdeas.map((idea) => (
+                              {lastResult.data.updatedIdeas.map(idea => (
                                 <div
                                   key={idea.id}
                                   className="flex items-center justify-between p-2 bg-muted rounded text-sm"
                                 >
-                                  <span className="truncate flex-1">{idea.title}</span>
+                                  <span className="truncate flex-1">
+                                    {idea.title}
+                                  </span>
                                   <span className="text-muted-foreground ml-2">
-                                    {idea.deadline ? new Date(idea.deadline).toLocaleDateString('ja-JP') : '期限なし'}
+                                    {idea.deadline
+                                      ? new Date(
+                                          idea.deadline
+                                        ).toLocaleDateString('ja-JP')
+                                      : '期限なし'}
                                   </span>
                                 </div>
                               ))}
@@ -182,7 +204,9 @@ export default function AdminOverduePage() {
 
                     {lastResult.error && (
                       <div className="p-3 bg-red-50 border border-red-200 rounded">
-                        <p className="text-red-800 text-sm">{lastResult.error}</p>
+                        <p className="text-red-800 text-sm">
+                          {lastResult.error}
+                        </p>
                       </div>
                     )}
                   </div>

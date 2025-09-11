@@ -7,7 +7,10 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // 管理者権限チェック
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       console.error('Auth check error:', authError);
@@ -25,7 +28,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (profileError || !profile || profile.role !== 'admin') {
-      console.error('User is not admin. Role:', profile?.role, 'Error:', profileError);
+      console.error(
+        'User is not admin. Role:',
+        profile?.role,
+        'Error:',
+        profileError
+      );
       return NextResponse.json(
         { error: '管理者権限が必要です' },
         { status: 403 }
@@ -58,7 +66,12 @@ export async function POST(request: NextRequest) {
       company: '会社情報',
     };
 
-    console.log('Saving content for:', documentType, 'Content length:', content?.length);
+    console.log(
+      'Saving content for:',
+      documentType,
+      'Content length:',
+      content?.length
+    );
 
     // データベースにコンテンツを保存
     const { data, error } = await supabase
@@ -104,7 +117,10 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // 管理者権限チェック
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       console.error('Auth check error:', authError);
@@ -122,7 +138,12 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (profileError || !profile || profile.role !== 'admin') {
-      console.error('User is not admin. Role:', profile?.role, 'Error:', profileError);
+      console.error(
+        'User is not admin. Role:',
+        profile?.role,
+        'Error:',
+        profileError
+      );
       return NextResponse.json(
         { error: '管理者権限が必要です' },
         { status: 403 }
@@ -170,4 +191,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

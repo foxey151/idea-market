@@ -6,24 +6,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { Category } from '@/lib/microcms';
-import { 
-  ArrowLeft, 
-  Save, 
-  Eye, 
-  Bold, 
-  Italic, 
-  Heading1, 
-  Heading2, 
+import {
+  ArrowLeft,
+  Save,
+  Eye,
+  Bold,
+  Italic,
+  Heading1,
+  Heading2,
   Heading3,
   List,
   ListOrdered,
   Quote,
   Link as LinkIcon,
   Image,
-  Type
+  Type,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -51,14 +57,14 @@ export default function BlogNewPage() {
       try {
         console.log('カテゴリ取得開始');
         const response = await fetch('/api/categories');
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
         console.log('カテゴリ取得成功:', data);
-        
+
         setCategories(data.contents || []);
       } catch (error) {
         console.error('カテゴリの取得に失敗しました:', error);
@@ -175,7 +181,7 @@ export default function BlogNewPage() {
       const element = document.createElement(tagName);
       element.appendChild(range.extractContents());
       range.insertNode(element);
-      
+
       // 選択範囲をクリア
       window.getSelection()?.removeAllRanges();
       handleEditablePreviewChange();
@@ -192,7 +198,7 @@ export default function BlogNewPage() {
     try {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString();
-      
+
       if (selectedText) {
         const element = document.createElement(tagName);
         element.textContent = selectedText;
@@ -201,14 +207,19 @@ export default function BlogNewPage() {
       } else {
         // 選択がない場合は新しいブロック要素を挿入
         const element = document.createElement(tagName);
-        element.textContent = tagName === 'h1' ? '見出し1' : 
-                             tagName === 'h2' ? '見出し2' : 
-                             tagName === 'h3' ? '見出し3' : 
-                             tagName === 'blockquote' ? '引用テキスト' : 
-                             '新しい段落';
+        element.textContent =
+          tagName === 'h1'
+            ? '見出し1'
+            : tagName === 'h2'
+              ? '見出し2'
+              : tagName === 'h3'
+                ? '見出し3'
+                : tagName === 'blockquote'
+                  ? '引用テキスト'
+                  : '新しい段落';
         range.insertNode(element);
       }
-      
+
       selection.removeAllRanges();
       handleEditablePreviewChange();
     } catch (error) {
@@ -224,17 +235,17 @@ export default function BlogNewPage() {
     try {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString();
-      
+
       const listElement = document.createElement(listType);
       const listItem = document.createElement('li');
       listItem.textContent = selectedText || 'リスト項目';
       listElement.appendChild(listItem);
-      
+
       if (selectedText) {
         range.deleteContents();
       }
       range.insertNode(listElement);
-      
+
       selection.removeAllRanges();
       handleEditablePreviewChange();
     } catch (error) {
@@ -254,7 +265,9 @@ export default function BlogNewPage() {
     ol: () => createList('ol'),
     quote: () => wrapSelectionWithBlock('blockquote'),
     link: () => {
-      const url = prompt('リンクURLを入力してください:');
+      // TODO: モーダル化してより良いUI/UXを実装する
+      // eslint-disable-next-line no-alert
+      const url = window.prompt('リンクURLを入力してください:');
       if (url) {
         const range = getSelectionRange();
         if (range) {
@@ -262,12 +275,12 @@ export default function BlogNewPage() {
             const linkElement = document.createElement('a');
             linkElement.href = url;
             linkElement.textContent = range.toString() || url;
-            
+
             if (range.toString()) {
               range.deleteContents();
             }
             range.insertNode(linkElement);
-            
+
             window.getSelection()?.removeAllRanges();
             handleEditablePreviewChange();
           } catch (error) {
@@ -277,7 +290,9 @@ export default function BlogNewPage() {
       }
     },
     image: () => {
-      const url = prompt('画像URLを入力してください:');
+      // TODO: モーダル化してより良いUI/UXを実装する
+      // eslint-disable-next-line no-alert
+      const url = window.prompt('画像URLを入力してください:');
       if (url) {
         const range = getSelectionRange();
         if (range) {
@@ -286,9 +301,9 @@ export default function BlogNewPage() {
             imgElement.src = url;
             imgElement.alt = '画像';
             imgElement.style.maxWidth = '100%';
-            
+
             range.insertNode(imgElement);
-            
+
             window.getSelection()?.removeAllRanges();
             handleEditablePreviewChange();
           } catch (error) {
@@ -328,7 +343,7 @@ export default function BlogNewPage() {
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    onChange={e => handleInputChange('title', e.target.value)}
                     placeholder="記事のタイトルを入力してください"
                     className="text-lg"
                   />
@@ -339,14 +354,16 @@ export default function BlogNewPage() {
                   <Label htmlFor="category">カテゴリ *</Label>
                   <Select
                     value={formData.category || ''}
-                    onValueChange={(value) => handleInputChange('category', value)}
+                    onValueChange={value =>
+                      handleInputChange('category', value)
+                    }
                     required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="カテゴリを選択してください" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
+                      {categories.map(category => (
                         <SelectItem key={category.id} value={category.id}>
                           <div className="flex flex-col">
                             <span className="font-medium">{category.name}</span>
@@ -488,30 +505,34 @@ export default function BlogNewPage() {
                         onClick={wysiwygFormatHandlers.image}
                         title="画像"
                       >
-                        <Image className="h-4 w-4" />
+                        <Image className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="text-xs text-muted-foreground mt-2 p-2 bg-blue-100 dark:bg-blue-900 rounded">
-                    💡 ショートカット: Ctrl+B (太字), Ctrl+I (斜体) | 直接テキストをクリックして編集できます
+                    💡 ショートカット: Ctrl+B (太字), Ctrl+I (斜体) |
+                    直接テキストをクリックして編集できます
                   </div>
                 </div>
 
                 {/* 常時編集可能エリア */}
                 <div className="border rounded-lg p-6 bg-background min-h-[400px]">
-                  <h3 
+                  <h3
                     className="text-2xl font-bold mb-6 border-b border-transparent hover:border-muted transition-colors cursor-text"
                     contentEditable={true}
-                    onBlur={(e) => {
-                      handleInputChange('title', e.currentTarget.textContent || '');
+                    onBlur={e => {
+                      handleInputChange(
+                        'title',
+                        e.currentTarget.textContent || ''
+                      );
                     }}
                     suppressContentEditableWarning={true}
                   >
                     {formData.title || 'タイトルを入力してください'}
                   </h3>
-                  
-                  <div 
+
+                  <div
                     ref={editableRef}
                     contentEditable={true}
                     onInput={handleEditablePreviewChange}
@@ -534,12 +555,16 @@ export default function BlogNewPage() {
                     suppressContentEditableWarning={true}
                   >
                     {!formData.content && (
-                      <p className="text-muted-foreground">コンテンツを入力してください...</p>
+                      <p className="text-muted-foreground">
+                        コンテンツを入力してください...
+                      </p>
                     )}
                   </div>
-                  
+
                   <div className="mt-4 text-sm text-muted-foreground flex justify-between">
-                    <span>✏️ 直接クリックして編集 | ツールバーでフォーマット</span>
+                    <span>
+                      ✏️ 直接クリックして編集 | ツールバーでフォーマット
+                    </span>
                     <span>{formData.content?.length || 0} / 50,000文字</span>
                   </div>
                 </div>
@@ -610,11 +635,11 @@ export default function BlogNewPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">カテゴリ:</span>
-                    <span className={!formData.category ? "text-red-500" : ""}>
-                      {formData.category 
-                        ? categories.find(cat => cat.id === formData.category)?.name || '不明'
-                        : '未選択（必須）'
-                      }
+                    <span className={!formData.category ? 'text-red-500' : ''}>
+                      {formData.category
+                        ? categories.find(cat => cat.id === formData.category)
+                            ?.name || '不明'
+                        : '未選択（必須）'}
                     </span>
                   </div>
                   <div className="flex justify-between">

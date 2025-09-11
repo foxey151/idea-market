@@ -16,9 +16,7 @@ export type EmailConfirmedPageProps = {
 };
 
 /** プロフィールページのProps型 */
-export type ProfilePageProps = {
-  // プロフィールページは引数なし
-};
+export type ProfilePageProps = Record<string, never>;
 
 /** ログインページのProps型 */
 export type LoginPageProps = {
@@ -35,9 +33,7 @@ export type SignupPageProps = {
 };
 
 /** パスワードリセット関連ページのProps型 */
-export type ForgotPasswordPageProps = {
-  // パスワード忘れページは引数なし
-};
+export type ForgotPasswordPageProps = Record<string, never>;
 
 export type ResetPasswordPageProps = {
   searchParams?: Promise<{

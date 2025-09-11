@@ -17,7 +17,9 @@ export default function TestRoutePage() {
         console.log('Current URL:', window.location.href);
       } catch (error) {
         console.error('Error resolving params:', error);
-        setResolvedParams({ error: error instanceof Error ? error.message : String(error) });
+        setResolvedParams({
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     };
 
@@ -30,8 +32,14 @@ export default function TestRoutePage() {
 
       <div className="bg-gray-100 p-4 rounded mb-4">
         <h2 className="font-semibold mb-2">現在の情報:</h2>
-        <p><strong>URL:</strong> {typeof window !== 'undefined' ? window.location.href : 'N/A'}</p>
-        <p><strong>Pathname:</strong> {typeof window !== 'undefined' ? window.location.pathname : 'N/A'}</p>
+        <p>
+          <strong>URL:</strong>{' '}
+          {typeof window !== 'undefined' ? window.location.href : 'N/A'}
+        </p>
+        <p>
+          <strong>Pathname:</strong>{' '}
+          {typeof window !== 'undefined' ? window.location.pathname : 'N/A'}
+        </p>
       </div>
 
       <div className="bg-blue-100 p-4 rounded mb-4">

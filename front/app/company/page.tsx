@@ -106,9 +106,7 @@ export default function CompanyInfoPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm border p-8">
-            <h1 className="text-3xl font-bold mb-8 text-gray-900">
-              会社情報
-            </h1>
+            <h1 className="text-3xl font-bold mb-8 text-gray-900">会社情報</h1>
 
             <div className="prose prose-sm max-w-none text-gray-700">
               <div dangerouslySetInnerHTML={{ __html: content }} />

@@ -47,18 +47,14 @@ const adminIdeaEditSchema = z.object({
     .string()
     .min(20, '概要は20文字以上で入力してください')
     .max(300, '概要は300文字以内で入力してください'),
-  detail: z
-    .string()
-    .optional(),
+  detail: z.string().optional(),
   status: z.enum(['published', 'closed', 'overdue']),
   price: z.enum(['none', '3000', '5000', '10000', '30000', '50000']).optional(),
   special: z
     .string()
     .max(500, '特別設定は500文字以内で入力してください')
     .optional(),
-  deadline: z
-    .string()
-    .optional(),
+  deadline: z.string().optional(),
 });
 
 type AdminIdeaEditFormData = z.infer<typeof adminIdeaEditSchema>;
@@ -76,20 +72,31 @@ export default function AdminIdeaSubmitPage() {
   useEffect(() => {
     const getParams = async () => {
       console.log('useParams result:', params);
-      console.log('Current pathname:', typeof window !== 'undefined' ? window.location.pathname : 'N/A');
+      console.log(
+        'Current pathname:',
+        typeof window !== 'undefined' ? window.location.pathname : 'N/A'
+      );
 
       try {
         const resolvedParams = await params;
         console.log('Resolved params:', resolvedParams);
 
-        const id = typeof resolvedParams.id === 'string' ? resolvedParams.id : Array.isArray(resolvedParams.id) ? resolvedParams.id[0] : '';
+        const id =
+          typeof resolvedParams.id === 'string'
+            ? resolvedParams.id
+            : Array.isArray(resolvedParams.id)
+              ? resolvedParams.id[0]
+              : '';
         console.log('Extracted ID:', id);
 
         setIdeaId(id);
       } catch (error) {
         console.error('Error getting params:', error);
         // fallback: URLから直接取得
-        const urlId = typeof window !== 'undefined' ? window.location.pathname.split('/').pop() : '';
+        const urlId =
+          typeof window !== 'undefined'
+            ? window.location.pathname.split('/').pop()
+            : '';
         console.log('Fallback ID from URL:', urlId);
         setIdeaId(urlId || '');
       }
@@ -197,7 +204,10 @@ export default function AdminIdeaSubmitPage() {
       };
 
       // 管理者用APIで更新
-      const { data: updatedIdea, error } = await adminUpdateIdea(ideaId, updateData);
+      const { data: updatedIdea, error } = await adminUpdateIdea(
+        ideaId,
+        updateData
+      );
 
       if (error) {
         console.error('管理者更新エラー詳細:', {
@@ -251,34 +261,36 @@ export default function AdminIdeaSubmitPage() {
           <div className="text-center py-16">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">アイデア情報を読み込み中...</p>
+          </div>
         </div>
-      </div>
-    // </AdminGuard>
-  );
-}
+      </AdminGuard>
+    );
+  }
 
   // アイデアが見つからない場合
   if (!idea) {
     return (
       // <AdminGuard> {/* 一時的に無効化してデバッグ */}
-        <div className="max-w-4xl mx-auto p-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-destructive" />
-                <h3 className="text-lg font-semibold mb-2">アイデアが見つかりません</h3>
-                <p className="text-muted-foreground mb-4">
-                  指定されたIDのアイデアが存在しないか、アクセス権限がありません。
-                  <br />
-                  現在のID: {ideaId}
-                </p>
-                <Button onClick={() => router.push('/admin')}>
-                  管理者ページに戻る
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="max-w-4xl mx-auto p-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-destructive" />
+              <h3 className="text-lg font-semibold mb-2">
+                アイデアが見つかりません
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                指定されたIDのアイデアが存在しないか、アクセス権限がありません。
+                <br />
+                現在のID: {ideaId}
+              </p>
+              <Button onClick={() => router.push('/admin')}>
+                管理者ページに戻る
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       // </AdminGuard>
     );
   }
@@ -291,8 +303,14 @@ export default function AdminIdeaSubmitPage() {
           <h3 className="font-semibold text-yellow-800 mb-2">デバッグ情報</h3>
           <div className="text-sm text-yellow-700">
             <p>Idea ID: {ideaId}</p>
-            <p>Current URL: {typeof window !== 'undefined' ? window.location.href : 'N/A'}</p>
-            <p>Pathname: {typeof window !== 'undefined' ? window.location.pathname : 'N/A'}</p>
+            <p>
+              Current URL:{' '}
+              {typeof window !== 'undefined' ? window.location.href : 'N/A'}
+            </p>
+            <p>
+              Pathname:{' '}
+              {typeof window !== 'undefined' ? window.location.pathname : 'N/A'}
+            </p>
           </div>
         </div>
 
@@ -333,7 +351,9 @@ export default function AdminIdeaSubmitPage() {
                 </span>
               </div>
               <div>
-                <span className="font-medium text-blue-900">現在のステータス:</span>
+                <span className="font-medium text-blue-900">
+                  現在のステータス:
+                </span>
                 <span className="ml-2 text-blue-700">{idea.status}</span>
               </div>
             </div>
@@ -427,8 +447,18 @@ export default function AdminIdeaSubmitPage() {
                 <Label htmlFor="price">価格設定</Label>
                 <Select
                   value={watch('price') || 'none'}
-                  onValueChange={(value) => {
-                    setValue('price', value === 'none' ? undefined : value as '3000' | '5000' | '10000' | '30000' | '50000');
+                  onValueChange={value => {
+                    setValue(
+                      'price',
+                      value === 'none'
+                        ? undefined
+                        : (value as
+                            | '3000'
+                            | '5000'
+                            | '10000'
+                            | '30000'
+                            | '50000')
+                    );
                   }}
                 >
                   <SelectTrigger>

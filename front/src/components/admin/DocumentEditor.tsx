@@ -15,7 +15,11 @@ import { useToast } from '@/hooks/use-toast';
 // React Quillを動的インポート（SSRの問題を回避）
 const ReactQuill = dynamic(() => import('react-quill-new'), {
   ssr: false,
-  loading: () => <div className="flex items-center justify-center h-96">エディタを読み込み中...</div>
+  loading: () => (
+    <div className="flex items-center justify-center h-96">
+      エディタを読み込み中...
+    </div>
+  ),
 });
 
 // React Quillのスタイルをインポート
@@ -24,20 +28,29 @@ import 'react-quill/dist/quill.snow.css';
 // React Quillのモジュール設定
 const quillModules = {
   toolbar: [
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    [{ header: [1, 2, 3, 4, 5, 6, false] }],
     ['bold', 'italic', 'underline', 'strike'],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    [{ 'indent': '-1'}, { 'indent': '+1' }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ indent: '-1' }, { indent: '+1' }],
     ['link'],
-    [{ 'color': [] }, { 'background': [] }],
-    [{ 'align': [] }],
-    ['clean']
+    [{ color: [] }, { background: [] }],
+    [{ align: [] }],
+    ['clean'],
   ],
 };
 
 const quillFormats = [
-  'header', 'bold', 'italic', 'underline', 'strike',
-  'list', 'indent', 'link', 'color', 'background', 'align'
+  'header',
+  'bold',
+  'italic',
+  'underline',
+  'strike',
+  'list',
+  'indent',
+  'link',
+  'color',
+  'background',
+  'align',
 ];
 
 interface DocumentEditorProps {
@@ -53,12 +66,12 @@ const documentTitles = {
   company: '会社情報',
 };
 
-const documentPaths = {
-  terms: '/terms',
-  privacy: '/privacy',
-  commerce: '/commerce',
-  company: '/company',
-};
+// const documentPaths = {
+//   terms: '/terms',
+//   privacy: '/privacy',
+//   commerce: '/commerce',
+//   company: '/company',
+// };
 
 export function DocumentEditor({
   open,

@@ -3,9 +3,7 @@
 import { Database } from '@/lib/supabase/types';
 
 /** アイデアページのProps型 */
-export type IdeaPageProps = {
-  // アイデア一覧ページは引数なし
-};
+export type IdeaPageProps = Record<string, never>;
 
 /** アイデア詳細ページのProps型 */
 export type IdeaDetailPageProps = {
@@ -23,9 +21,7 @@ export type IdeaFinalPageProps = {
 };
 
 /** マイアイデアページのProps型 */
-export type MyIdeasPageProps = {
-  // マイアイデアページは引数なし
-};
+export type MyIdeasPageProps = Record<string, never>;
 
 /** 基本的なアイデア型（Supabaseのテーブル型を拡張） */
 export type IdeaDetail = Database['public']['Tables']['ideas']['Row'] & {

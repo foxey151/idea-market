@@ -1,9 +1,7 @@
 // 管理者・システム関連の型定義
 
 /** 管理者ページのProps型 */
-export type AdminPageProps = {
-  // 管理者ページは引数なし
-};
+export type AdminPageProps = Record<string, never>;
 
 /** 編集可能なドキュメント種別 */
 export type EditableDocument = 'terms' | 'privacy' | 'commerce' | 'company';

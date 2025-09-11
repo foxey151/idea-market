@@ -12,7 +12,9 @@ import { Calendar, ArrowRight, ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { BlogCategoryPageProps } from '@/types/blog';
 
-export default async function CategoryBlogPage({ params }: BlogCategoryPageProps) {
+export default async function CategoryBlogPage({
+  params,
+}: BlogCategoryPageProps) {
   const { id } = await params;
   const { contents: blogs } = await getBlogsByCategory(id);
   const { contents: categories } = await getCategories();

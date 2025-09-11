@@ -355,24 +355,26 @@ export const updateAllOverdueIdeas = async () => {
         return { error: updateError };
       }
 
-      console.log(`${overdueIdeas.length}件の期限切れアイデアを自動更新しました:`, {
-        ideaIds,
-        titles: overdueIdeas.map((idea: any) => idea.title),
-        timestamp: now
-      });
+      console.log(
+        `${overdueIdeas.length}件の期限切れアイデアを自動更新しました:`,
+        {
+          ideaIds,
+          titles: overdueIdeas.map((idea: any) => idea.title),
+          timestamp: now,
+        }
+      );
 
       return {
         data: {
           updatedCount: overdueIdeas.length,
           updatedIdeas: overdueIdeas,
-          timestamp: now
-        }
+          timestamp: now,
+        },
       };
     }
 
     console.log('期限切れのアイデアは見つかりませんでした');
     return { data: { updatedCount: 0, updatedIdeas: [], timestamp: now } };
-
   } catch (error) {
     console.error('期限切れアイデア自動更新中に予期しないエラーが発生:', error);
     return { error };
@@ -416,7 +418,9 @@ export const adminUpdateIdea = async (id: string, updates: IdeaUpdate) => {
 // 管理者権限チェック関数
 export const checkAdminStatus = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { isAdmin: false, error: 'Not authenticated' };
 
     const { data, error } = await supabase

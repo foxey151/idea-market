@@ -15,12 +15,15 @@ export function AdminDebug() {
     setLoading(true);
     try {
       // 1. 現在のユーザー情報を取得
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
       // 2. プロファイル情報を取得
       let profileData = null;
       let profileError = null;
-      
+
       if (user) {
         const { data, error } = await supabase
           .from('profiles')
@@ -72,13 +75,15 @@ export function AdminDebug() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           管理者権限デバッグ情報
-          <Button 
-            onClick={checkDebugInfo} 
+          <Button
+            onClick={checkDebugInfo}
             disabled={loading}
             size="sm"
             variant="outline"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+            />
             更新
           </Button>
         </CardTitle>

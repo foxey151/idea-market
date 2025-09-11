@@ -333,7 +333,9 @@ export default function FinalIdeaPage() {
                           className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
                         >
                           <div className="font-medium">3,000円</div>
-                          <div className="text-sm text-muted-foreground">基本的なアイデア提案</div>
+                          <div className="text-sm text-muted-foreground">
+                            基本的なアイデア提案
+                          </div>
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -343,7 +345,9 @@ export default function FinalIdeaPage() {
                           className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
                         >
                           <div className="font-medium">5,000円</div>
-                          <div className="text-sm text-muted-foreground">詳細な仕様付き</div>
+                          <div className="text-sm text-muted-foreground">
+                            詳細な仕様付き
+                          </div>
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -353,7 +357,9 @@ export default function FinalIdeaPage() {
                           className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
                         >
                           <div className="font-medium">10,000円</div>
-                          <div className="text-sm text-muted-foreground">実装可能な詳細設計付き</div>
+                          <div className="text-sm text-muted-foreground">
+                            実装可能な詳細設計付き
+                          </div>
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -363,7 +369,9 @@ export default function FinalIdeaPage() {
                           className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
                         >
                           <div className="font-medium">30,000円</div>
-                          <div className="text-sm text-muted-foreground">プロトタイプ実装付き</div>
+                          <div className="text-sm text-muted-foreground">
+                            プロトタイプ実装付き
+                          </div>
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -373,7 +381,9 @@ export default function FinalIdeaPage() {
                           className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
                         >
                           <div className="font-medium">50,000円</div>
-                          <div className="text-sm text-muted-foreground">完全なプロダクト実装付き</div>
+                          <div className="text-sm text-muted-foreground">
+                            完全なプロダクト実装付き
+                          </div>
                         </Label>
                       </div>
                     </RadioGroup>

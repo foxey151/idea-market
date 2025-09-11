@@ -10,7 +10,7 @@ export default function DebugPage() {
     testing: boolean;
     result?: { success: boolean; error?: string };
   }>({ testing: false });
-  
+
   const microCMSConfig = validateMicroCMSConfig();
 
   const handleTestMicroCMS = async () => {
@@ -18,10 +18,10 @@ export default function DebugPage() {
     try {
       const result = await testMicroCMSConnection();
       setMicroCMSTest({ testing: false, result });
-    } catch (error) {
+    } catch {
       setMicroCMSTest({
         testing: false,
-        result: { success: false, error: 'テスト実行中にエラーが発生しました' }
+        result: { success: false, error: 'テスト実行中にエラーが発生しました' },
       });
     }
   };
@@ -48,17 +48,25 @@ export default function DebugPage() {
             </p>
             <p>
               Supabase Key:{' '}
-              {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '設定済み' : '未設定'}
+              {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+                ? '設定済み'
+                : '未設定'}
             </p>
             <hr className="my-3" />
             <h3 className="font-medium">microCMS設定</h3>
             <p>
-              設定状態: {' '}
-              <span className={microCMSConfig.isValid ? 'text-green-600' : 'text-red-600'}>
+              設定状態:{' '}
+              <span
+                className={
+                  microCMSConfig.isValid ? 'text-green-600' : 'text-red-600'
+                }
+              >
                 {microCMSConfig.isValid ? '✅ 正常' : '❌ エラー'}
               </span>
             </p>
-            <p>Service Domain: {microCMSConfig.config.serviceDomain || '未設定'}</p>
+            <p>
+              Service Domain: {microCMSConfig.config.serviceDomain || '未設定'}
+            </p>
             <p>API Key: {microCMSConfig.config.apiKeyPrefix || '未設定'}</p>
             {microCMSConfig.errors.length > 0 && (
               <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
@@ -82,13 +90,15 @@ export default function DebugPage() {
           >
             {microCMSTest.testing ? 'テスト中...' : 'microCMS接続テスト'}
           </button>
-          
+
           {microCMSTest.result && (
-            <div className={`mt-4 p-3 rounded ${
-              microCMSTest.result.success 
-                ? 'bg-green-100 border border-green-500 text-green-700'
-                : 'bg-red-100 border border-red-500 text-red-700'
-            }`}>
+            <div
+              className={`mt-4 p-3 rounded ${
+                microCMSTest.result.success
+                  ? 'bg-green-100 border border-green-500 text-green-700'
+                  : 'bg-red-100 border border-red-500 text-red-700'
+              }`}
+            >
               <p className="font-semibold">
                 {microCMSTest.result.success ? '✅ 接続成功' : '❌ 接続失敗'}
               </p>

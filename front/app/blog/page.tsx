@@ -41,7 +41,7 @@ export default async function BlogPage() {
                 最新の記事や人気記事をチェックして、興味のあるトピックを深く学びましょう
               </p>
             </div>
-            
+
             {/* 新規投稿ボタン */}
             <div className="flex-1 flex justify-end">
               <Button asChild>
