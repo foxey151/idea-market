@@ -106,7 +106,7 @@ export default function IdeasPage() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              革新的なアイデアを発見し、あなたのビジネスに活用してください
+              hoge
             </p>
           </div>
 
@@ -128,8 +128,8 @@ export default function IdeasPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card>
+          <div className="mb-8">
+            <Card className="max-w-xs mx-auto md:mx-0">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   総アイデア数
@@ -137,30 +137,6 @@ export default function IdeasPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{ideas.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  公開中
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {ideas.filter(idea => idea.status === 'published').length}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  進行中
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-yellow-600">
-                  {ideas.filter(idea => idea.status === 'published').length}
-                </div>
               </CardContent>
             </Card>
           </div>

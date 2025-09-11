@@ -6,7 +6,13 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['@radix-ui/react-icons'],
   },
   images: {
-    domains: ['images.microcms-assets.io'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.microcms-assets.io',
+        pathname: '/**',
+      },
+    ],
   },
 };
 

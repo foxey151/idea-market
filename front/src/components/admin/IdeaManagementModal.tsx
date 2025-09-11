@@ -103,7 +103,7 @@ export function IdeaManagementModal({
         <DialogHeader>
           <DialogTitle className="text-2xl">最終アイデア修正</DialogTitle>
           <DialogDescription>
-            detailがnullでないアイデアの一覧です。編集する場合は各行の編集ボタンをクリックしてください。
+            編集する場合は各行の編集ボタンをクリックしてください。
           </DialogDescription>
         </DialogHeader>
 
@@ -121,8 +121,8 @@ export function IdeaManagementModal({
                     <TableHead className="w-24">CMT番号</TableHead>
                     <TableHead className="w-48">タイトル</TableHead>
                     <TableHead className="w-64">概要</TableHead>
+                    <TableHead className="w-64">詳細</TableHead>
                     <TableHead className="w-32">作成者</TableHead>
-                    <TableHead className="w-24">ステータス</TableHead>
                     <TableHead className="w-20">価格</TableHead>
                     <TableHead className="w-32">作成日</TableHead>
                     <TableHead className="w-24">操作</TableHead>
@@ -143,12 +143,12 @@ export function IdeaManagementModal({
                         </div>
                       </TableCell>
                       <TableCell>
-                        {idea.profiles?.display_name || '不明'}
+                        <div className="text-sm text-gray-600 line-clamp-2">
+                          {idea.detail}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusBadgeVariant(idea.status)}>
-                          {getStatusText(idea.status)}
-                        </Badge>
+                        {idea.profiles?.display_name || '不明'}
                       </TableCell>
                       <TableCell>
                         {idea.price ? `${Number(idea.price).toLocaleString()}円` : '未設定'}
