@@ -1,6 +1,6 @@
--- Migration: 20250902000011_rls_policies
--- Description: RLSポリシーの設定
--- 作成日: 2025-09-02
+-- Migration: 20250911000012_rls_policies
+-- Description: RLSポリシーの設定（整理版）
+-- 作成日: 2025-09-11
 
 -- =================================================================
 -- RLSポリシーの設定
@@ -66,6 +66,23 @@ CREATE POLICY "Authors can update own ideas" ON public.ideas
 
 CREATE POLICY "Authors can delete own ideas" ON public.ideas
     FOR DELETE USING (auth.uid() = author_id);
+
+-- 管理者は全てのアイデアを更新・削除可能
+CREATE POLICY "Admins can update all ideas" ON public.ideas
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+CREATE POLICY "Admins can delete all ideas" ON public.ideas
+    FOR DELETE USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
 
 -- =================================================================
 -- idea_versions テーブルのポリシー
@@ -139,7 +156,7 @@ CREATE POLICY "Buyers can update own purchases" ON public.purchases
 CREATE POLICY "Admins can view audit logs" ON public.audit_logs
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM public.profiles 
+            SELECT 1 FROM public.profiles
             WHERE id = auth.uid() AND role = 'admin'
         )
     );

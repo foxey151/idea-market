@@ -1,4 +1,78 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { getPageContent } from '@/lib/supabase/ideas';
+
 export default function PrivacyPolicyPage() {
+  const [content, setContent] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const { data, error } = await getPageContent('privacy');
+
+        if (error) {
+          // データが存在しない場合はデフォルトコンテンツを表示
+          if (error.code === 'PGRST116') {
+            setContent(getDefaultContent());
+          } else {
+            setError('コンテンツの取得に失敗しました');
+          }
+        } else {
+          setContent(data?.content || getDefaultContent());
+        }
+      } catch (err) {
+        console.error('Error fetching privacy content:', err);
+        setError('コンテンツの取得に失敗しました');
+        setContent(getDefaultContent());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, []);
+
+  const getDefaultContent = () => {
+    return `<h2>デフォルト</h2>
+<p>このプライバシーポリシー（以下、「本ポリシー」といいます。）は、当サービス（以下、「本サービス」といいます。）における個人情報の取り扱いについて定めるものです。本サービスをご利用になる場合、本ポリシーに同意したものとみなされます。</p>`;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-lg shadow-sm border p-8">
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">読み込み中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-lg shadow-sm border p-8">
+              <div className="text-center py-16">
+                <p className="text-red-600">{error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto px-4 py-8">
@@ -8,66 +82,14 @@ export default function PrivacyPolicyPage() {
               プライバシーポリシー
             </h1>
 
-            <div className="space-y-6 text-gray-700">
-              <section>
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">
-                  第1条（適用範囲）
-                </h2>
-                <p>
-                  あああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ。
-                </p>
-              </section>
+            <div className="prose prose-sm max-w-none text-gray-700">
+              <div dangerouslySetInnerHTML={{ __html: content }} />
+            </div>
 
-              <section>
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">
-                  第2条（個人情報の収集）
-                </h2>
-                <p>
-                  いいいいいいいいいいいいいいいいいいいいいいいいいいいい
-                  第3条（個人情報の利用目的）
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">
-                  ううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううう。
-                </h2>
-                <p>第4条（個人情報の第三者提供）</p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">
-                  えええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええええ。
-                </h2>
-                <p>第5条（個人情報の保管・管理）</p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">
-                  おおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおお。
-                </h2>
-                <p>第6条（Cookie等の利用）</p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">
-                  かかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかかか。
-                </h2>
-                <p>第7条（プライバシーポリシーの変更）</p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">
-                  きききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききききき。
-                </h2>
-                <p>第8条（お問い合わせ）</p>
-              </section>
-
-              <div className="mt-8 text-right text-sm text-gray-500">
-                制定日：2024年1月1日
-                <br />
-                最終更新日：2025/9/3
-              </div>
+            <div className="mt-8 text-right text-sm text-gray-500">
+              制定日：2024年1月1日
+              <br />
+              最終更新日：{new Date().toLocaleDateString('ja-JP')}
             </div>
           </div>
         </div>

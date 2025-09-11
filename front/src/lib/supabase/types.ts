@@ -107,6 +107,8 @@ export type Database = {
           attachments: string[];
           deadline: string | null;
           status: 'published' | 'overdue' | 'closed';
+          price: Database['public']['Enums']['price_enum'] | null;
+          special: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -120,6 +122,8 @@ export type Database = {
           attachments?: string[];
           deadline?: string | null;
           status?: 'draft' | 'published' | 'closed' | 'overdue';
+          price?: Database['public']['Enums']['price_enum'] | null;
+          special?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -133,6 +137,8 @@ export type Database = {
           attachments?: string[];
           deadline?: string | null;
           status?: 'published' | 'closed' | 'overdue';
+          price?: Database['public']['Enums']['price_enum'] | null;
+          special?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -330,6 +336,29 @@ export type Database = {
           updated_at?: string;
         };
       };
+      pages_content: {
+        Row: {
+          id: number;
+          page_type: string;
+          content: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: number;
+          page_type: string;
+          content?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: number;
+          page_type?: string;
+          content?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+      };
       audit_logs: {
         Row: {
           id: number;
@@ -455,6 +484,7 @@ export type Database = {
       purchase_status: 'succeeded' | 'refunded' | 'failed';
       account_type_enum: 'ordinary' | 'current';
       gender_enum: 'male' | 'female' | 'other';
+      price_enum: '3000' | '5000' | '10000' | '30000' | '50000';
       prefecture_enum:
         | 'hokkaido'
         | 'aomori'

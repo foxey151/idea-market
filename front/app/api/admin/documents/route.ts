@@ -1,96 +1,93 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
+    // サーバーサイドSupabaseクライアントを作成
+    const supabase = await createClient();
+
+    // 管理者権限チェック
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Auth check error:', authError);
+      return NextResponse.json(
+        { error: 'Authentication failed' },
+        { status: 401 }
+      );
+    }
+
+    // ユーザーのロールを取得
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile || profile.role !== 'admin') {
+      console.error('User is not admin. Role:', profile?.role, 'Error:', profileError);
+      return NextResponse.json(
+        { error: '管理者権限が必要です' },
+        { status: 403 }
+      );
+    }
+
     const { documentType, content } = await request.json();
 
-    if (!documentType || !content) {
+    if (!documentType || content === undefined) {
       return NextResponse.json(
         { error: 'Document type and content are required' },
         { status: 400 }
       );
     }
 
-    // ファイルパスの決定
-    let filePath: string;
-    let pageTitle: string;
-
-    switch (documentType) {
-      case 'terms':
-        filePath = join(process.cwd(), 'app', 'terms', 'page.tsx');
-        pageTitle = '利用規約';
-        break;
-      case 'privacy':
-        filePath = join(process.cwd(), 'app', 'privacy', 'page.tsx');
-        pageTitle = 'プライバシーポリシー';
-        break;
-      case 'commerce':
-        filePath = join(process.cwd(), 'app', 'commerce', 'page.tsx');
-        pageTitle = '特定商取引法に基づく表記';
-        break;
-      case 'company':
-        filePath = join(process.cwd(), 'app', 'company', 'page.tsx');
-        pageTitle = '会社情報';
-        break;
-      default:
-        return NextResponse.json(
-          { error: 'Invalid document type' },
-          { status: 400 }
-        );
+    // 有効なドキュメントタイプをチェック
+    const validTypes = ['terms', 'privacy', 'commerce', 'company'];
+    if (!validTypes.includes(documentType)) {
+      return NextResponse.json(
+        { error: 'Invalid document type' },
+        { status: 400 }
+      );
     }
 
-    // コンテンツをセクションに分割してHTMLを生成
-    const sections = content
-      .split('\n\n')
-      .filter((section: string) => section.trim());
-    let sectionsHTML = '';
+    // ページタイトルのマッピング
+    const pageTitles: { [key: string]: string } = {
+      terms: '利用規約',
+      privacy: 'プライバシーポリシー',
+      commerce: '特定商取引法に基づく表記',
+      company: '会社情報',
+    };
 
-    for (let i = 0; i < sections.length; i += 2) {
-      const heading = sections[i]?.trim();
-      const contentText = sections[i + 1]?.trim();
+    console.log('Saving content for:', documentType, 'Content length:', content?.length);
 
-      if (heading && contentText) {
-        sectionsHTML += `              <section>
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">${heading}</h2>
-                <p>
-                  ${contentText}
-                </p>
-              </section>
+    // データベースにコンテンツを保存
+    const { data, error } = await supabase
+      .from('pages_content')
+      .upsert(
+        {
+          page_type: documentType,
+          content: content || '',
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'page_type',
+        }
+      )
+      .select()
+      .single();
 
-`;
-      }
+    if (error) {
+      console.error('Database error:', error);
+      return NextResponse.json(
+        { error: 'Failed to save document' },
+        { status: 500 }
+      );
     }
-
-    // ページファイルの内容を生成
-    const pageContent = `export default function ${getComponentName(documentType)}Page() {
-  return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm border p-8">
-            <h1 className="text-3xl font-bold mb-8 text-gray-900">${pageTitle}</h1>
-            
-            <div className="space-y-6 text-gray-700">
-${sectionsHTML}              <div className="mt-8 text-right text-sm text-gray-500">
-                制定日：2024年1月1日<br />
-                最終更新日：${new Date().toLocaleDateString('ja-JP')}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}`;
-
-    // ファイルに書き込み
-    await writeFile(filePath, pageContent, 'utf8');
 
     return NextResponse.json({
       success: true,
-      message: `${pageTitle}を更新しました。`,
+      message: `${pageTitles[documentType]}を保存しました。`,
+      data: data,
     });
   } catch (error) {
     console.error('文書保存エラー:', error);
@@ -101,17 +98,76 @@ ${sectionsHTML}              <div className="mt-8 text-right text-sm text-gray-5
   }
 }
 
-function getComponentName(documentType: string): string {
-  switch (documentType) {
-    case 'terms':
-      return 'Terms';
-    case 'privacy':
-      return 'PrivacyPolicy';
-    case 'commerce':
-      return 'CommerceLaw';
-    case 'company':
-      return 'CompanyInfo';
-    default:
-      return 'Document';
+export async function GET(request: NextRequest) {
+  try {
+    // サーバーサイドSupabaseクライアントを作成
+    const supabase = await createClient();
+
+    // 管理者権限チェック
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Auth check error:', authError);
+      return NextResponse.json(
+        { error: 'Authentication failed' },
+        { status: 401 }
+      );
+    }
+
+    // ユーザーのロールを取得
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile || profile.role !== 'admin') {
+      console.error('User is not admin. Role:', profile?.role, 'Error:', profileError);
+      return NextResponse.json(
+        { error: '管理者権限が必要です' },
+        { status: 403 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+
+    if (!type) {
+      return NextResponse.json(
+        { error: 'Type parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Fetching content for type:', type);
+
+    // サーバーサイドでコンテンツを取得
+    const { data, error } = await supabase
+      .from('pages_content')
+      .select('*')
+      .eq('page_type', type)
+      .single();
+
+    console.log('GET result:', { data: data ? 'found' : 'null', error });
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Database error:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch document' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: data || null,
+    });
+  } catch (error) {
+    console.error('GET request error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
+

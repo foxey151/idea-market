@@ -33,7 +33,7 @@ export const createIdea = async (
   return { data, error };
 };
 
-// アイデア一覧取得（公開中と完成済みを取得）
+// アイデア一覧取得（公開中のもののみ）
 export const getIdeas = async (limit = 20, offset = 0) => {
   const { data, error } = await supabase
     .from('ideas')
@@ -43,7 +43,7 @@ export const getIdeas = async (limit = 20, offset = 0) => {
       profiles(display_name, role)
     `
     )
-    .in('status', ['published', 'closed'])
+    .eq('status', 'published')
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -99,7 +99,7 @@ export const getIdeaByCmtNo = async (cmtNo: string) => {
   return { data, error };
 };
 
-// キーワードでアイデア検索（title, summaryの部分一致）
+// キーワードでアイデア検索（title, summaryの部分一致、公開中のみ）
 export const searchIdeas = async (keyword: string, limit = 20, offset = 0) => {
   if (!keyword.trim()) {
     return { data: [], error: null };
@@ -114,7 +114,7 @@ export const searchIdeas = async (keyword: string, limit = 20, offset = 0) => {
     `
     )
     .or(`title.ilike.%${keyword}%,summary.ilike.%${keyword}%`)
-    .in('status', ['published', 'closed'])
+    .eq('status', 'published')
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -289,7 +289,7 @@ export const createComment = async (
   return { data, error };
 };
 
-// 期限切れアイデアを検出してステータスを更新
+// 期限切れアイデアを検出してステータスを更新（特定ユーザー用）
 export const updateOverdueIdeas = async (userId: string) => {
   const now = new Date().toISOString();
 
@@ -322,4 +322,156 @@ export const updateOverdueIdeas = async (userId: string) => {
   }
 
   return { data: overdueIdeas };
+};
+
+// すべての期限切れアイデアを検出してステータスを更新（自動化用）
+export const updateAllOverdueIdeas = async () => {
+  const now = new Date().toISOString();
+
+  try {
+    // 期限切れのアイデアを取得（締切があって過ぎているもの、または締切がないもの）
+    const { data: overdueIdeas, error: fetchError } = await supabase
+      .from('ideas')
+      .select('id, deadline, title, author_id')
+      .eq('status', 'published')
+      .or(`deadline.lt.${now},deadline.is.null`);
+
+    if (fetchError) {
+      console.error('期限切れアイデア取得エラー:', fetchError);
+      return { error: fetchError };
+    }
+
+    if (overdueIdeas && overdueIdeas.length > 0) {
+      const ideaIds = overdueIdeas.map((idea: any) => idea.id);
+
+      // ステータスをoverdueに更新
+      const { error: updateError } = await supabase
+        .from('ideas')
+        .update({ status: 'overdue', updated_at: now })
+        .in('id', ideaIds);
+
+      if (updateError) {
+        console.error('ステータス更新エラー:', updateError);
+        return { error: updateError };
+      }
+
+      console.log(`${overdueIdeas.length}件の期限切れアイデアを自動更新しました:`, {
+        ideaIds,
+        titles: overdueIdeas.map((idea: any) => idea.title),
+        timestamp: now
+      });
+
+      return {
+        data: {
+          updatedCount: overdueIdeas.length,
+          updatedIdeas: overdueIdeas,
+          timestamp: now
+        }
+      };
+    }
+
+    console.log('期限切れのアイデアは見つかりませんでした');
+    return { data: { updatedCount: 0, updatedIdeas: [], timestamp: now } };
+
+  } catch (error) {
+    console.error('期限切れアイデア自動更新中に予期しないエラーが発生:', error);
+    return { error };
+  }
+};
+
+// 管理者用：detailがnullでないアイデア一覧を取得
+export const getIdeasWithDetail = async (limit = 50, offset = 0) => {
+  const { data, error } = await supabase
+    .from('ideas')
+    .select(
+      `
+      *,
+      profiles(display_name, role)
+    `
+    )
+    .not('detail', 'is', null)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  return { data, error };
+};
+
+// 管理者用：アイデアを更新（所有者チェックなし）
+export const adminUpdateIdea = async (id: string, updates: IdeaUpdate) => {
+  const { data, error } = await supabase
+    .from('ideas')
+    .update(updates)
+    .eq('id', id)
+    .select(
+      `
+      *,
+      profiles(display_name, role)
+    `
+    )
+    .single();
+
+  return { data, error };
+};
+
+// 管理者権限チェック関数
+export const checkAdminStatus = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { isAdmin: false, error: 'Not authenticated' };
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (error) return { isAdmin: false, error };
+
+    return { isAdmin: data?.role === 'admin', role: data?.role };
+  } catch (error) {
+    return { isAdmin: false, error };
+  }
+};
+
+// ページコンテンツ関連関数
+export const getPageContent = async (pageType: string) => {
+  console.log('Getting page content for:', pageType);
+
+  const { data, error } = await supabase
+    .from('pages_content')
+    .select('*')
+    .eq('page_type', pageType)
+    .single();
+
+  console.log('Page content result:', { data, error });
+
+  return { data, error };
+};
+
+export const updatePageContent = async (pageType: string, content: string) => {
+  const { data, error } = await supabase
+    .from('pages_content')
+    .upsert(
+      {
+        page_type: pageType,
+        content: content,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'page_type',
+      }
+    )
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+export const getAllPageContents = async () => {
+  const { data, error } = await supabase
+    .from('pages_content')
+    .select('*')
+    .order('updated_at', { ascending: false });
+
+  return { data, error };
 };

@@ -154,12 +154,12 @@ export default function IdeasPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  完成
+                  進行中
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
-                  {ideas.filter(idea => idea.status === 'closed').length}
+                <div className="text-2xl font-bold text-yellow-600">
+                  {ideas.filter(idea => idea.status === 'published').length}
                 </div>
               </CardContent>
             </Card>

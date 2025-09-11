@@ -12,7 +12,8 @@
     "format:check": "prettier --check .",
     "audit": "yarn audit",
     "audit:fix": "yarn audit --summary --fix",
-    "check": "yarn format:check && yarn lint"
+    "check": "yarn format:check && yarn lint",
+    "update-overdue": "curl -X POST http://localhost:3000/api/overdue/update"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -45,6 +46,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.56.0",
+    "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.83.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -60,6 +62,8 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.62.0",
+    "react-quill": "^2.0.0",
+    "react-quill-new": "^3.6.0",
     "react-resizable-panels": "^2.1.9",
     "recharts": "^2.15.4",
     "sonner": "^1.7.4",

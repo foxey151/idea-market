@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { getIdeaById, updateIdea } from '@/lib/supabase/ideas';
 import { Calendar, User, Clock, Upload, X, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -28,6 +29,7 @@ export default function FinalIdeaPage() {
   const [submitting, setSubmitting] = useState(false);
   const [detail, setDetail] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [price, setPrice] = useState<string>('3000'); // デフォルト金額を設定
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
@@ -133,6 +135,15 @@ export default function FinalIdeaPage() {
       return;
     }
 
+    if (!price) {
+      toast({
+        title: 'エラー',
+        description: '販売価格を選択してください。',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -142,6 +153,7 @@ export default function FinalIdeaPage() {
       const { data: _data, error } = await updateIdea(ideaId, {
         detail: detail.trim(),
         attachments: attachmentPaths,
+        price: price as '3000' | '5000' | '10000' | '30000' | '50000',
         status: 'closed', // 最終版作成後は終了状態に
         updated_at: new Date().toISOString(),
       });
@@ -306,6 +318,70 @@ export default function FinalIdeaPage() {
                     </p>
                   </div>
 
+                  {/* 金額設定 */}
+                  <div className="space-y-4">
+                    <Label>販売価格 *</Label>
+                    <RadioGroup
+                      value={price}
+                      onValueChange={setPrice}
+                      className="grid grid-cols-1 gap-3"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="3000" id="price-3000" />
+                        <Label
+                          htmlFor="price-3000"
+                          className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
+                        >
+                          <div className="font-medium">3,000円</div>
+                          <div className="text-sm text-muted-foreground">基本的なアイデア提案</div>
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="5000" id="price-5000" />
+                        <Label
+                          htmlFor="price-5000"
+                          className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
+                        >
+                          <div className="font-medium">5,000円</div>
+                          <div className="text-sm text-muted-foreground">詳細な仕様付き</div>
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="10000" id="price-10000" />
+                        <Label
+                          htmlFor="price-10000"
+                          className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
+                        >
+                          <div className="font-medium">10,000円</div>
+                          <div className="text-sm text-muted-foreground">実装可能な詳細設計付き</div>
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="30000" id="price-30000" />
+                        <Label
+                          htmlFor="price-30000"
+                          className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
+                        >
+                          <div className="font-medium">30,000円</div>
+                          <div className="text-sm text-muted-foreground">プロトタイプ実装付き</div>
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="50000" id="price-50000" />
+                        <Label
+                          htmlFor="price-50000"
+                          className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
+                        >
+                          <div className="font-medium">50,000円</div>
+                          <div className="text-sm text-muted-foreground">完全なプロダクト実装付き</div>
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                    <p className="text-sm text-muted-foreground">
+                      最終アイデアの内容に応じて適切な価格を設定してください。
+                    </p>
+                  </div>
+
                   {/* ファイル添付 */}
                   <div className="space-y-4">
                     <Label>ファイル添付</Label>
@@ -382,7 +458,7 @@ export default function FinalIdeaPage() {
                   <div className="flex gap-3 pt-4">
                     <Button
                       onClick={handleSubmit}
-                      disabled={!detail.trim() || submitting}
+                      disabled={!detail.trim() || !price || submitting}
                       className="flex-1"
                     >
                       {submitting ? (

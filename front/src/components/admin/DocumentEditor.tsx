@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Dialog,
   DialogContent,
@@ -9,8 +10,35 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+
+// React Quillを動的インポート（SSRの問題を回避）
+const ReactQuill = dynamic(() => import('react-quill-new'), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-96">エディタを読み込み中...</div>
+});
+
+// React Quillのスタイルをインポート
+import 'react-quill/dist/quill.snow.css';
+
+// React Quillのモジュール設定
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'indent': '-1'}, { 'indent': '+1' }],
+    ['link'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'align': [] }],
+    ['clean']
+  ],
+};
+
+const quillFormats = [
+  'header', 'bold', 'italic', 'underline', 'strike',
+  'list', 'indent', 'link', 'color', 'background', 'align'
+];
 
 interface DocumentEditorProps {
   open: boolean;
@@ -48,40 +76,25 @@ export function DocumentEditor({
     try {
       setLoading(true);
 
-      // 対応するページのHTMLを取得
-      const response = await fetch(
-        documentPaths[type as keyof typeof documentPaths]
-      );
+      // データベースからコンテンツを取得
+      const response = await fetch(`/api/admin/documents?type=${type}`);
+
       if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const { data, error } = result;
+
+      if (error && error.code !== 'PGRST116') {
         throw new Error('文書の取得に失敗しました');
       }
 
-      const html = await response.text();
-
-      // HTMLから実際のコンテンツ部分を抽出（簡易的な実装）
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-
-      // セクション要素を取得してテキストに変換
-      const sections = doc.querySelectorAll('section');
-      let extractedContent = '';
-
-      sections.forEach((section, _index) => {
-        const heading = section.querySelector('h2');
-        const content = section.querySelector('p, div');
-
-        if (heading && content) {
-          extractedContent += `${heading.textContent}\n\n${content.textContent}\n\n`;
-        }
-      });
-
       // コンテンツが空の場合はデフォルトテキストを設定
-      if (!extractedContent.trim()) {
-        extractedContent = getDefaultContent(type);
-      }
+      const finalContent = data?.content || getDefaultContent(type);
 
-      setContent(extractedContent);
-      setOriginalContent(extractedContent);
+      setContent(finalContent);
+      setOriginalContent(finalContent);
     } catch (error) {
       console.error('文書取得エラー:', error);
       toast({
@@ -104,56 +117,16 @@ export function DocumentEditor({
   const getDefaultContent = (type: string) => {
     switch (type) {
       case 'terms':
-        return `第1条（適用範囲）
-
-あああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ。
-
-第2条（サービスの内容）
-
-いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい。
-
-第3条（利用登録）
-
-ううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううう。`;
+        return `default content`;
 
       case 'privacy':
-        return `第1条（適用範囲）
-
-あああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ。
-
-第2条（個人情報の収集）
-
-いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい。
-
-第3条（個人情報の利用目的）
-
-ううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううう。`;
+        return `default content`;
 
       case 'commerce':
-        return `販売業者
-
-さささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささささ。
-
-運営統括責任者
-
-しししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししししし。
-
-所在地
-
-すすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすすす。`;
+        return `default content`;
 
       case 'company':
-        return `会社概要
-
-会社名: にににににににににににににににににににににににににににににににににににににににににににににににににににににににににににに
-
-代表取締役: ぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬぬ
-
-設立年月日: ねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねねね
-
-資本金: ののののののののののののののののののののののののののののののののののののののののののののののののののののののののののの
-
-従業員数: はははははははははははははははははははははははははははははははははははははははははははははははははははははははははははは`;
+        return `default content`;
 
       default:
         return '';
@@ -229,7 +202,7 @@ export function DocumentEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-6xl h-[70vh] flex flex-col z-[100]">
         <DialogHeader>
           <DialogTitle className="text-2xl">
             {documentTitles[documentType]}の編集
@@ -248,12 +221,17 @@ export function DocumentEditor({
               </div>
             </div>
           ) : (
-            <Textarea
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              placeholder="文書の内容を入力してください..."
-              className="flex-1 min-h-[400px] resize-none font-mono text-sm"
-            />
+            <div className="flex-1">
+              <ReactQuill
+                value={content}
+                onChange={setContent}
+                modules={quillModules}
+                formats={quillFormats}
+                placeholder="文書の内容を入力してください..."
+                className="h-[400px]"
+                theme="snow"
+              />
+            </div>
           )}
         </div>
 

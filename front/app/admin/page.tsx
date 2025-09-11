@@ -3,7 +3,9 @@
 import { AdminGuard } from '@/components/AdminGuard';
 import { LogDownloadModal } from '@/components/admin/LogDownloadModal';
 import { TermsEditModal } from '@/components/admin/TermsEditModal';
+import { IdeaManagementModal } from '@/components/admin/IdeaManagementModal';
 import { DocumentEditor } from '@/components/admin/DocumentEditor';
+import { DebugAdmin } from '@/components/admin/DebugAdmin';
 // import { LogInputModal } from '@/components/admin/LogInputModal'
 import { useState } from 'react';
 import { EditableDocument } from '@/types/admin';
@@ -11,6 +13,7 @@ import { EditableDocument } from '@/types/admin';
 export default function AdminPage() {
   const [logModalOpen, setLogModalOpen] = useState(false);
   const [termsEditModalOpen, setTermsEditModalOpen] = useState(false);
+  const [ideaManagementModalOpen, setIdeaManagementModalOpen] = useState(false);
   const [documentEditorOpen, setDocumentEditorOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] =
     useState<EditableDocument | null>(null);
@@ -171,7 +174,7 @@ export default function AdminPage() {
                 </div>
                 <button
                   className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
-                  disabled
+                  onClick={() => setIdeaManagementModalOpen(true)}
                 >
                   管理画面
                 </button>
@@ -200,6 +203,43 @@ export default function AdminPage() {
                 </button>
               </div>
             </div> */}
+
+            {/* 期限切れアイデア管理 */}
+            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+                    <svg
+                      className="w-5 h-5 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      期限切れアイデア管理
+                    </h2>
+                    <p className="text-gray-600 text-sm">
+                      期限切れのアイデアを自動的に検出し、ステータスを更新します
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href="/admin/overdue"
+                  className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
+                >
+                  管理画面
+                </a>
+              </div>
+            </div>
 
             {/* ログダウンロード */}
             <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
@@ -238,6 +278,42 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
+
+          {/* デバッグ情報 */}
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                  <svg
+                    className="w-5 h-5 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    デバッグ情報
+                  </h2>
+                  <p className="text-gray-600 text-sm">
+                    管理者権限とデータベース接続の確認
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* デバッグコンポーネント */}
+        <div className="mt-8">
+          <DebugAdmin />
         </div>
       </div>
 
@@ -249,6 +325,12 @@ export default function AdminPage() {
         open={termsEditModalOpen}
         onOpenChange={setTermsEditModalOpen}
         onDocumentSelect={handleDocumentSelect}
+      />
+
+      {/* 最終アイデア修正モーダル */}
+      <IdeaManagementModal
+        open={ideaManagementModalOpen}
+        onOpenChange={setIdeaManagementModalOpen}
       />
 
       {/* 文書編集画面 */}
