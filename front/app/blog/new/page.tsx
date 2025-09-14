@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { Category } from '@/lib/microcms';
+import { Category, Author } from '@/lib/microcms';
 import {
   ArrowLeft,
   Save,
@@ -32,11 +32,25 @@ import {
   Type,
 } from 'lucide-react';
 import Link from 'next/link';
+import { getCurrentUser } from '@/lib/supabase/auth';
+
+// 現在のユーザーIDを取得
+const getCurrentUserId = async (): Promise<string | null> => {
+  const { user, error } = await getCurrentUser();
+  if (error || !user) {
+    console.error('ユーザ情報取得エラー:', error);
+    return null;
+  }
+  return user.id;
+};
+
+
 
 interface BlogCreateData {
   title: string;
   content: string;
-  category?: string;
+  category: string;
+  user_id: string;
   publishedAt?: string;
 }
 
@@ -44,9 +58,12 @@ export default function BlogNewPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
   const [formData, setFormData] = useState<BlogCreateData>({
     title: '',
     content: '',
+    category: '',
+    user_id: '',
   });
   const [preview, setPreview] = useState(false);
   const editableRef = useRef<HTMLDivElement>(null);
@@ -77,6 +94,51 @@ export default function BlogNewPage() {
     };
     fetchCategories();
   }, []);
+
+  // 著者データを取得
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      try {
+        console.log('著者取得開始');
+        const response = await fetch('/api/authors');
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('著者取得成功:', data);
+
+        setAuthors(data.contents || []);
+      } catch (error) {
+        console.error('著者の取得に失敗しました:', error);
+        toast({
+          title: 'エラー',
+          description: '著者の取得に失敗しました',
+          variant: 'destructive',
+        });
+      }
+    };
+    fetchAuthors();
+  }, []);
+
+  // 現在のユーザーが著者として登録されているかをチェック、登録されていない場合はmicroCMSに登録する
+  useEffect(() => {
+    const checkAuthor = async () => {
+      const currentUserId = await getCurrentUserId();
+      if (currentUserId === null || !authors.map((author) => author.user_id).includes(currentUserId)) {        
+        const response = await fetch('/api/authors', {
+          method: 'POST',
+          body: JSON.stringify({ user_id: currentUserId }),
+        });
+        const data = await response.json();
+        console.log('著者登録成功:', data);
+      }
+    };
+    if (authors.length > 0) {
+      checkAuthor();
+    }
+  }, [authors]);
 
   const handleSubmit = async () => {
     if (!formData.title.trim() || !formData.content.trim()) {

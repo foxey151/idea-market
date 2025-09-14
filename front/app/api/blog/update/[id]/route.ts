@@ -6,7 +6,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
 
   console.group(`🔵 ブログ更新API開始 [${requestId}]`);
   console.log('タイムスタンプ:', new Date().toISOString());

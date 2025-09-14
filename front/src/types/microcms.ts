@@ -31,6 +31,10 @@ export interface Blog extends MicroCMSContentBase {
   publishedAt: string;
 }
 
+/** microCMSの作者型定義 */
+export interface Author extends MicroCMSContentBase {
+  user_id: string;
+}
 /** microCMSのAPIレスポンス型 */
 export interface MicroCMSListResponse<T> {
   contents: T[];

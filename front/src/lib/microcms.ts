@@ -1,5 +1,5 @@
 import { createClient } from 'microcms-js-sdk';
-import type { Blog, Category, MicroCMSListResponse } from '../types/microcms';
+import type { Blog, Category, MicroCMSListResponse, Author } from '../types/microcms';
 
 // 環境変数の詳細な検証
 export function validateMicroCMSConfig() {
@@ -61,7 +61,7 @@ export const client = configValidation.isValid
   : null;
 
 // 型定義の再エクスポート（互換性のため）
-export type { Blog, Category } from '../types/microcms';
+export type { Blog, Category, Author } from '../types/microcms';
 
 // microCMSの接続をテストする関数
 export async function testMicroCMSConnection(): Promise<{
@@ -371,5 +371,91 @@ export async function getBlog(id: string): Promise<Blog> {
       content:
         '<p>microCMSへの接続でエラーが発生しました。設定を確認してください。</p>',
     };
+  }
+}
+
+//microCMSからuidを取得
+export async function getAuthors(): Promise<MicroCMSListResponse<Author>> {
+  try {
+    if (!client) {
+      console.warn(
+        'microCMSクライアントが利用できません。空のカテゴリリストを返します。'
+      );
+      return {
+        contents: [],
+        totalCount: 0,
+        offset: 0,
+        limit: 100,
+      };
+    }
+
+    const response = await client.get({
+      endpoint: 'authors',
+      queries: {
+        orders: 'user_id',
+        limit: 100,
+      },
+    });
+    return response;
+  } catch (error: any) {
+    console.error('microCMSからのuidデータ取得に失敗しました:', error);
+
+    // HTMLレスポンスやエンドポイント不存在の場合は空のリストを返す
+    if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
+      console.warn(
+          'microCMSのauthorsエンドポイントが見つかりません。空のカテゴリリストを返します。'
+        );
+      return {
+        contents: [],
+        totalCount: 0,
+        offset: 0,
+        limit: 100,
+      };
+    }
+
+    console.warn(
+      'microCMSエラーのため、空の著者リストを返します:',
+      error.message
+    );
+    return {
+      contents: [],
+      totalCount: 0,
+      offset: 0,
+      limit: 100,
+    };
+  }
+}
+
+/**
+ * microCMSに新しい著者を作成する
+ * @param authorData 著者データ
+ * @returns 作成された著者データ
+ */
+export async function createAuthor(authorData: { user_id: string }): Promise<Author> {
+  try {
+    if (!client) {
+      throw new Error('microCMSクライアントが利用できません');
+    }
+
+    console.log('microCMS著者作成開始:', authorData);
+
+    const response = await client.create({
+      endpoint: 'authors',
+      content: {
+        user_id: authorData.user_id,
+      },
+    });
+
+    console.log('microCMS著者作成成功:', response);
+
+    return {
+      id: response.id,
+      user_id: authorData.user_id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  } catch (error: any) {
+    console.error('microCMS著者作成エラー:', error);
+    throw new Error(`著者の作成に失敗しました: ${error.message}`);
   }
 }
