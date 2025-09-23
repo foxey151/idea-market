@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { client } from '@/lib/microcms';
 
 // ブログ記事の更新
@@ -126,6 +127,25 @@ export async function PUT(
 
     console.log('✅ microCMSレスポンス:', response);
     console.log('更新されたブログID:', response.id);
+
+    // キャッシュ無効化処理
+    console.log('キャッシュ無効化開始...');
+    try {
+      // ブログ一覧ページのキャッシュを無効化
+      revalidatePath('/blog');
+      console.log('✅ ブログ一覧ページのキャッシュを無効化しました');
+
+      // 更新された記事の詳細ページのキャッシュも無効化
+      revalidatePath(`/blog/${id}`);
+      console.log(`✅ 個別記事ページ (/blog/${id}) のキャッシュを無効化しました`);
+
+      // ホームページのキャッシュも無効化
+      revalidatePath('/');
+      console.log('✅ ホームページのキャッシュを無効化しました');
+    } catch (revalidateError) {
+      console.error('⚠️ キャッシュ無効化エラー:', revalidateError);
+    }
+
     console.groupEnd();
 
     return NextResponse.json({
@@ -282,6 +302,25 @@ export async function PATCH(
 
     console.log('✅ microCMSレスポンス:', response);
     console.log('更新されたブログID:', response.id);
+
+    // キャッシュ無効化処理
+    console.log('キャッシュ無効化開始...');
+    try {
+      // ブログ一覧ページのキャッシュを無効化
+      revalidatePath('/blog');
+      console.log('✅ ブログ一覧ページのキャッシュを無効化しました');
+
+      // 更新された記事の詳細ページのキャッシュも無効化
+      revalidatePath(`/blog/${id}`);
+      console.log(`✅ 個別記事ページ (/blog/${id}) のキャッシュを無効化しました`);
+
+      // ホームページのキャッシュも無効化
+      revalidatePath('/');
+      console.log('✅ ホームページのキャッシュを無効化しました');
+    } catch (revalidateError) {
+      console.error('⚠️ キャッシュ無効化エラー:', revalidateError);
+    }
+
     console.groupEnd();
 
     return NextResponse.json({

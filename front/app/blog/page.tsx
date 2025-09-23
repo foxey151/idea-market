@@ -13,6 +13,10 @@ import {
   Plus,
 } from 'lucide-react';
 
+// 動的レンダリングを強制（キャッシュを無効化）
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function BlogPage() {
   let categories: any[] = [];
   let blogs: any[] = [];

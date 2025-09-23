@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { client } from '@/lib/microcms';
 
 // ブログ記事の作成
@@ -92,6 +93,26 @@ export async function POST(request: NextRequest) {
     });
     console.log('✅ microCMSレスポンス:', response);
     console.log('作成されたブログID:', response.id);
+
+    // キャッシュ無効化処理
+    console.log('キャッシュ無効化開始...');
+    try {
+      // ブログ一覧ページのキャッシュを無効化
+      revalidatePath('/blog');
+      console.log('✅ ブログ一覧ページのキャッシュを無効化しました');
+
+      // 作成された記事の詳細ページのキャッシュも無効化
+      revalidatePath(`/blog/${response.id}`);
+      console.log(`✅ 個別記事ページ (/blog/${response.id}) のキャッシュを無効化しました`);
+
+      // ホームページのキャッシュも無効化（ブログが表示される場合）
+      revalidatePath('/');
+      console.log('✅ ホームページのキャッシュを無効化しました');
+    } catch (revalidateError) {
+      console.error('⚠️ キャッシュ無効化エラー:', revalidateError);
+      // キャッシュ無効化エラーは致命的ではないので続行
+    }
+
     console.groupEnd();
 
     return NextResponse.json({

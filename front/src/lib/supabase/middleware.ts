@@ -1,4 +1,3 @@
-import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function updateSession(request: NextRequest) {
@@ -6,16 +5,20 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  // 環境変数の存在確認
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  try {
+    // 環境変数の存在確認
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Supabase環境変数が設定されていません');
-    return supabaseResponse;
-  }
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Supabase環境変数が設定されていません');
+      return supabaseResponse;
+    }
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    // 動的インポートでSupabaseクライアントを作成（Edge Runtime対応）
+    const { createServerClient } = await import('@supabase/ssr');
+
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -32,9 +35,8 @@ export async function updateSession(request: NextRequest) {
         );
       },
     },
-  });
+    });
 
-  try {
     // ユーザーセッションを更新
     const {
       data: { user },
@@ -109,12 +111,19 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url);
       }
     }
+
+    // IMPORTANT: supabaseResponseを返す必要があります
+    // これによってcookieが正しく設定されます
+    return supabaseResponse;
   } catch (error) {
     console.error('ミドルウェアでエラー:', error);
     // エラーが発生した場合も処理を続行（可用性を優先）
+    
+    // セキュリティヘッダーを追加
+    supabaseResponse.headers.set('X-Frame-Options', 'DENY');
+    supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff');
+    supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    return supabaseResponse;
   }
-
-  // IMPORTANT: supabaseResponseを返す必要があります
-  // これによってcookieが正しく設定されます
-  return supabaseResponse;
 }
