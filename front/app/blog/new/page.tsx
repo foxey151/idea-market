@@ -125,14 +125,45 @@ export default function BlogNewPage() {
   // 現在のユーザーが著者として登録されているかをチェック、登録されていない場合はmicroCMSに登録する
   useEffect(() => {
     const checkAuthor = async () => {
-      const currentUserId = await getCurrentUserId();
-      if (currentUserId === null || !authors.map((author) => author.user_id).includes(currentUserId)) {        
-        const response = await fetch('/api/authors', {
-          method: 'POST',
-          body: JSON.stringify({ user_id: currentUserId }),
+      try {
+        const currentUserId = await getCurrentUserId();
+        if (currentUserId === null) {
+          console.error('ユーザーIDが取得できませんでした');
+          return;
+        }
+
+        if (!authors.map((author) => author.user_id).includes(currentUserId)) {        
+          console.log('著者登録開始:', currentUserId);
+          const response = await fetch('/api/authors', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: currentUserId }),
+          });
+
+          const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || '著者登録に失敗しました');
+          }
+
+          console.log('著者登録成功:', data);
+          
+          // 成功した場合、著者リストを再取得して状態を更新
+          if (data.author) {
+            setAuthors(prevAuthors => [...prevAuthors, data.author]);
+          }
+        } else {
+          console.log('既に著者として登録済みです:', currentUserId);
+        }
+      } catch (error) {
+        console.error('著者登録エラー:', error);
+        toast({
+          title: 'エラー',
+          description: '著者登録に失敗しました',
+          variant: 'destructive',
         });
-        const data = await response.json();
-        console.log('著者登録成功:', data);
       }
     };
     if (authors.length > 0) {
@@ -162,9 +193,16 @@ export default function BlogNewPage() {
     setIsLoading(true);
 
     try {
+      // 現在のユーザーIDを取得
+      const currentUserId = await getCurrentUserId();
+      if (!currentUserId) {
+        throw new Error('ユーザーIDが取得できませんでした。ログインしてください。');
+      }
+
       const submitData = {
         ...formData,
         status: 'PUBLISH',
+        user_id: currentUserId,
         publishedAt: new Date().toISOString(),
         ...(formData.category && { category: formData.category }),
       };

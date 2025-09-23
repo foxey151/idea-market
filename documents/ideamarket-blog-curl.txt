@@ -1,0 +1,1 @@
+curl -X POST "https://ideamarket.microcms.io/api/v1/blogs" -H "X-MICROCMS-API-KEY:LRp7NwlRTj0i7EdQVpmqKskoitu0cHje3O5p" -H "Content-Type:application/json" -d '{"title":"from terminal", "content":"aaaa", "category":"tech-form", "user_id":"a4f9ab92-985c-4a50-9007-83d4e5fbb052"}'
