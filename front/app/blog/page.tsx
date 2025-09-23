@@ -14,15 +14,63 @@ import {
 } from 'lucide-react';
 
 export default async function BlogPage() {
-  const [{ contents: categories }, { contents: blogs }, popularBlogData] =
-    await Promise.all([getCategories(), getBlogs(), getPopularBlogs(6)]);
+  let categories: any[] = [];
+  let blogs: any[] = [];
+  let popularBlogData: any[] = [];
+
+  try {
+    console.log('ブログページ: データ取得開始');
+    
+    const [categoriesResult, blogsResult, popularResult] = await Promise.all([
+      getCategories().catch(error => {
+        console.error('カテゴリ取得エラー:', error);
+        return { contents: [], totalCount: 0, offset: 0, limit: 100 };
+      }),
+      getBlogs().catch(error => {
+        console.error('ブログ取得エラー:', error);
+        return { contents: [], totalCount: 0, offset: 0, limit: 3 };
+      }),
+      getPopularBlogs(6).catch(error => {
+        console.error('人気ブログ取得エラー:', error);
+        return [];
+      })
+    ]);
+
+    categories = categoriesResult.contents;
+    blogs = blogsResult.contents;
+    popularBlogData = popularResult;
+    
+    console.log('ブログページ: データ取得完了', {
+      categoriesCount: categories.length,
+      blogsCount: blogs.length,
+      popularBlogCount: popularBlogData.length
+    });
+  } catch (error) {
+    console.error('ブログページ: 予期しないエラー:', error);
+  }
 
   // 人気記事のIDリストを取得
   const popularBlogIds = popularBlogData.map((item: any) => item.blog_id);
 
   // 全ブログの閲覧数を取得
   const blogIds = blogs.map((blog: Blog) => blog.id);
-  const blogViewCounts = await getBlogViewCounts(blogIds);
+  let blogViewCounts: any[] = [];
+  
+  try {
+    if (blogIds.length > 0) {
+      blogViewCounts = await getBlogViewCounts(blogIds);
+      console.log('閲覧数取得完了:', blogViewCounts.length);
+    }
+  } catch (error) {
+    console.error('閲覧数取得エラー:', error);
+    // デフォルト値で配列を作成
+    blogViewCounts = blogIds.map(blogId => ({
+      blog_id: blogId,
+      view_count: 0,
+      unique_view_count: 0,
+      last_viewed_at: null,
+    }));
+  }
 
   return (
     <div className="min-h-screen bg-gradient-subtle">

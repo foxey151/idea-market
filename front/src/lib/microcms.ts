@@ -41,7 +41,7 @@ if (typeof window !== 'undefined') {
 }
 
 const configValidation = validateMicroCMSConfig();
-if (configValidation.isValid) {
+if (!configValidation.isValid) {
   console.error('microCMS設定エラー:', configValidation.errors);
   console.error('現在の環境:', {
     isClient: typeof window !== 'undefined',
@@ -163,7 +163,7 @@ export async function getBlogs(): Promise<MicroCMSListResponse<Blog>> {
       endpoint: 'blogs',
       queries: {
         orders: '-publishedAt',
-        limit: 3,
+        limit: 100,
       },
     });
     return response;
