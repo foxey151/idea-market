@@ -59,6 +59,7 @@ export default function BlogNewPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
+  const [authorsLoaded, setAuthorsLoaded] = useState(false);
   const [formData, setFormData] = useState<BlogCreateData>({
     title: '',
     content: '',
@@ -67,6 +68,9 @@ export default function BlogNewPage() {
   });
   const [preview, setPreview] = useState(false);
   const editableRef = useRef<HTMLDivElement>(null);
+  
+  // 著者登録の実行フラグを追加
+  const authorCheckExecutedRef = useRef(false);
 
   // カテゴリデータを取得
   useEffect(() => {
@@ -110,6 +114,7 @@ export default function BlogNewPage() {
         console.log('著者取得成功:', data);
 
         setAuthors(data.contents || []);
+        setAuthorsLoaded(true); // 読み込み完了フラグを設定
       } catch (error) {
         console.error('著者の取得に失敗しました:', error);
         toast({
@@ -125,6 +130,11 @@ export default function BlogNewPage() {
   // 現在のユーザーが著者として登録されているかをチェック、登録されていない場合はmicroCMSに登録する
   useEffect(() => {
     const checkAuthor = async () => {
+      // 既に実行済みの場合は何もしない
+      if (authorCheckExecutedRef.current) {
+        return;
+      }
+
       try {
         const currentUserId = await getCurrentUserId();
         if (currentUserId === null) {
@@ -134,6 +144,10 @@ export default function BlogNewPage() {
 
         if (!authors.map((author) => author.user_id).includes(currentUserId)) {        
           console.log('著者登録開始:', currentUserId);
+          
+          // 実行フラグを設定
+          authorCheckExecutedRef.current = true;
+          
           const response = await fetch('/api/authors', {
             method: 'POST',
             headers: {
@@ -145,6 +159,8 @@ export default function BlogNewPage() {
           const data = await response.json();
           
           if (!response.ok) {
+            // エラーの場合はフラグをリセット
+            authorCheckExecutedRef.current = false;
             throw new Error(data.error || '著者登録に失敗しました');
           }
 
@@ -156,9 +172,13 @@ export default function BlogNewPage() {
           }
         } else {
           console.log('既に著者として登録済みです:', currentUserId);
+          // 既に登録済みの場合もフラグを設定
+          authorCheckExecutedRef.current = true;
         }
       } catch (error) {
         console.error('著者登録エラー:', error);
+        // エラーの場合はフラグをリセット
+        authorCheckExecutedRef.current = false;
         toast({
           title: 'エラー',
           description: '著者登録に失敗しました',
@@ -166,10 +186,12 @@ export default function BlogNewPage() {
         });
       }
     };
-    if (authors.length > 0) {
+    
+    // 著者データが読み込まれ、まだ実行されていない場合のみ実行
+    if (authorsLoaded && !authorCheckExecutedRef.current) {
       checkAuthor();
     }
-  }, [authors]);
+  }, [authorsLoaded, authors]);
 
   const handleSubmit = async () => {
     if (!formData.title.trim() || !formData.content.trim()) {

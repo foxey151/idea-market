@@ -57,7 +57,7 @@ src/
 ├── components/   → UI部品（再利用可能）
 ├── features/     → 機能単位のまとまり
 ├── lib/          → 共通処理
-├── pages/        → 画面定義（Next.jsの場合）
+├── app/          → 画面定義（Next.jsの場合）
 ├── types/        → 型定義
 └── tests/        → テストコード
 ```
