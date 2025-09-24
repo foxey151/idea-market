@@ -1,4 +1,6 @@
 foxeyr1103での投稿のテスト用
 curl -X POST "https://ideamarket.microcms.io/api/v1/blogs" -H "X-MICROCMS-API-KEY:LRp7NwlRTj0i7EdQVpmqKskoitu0cHje3O5p" -H "Content-Type:application/json" -d '{"title":"from terminal", "content":"aaaa", "category":"tech-form", "user_id":"a4f9ab92-985c-4a50-9007-83d4e5fbb052"}'
-foxeyr1103のid登録用
+foxeyr1103のid登録用POST
 curl -X POST "https://ideamarket.microcms.io/api/v1/authors" -H "X-MICROCMS-API-KEY:LRp7NwlRTj0i7EdQVpmqKskoitu0cHje3O5p" -H "Content-Type:application/json" -d '{"user_id":"a4f9ab92-985c-4a50-9007-83d4e5fbb052"}'
+foxeyr1103のid登録用PUT
+curl -X PUT "https://ideamarket.microcms.io/api/v1/authors/a4f9ab92-985c-4a50-9007-83d4e5fbb052" -H "X-MICROCMS-API-KEY:LRp7NwlRTj0i7EdQVpmqKskoitu0cHje3O5p" -H "Content-Type:application/json" -d '{"user_id": "a4f9ab92-985c-4a50-9007-83d4e5fbb052"}'

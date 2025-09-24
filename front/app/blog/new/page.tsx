@@ -147,9 +147,10 @@ export default function BlogNewPage() {
           
           // 実行フラグを設定
           authorCheckExecutedRef.current = true;
-          
-          const response = await fetch('/api/authors', {
-            method: 'POST',
+
+          // PUTメソッドで著者登録
+          const response = await fetch(`/api/authors/${currentUserId}`, {
+            method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
             },
