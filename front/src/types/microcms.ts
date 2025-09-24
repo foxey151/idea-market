@@ -27,6 +27,7 @@ export interface Blog extends MicroCMSContentBase {
   title: string;
   content: string;
   category?: Category;
+  user_id?: string;
   image?: MicroCMSImageField;
   publishedAt: string;
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { client } from '@/lib/microcms';
+import { client, getAuthors } from '@/lib/microcms';
 
 // ブログ記事の作成
 export async function POST(request: NextRequest) {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // リクエストボディのバリデーション
     console.log('バリデーション開始...');
-    const { title, content, publishedAt, category } = body;
+    const { title, content, publishedAt, category, user_id } = body;
 
     console.log('フィールド値:', {
       title: title ? `"${title}" (${title.length}文字)` : 'undefined/null',
@@ -43,12 +43,14 @@ export async function POST(request: NextRequest) {
         : 'undefined/null',
       publishedAt: publishedAt || 'undefined/null',
       category: category || 'undefined/null',
+      user_id: user_id || 'undefined/null',
     });
 
     // 必須フィールドチェック
     const missingFields = [];
     if (!title) missingFields.push('title');
     if (!content) missingFields.push('content');
+    if (!user_id) missingFields.push('user_id');
 
     if (missingFields.length > 0) {
       console.error('❌ 必須フィールドが不足:', missingFields);
@@ -63,10 +65,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 著者のcontentIdを取得
+    console.log('著者情報の取得開始...');
+    let authorContentId: string | null = null;
+    
+    try {
+      const authorsResponse = await getAuthors();
+      const author = authorsResponse.contents.find(author => author.user_id === user_id);
+      
+      if (!author) {
+        console.error('❌ 指定されたuser_idに対応する著者が見つかりません:', user_id);
+        console.groupEnd();
+        return NextResponse.json(
+          {
+            error: '指定されたユーザーIDに対応する著者が見つかりません',
+            user_id,
+          },
+          { status: 404 }
+        );
+      }
+      
+      authorContentId = author.id;
+      console.log('✅ 著者情報取得成功:', { user_id, contentId: authorContentId });
+    } catch (authorError: any) {
+      console.error('❌ 著者情報取得エラー:', authorError);
+      console.groupEnd();
+      return NextResponse.json(
+        {
+          error: '著者情報の取得に失敗しました',
+          details: authorError.message,
+        },
+        { status: 500 }
+      );
+    }
+
     // microCMSに送信するデータを準備
     const createData: any = {
       title,
       content,
+      user_id: authorContentId, // 著者のcontentIdを設定
     };
 
     // publishedAtが提供されている場合のみ追加
