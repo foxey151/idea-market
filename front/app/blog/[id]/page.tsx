@@ -3,16 +3,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock, Eye, Edit } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Eye, Edit, User } from 'lucide-react';
 import { getBlogViewCount } from '@/lib/supabase/blog-views';
 import { BlogViewTracker } from '@/components/BlogViewTracker';
 import { BlogDetailPageProps } from '@/types/blog';
+import { getAuthorByBlogUserId } from '@/lib/blog-author';
+import { AuthorInfo } from '@/components/blog/AuthorInfo';
 
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   try {
     const { id } = await params;
     const blog = await getBlog(id);
     const viewCount = await getBlogViewCount(id);
+    
+    // 著者情報を取得
+    const author = await getAuthorByBlogUserId(blog.user_id);
 
     // 読了時間の計算（簡易版）
     const readingTime = Math.ceil(
@@ -62,7 +67,12 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                 {blog.title}
               </h1>
 
-              <div className="flex items-center justify-center gap-6 text-muted-foreground">
+              {/* 著者情報 */}
+              <div className="mb-6 flex justify-center">
+                <AuthorInfo author={author} showBio={true} />
+              </div>
+
+              <div className="flex items-center justify-center gap-6 text-muted-foreground flex-wrap">
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2" />
                   <time dateTime={blog.publishedAt}>
