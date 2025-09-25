@@ -96,6 +96,7 @@ export default function IdeaDetailPage() {
   
   // 購入フォーム関連の状態
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [purchaseStep, setPurchaseStep] = useState<1 | 2>(1); // 購入フローのステップ管理
   const [purchaseFormData, setPurchaseFormData] = useState<PurchaseFormData>({
     companyOrName: '',
     industry: '',
@@ -169,7 +170,14 @@ export default function IdeaDetailPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 購入フォーム送信処理
+  // 合計金額計算
+  const calculateTotalAmount = () => {
+    const basePrice = Number(idea?.price) || 0;
+    const formalDocumentationFee = purchaseFormData.formalDocumentation === 'required' ? 25000 : 0;
+    return basePrice + formalDocumentationFee;
+  };
+
+  // 購入フォーム送信処理（第1ステップ）
   const handlePurchaseFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -177,6 +185,12 @@ export default function IdeaDetailPage() {
       return;
     }
 
+    // 第1ステップから第2ステップ（支払い画面）に進む
+    setPurchaseStep(2);
+  };
+
+  // 最終的な注文確定処理
+  const handleOrderConfirmation = async () => {
     try {
       setIsPurchaseSubmitting(true);
 
@@ -197,6 +211,7 @@ export default function IdeaDetailPage() {
         formalDocumentation: 'not_required',
       });
       setPurchaseFormErrors({});
+      setPurchaseStep(1);
       setIsPurchaseModalOpen(false);
 
     } catch (error) {
@@ -209,6 +224,11 @@ export default function IdeaDetailPage() {
     } finally {
       setIsPurchaseSubmitting(false);
     }
+  };
+
+  // 支払い画面から戻る処理
+  const handleBackToForm = () => {
+    setPurchaseStep(1);
   };
 
   const loadAttachments = useCallback(async () => {
@@ -609,16 +629,30 @@ export default function IdeaDetailPage() {
       </Dialog>
 
       {/* 購入フォームモーダル */}
-      <Dialog open={isPurchaseModalOpen} onOpenChange={setIsPurchaseModalOpen}>
+      <Dialog 
+        open={isPurchaseModalOpen} 
+        onOpenChange={(open) => {
+          setIsPurchaseModalOpen(open);
+          if (!open) {
+            setPurchaseStep(1); // モーダルを閉じるときはステップをリセット
+          }
+        }}
+      >
         <DialogContent className="max-w-md w-full">
           <DialogHeader>
-            <DialogTitle>注文者情報入力</DialogTitle>
+            <DialogTitle>
+              {purchaseStep === 1 ? '注文者情報入力' : 'お支払い情報'}
+            </DialogTitle>
             <DialogDescription>
-              以下の情報をご入力ください。
+              {purchaseStep === 1 
+                ? '以下の情報をご入力ください。' 
+                : 'お支払い方法をご確認ください。'
+              }
             </DialogDescription>
           </DialogHeader>
           
-          <form onSubmit={handlePurchaseFormSubmit} className="space-y-4">
+          {purchaseStep === 1 ? (
+            <form onSubmit={handlePurchaseFormSubmit} className="space-y-4">
             {/* 企業名またはお名前 */}
             <div className="space-y-2">
               <Label htmlFor="companyOrName">
@@ -730,11 +764,108 @@ export default function IdeaDetailPage() {
                     処理中...
                   </>
                 ) : (
-                  '注文を確定する'
+                  '次に進む'
                 )}
               </Button>
             </div>
           </form>
+          ) : (
+            // 第2ステップ: 支払い情報画面
+            <div className="space-y-4">
+              {/* 注文情報確認 */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-lg">注文情報</h3>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between">
+                    <span>企業名/お名前:</span>
+                    <span>{purchaseFormData.companyOrName}</span>
+                  </div>
+                  {purchaseFormData.industry && (
+                    <div className="flex justify-between">
+                      <span>業種:</span>
+                      <span>{purchaseFormData.industry}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span>ご担当者様:</span>
+                    <span>{purchaseFormData.contactPerson}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>電話番号:</span>
+                    <span>{purchaseFormData.phoneNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>正式文章化:</span>
+                    <span>{purchaseFormData.formalDocumentation === 'required' ? '必要' : '不要'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 料金情報 */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-lg">料金詳細</h3>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between">
+                    <span>基本料金:</span>
+                    <span>¥{(Number(idea?.price) || 0).toLocaleString()}</span>
+                  </div>
+                  {purchaseFormData.formalDocumentation === 'required' && (
+                    <div className="flex justify-between">
+                      <span>正式文章化費用:</span>
+                      <span>¥25,000</span>
+                    </div>
+                  )}
+                  <hr className="my-2" />
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>合計金額:</span>
+                    <span>¥{calculateTotalAmount().toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 支払い方法 */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-lg">お支払い方法</h3>
+                <div className="bg-blue-50 p-4 rounded-lg space-y-2">
+                  <p className="font-medium">お支払いは以下の口座にお振込みでお願いします</p>
+                  <div className="space-y-1 text-sm">
+                    <div><span className="font-medium">銀行:</span> GMOあおぞらネット銀行</div>
+                    <div><span className="font-medium">支店:</span> 法人営業部</div>
+                    <div><span className="font-medium">口座種別:</span> 普通</div>
+                    <div><span className="font-medium">口座番号:</span> 1421634</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ボタン */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBackToForm}
+                  disabled={isPurchaseSubmitting}
+                  className="flex-1"
+                >
+                  戻る
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleOrderConfirmation}
+                  disabled={isPurchaseSubmitting}
+                  className="flex-1"
+                >
+                  {isPurchaseSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      処理中...
+                    </>
+                  ) : (
+                    '注文を確定する'
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

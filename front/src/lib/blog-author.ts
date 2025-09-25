@@ -126,7 +126,7 @@ export async function getAuthorsByBlogUserIds(
 
       // 3. データをマップに格納
       for (const author of authors) {
-        const profile = profiles?.find(p => p.id === author.user_id);
+        const profile = profiles?.find((p: any) => p.id === author.user_id);
         
         authorMap.set(author.id, {
           id: author.user_id,

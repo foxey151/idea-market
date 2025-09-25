@@ -15,7 +15,7 @@ export function createClient() {
 
     if (!url || !key || url.length < 10 || key.length < 10) {
       const error =
-        'Supabaseの環境変数が設定されていません。.env.localファイルにNEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを設定してください。';
+        'Supabaseの環境変数が設定されていません。環境変数にNEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを設定してください。';
       console.error(error);
       console.error('現在の値:', {
         url: url?.substring(0, 20) + '...',
