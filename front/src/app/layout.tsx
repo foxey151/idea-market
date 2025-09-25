@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 // import Script from 'next/script'; // 現在未使用
-import '../src/index.css';
+import '../index.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';

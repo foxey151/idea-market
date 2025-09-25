@@ -29,6 +29,14 @@ const Footer = () => {
               </li>
               <li>
                 <Link
+                  href="/idea-buy"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  アイデア購入
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/search"
                   className="text-muted-foreground hover:text-foreground"
                 >

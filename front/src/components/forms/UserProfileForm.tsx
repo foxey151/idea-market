@@ -37,8 +37,10 @@ import {
   type Gender,
   type Prefecture,
 } from '@/lib/supabase/user-details';
+import { getProfile, updateProfile } from '@/lib/supabase/auth';
 
 interface FormData {
+  display_name: string;
   full_name: string;
   email: string;
   bank_name: string;
@@ -52,6 +54,7 @@ interface FormData {
 }
 
 interface FormErrors {
+  display_name?: string;
   full_name?: string;
   email?: string;
   bank_name?: string;
@@ -83,6 +86,7 @@ export default function UserProfileForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
+    display_name: '',
     full_name: '',
     email: '',
     bank_name: '',
@@ -121,14 +125,23 @@ export default function UserProfileForm() {
     }
     setIsLoading(true);
     try {
-      const result = await getCurrentUserDetails();
+      const [userDetailsResult, profileResult] = await Promise.all([
+        getCurrentUserDetails(),
+        user ? getProfile(user.id) : Promise.resolve({ data: null, error: null })
+      ]);
 
-      if (result && !result.error && result.data) {
-        const userDetails: UserDetails = result.data;
+      let formUpdate: Partial<FormData> = {
+        email: user?.email || '',
+      };
+
+      // ユーザー詳細情報がある場合
+      if (userDetailsResult && !userDetailsResult.error && userDetailsResult.data) {
+        const userDetails: UserDetails = userDetailsResult.data;
         if (process.env.NODE_ENV === 'development') {
           console.log('既存のユーザー詳細情報を読み込み:', userDetails);
         }
-        setFormData({
+        formUpdate = {
+          ...formUpdate,
           full_name: userDetails.full_name || '',
           email: userDetails.email || user?.email || '',
           bank_name: userDetails.bank_name || '',
@@ -139,19 +152,24 @@ export default function UserProfileForm() {
           gender: userDetails.gender || '',
           birth_date: userDetails.birth_date || '',
           prefecture: userDetails.prefecture || '',
-        });
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('新規ユーザーのため初期値を設定');
-        }
-        // 新規ユーザーの場合、メールアドレスのみ設定
-        setFormData(prev => ({
-          ...prev,
-          email: user?.email || '',
-        }));
+        };
+      }
+
+      // プロフィール情報がある場合
+      if (profileResult && !profileResult.error && profileResult.data) {
+        formUpdate.display_name = profileResult.data.display_name || '';
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        ...formUpdate,
+      }));
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('新規/既存ユーザーの初期値を設定');
       }
     } catch (error) {
-      console.error('ユーザー詳細情報の取得に失敗:', error);
+      console.error('ユーザー詳細情報/プロフィールの取得に失敗:', error);
       // エラーの場合もメールアドレスのみ設定
       setFormData(prev => ({
         ...prev,
@@ -252,6 +270,21 @@ export default function UserProfileForm() {
 
     setIsSubmitting(true);
     try {
+      // プロフィール（display_name）を更新
+      const profileUpdateResult = await updateProfile(user.id, {
+        display_name: formData.display_name.trim() || null,
+      });
+
+      if (profileUpdateResult.error) {
+        toast({
+          title: 'プロフィール名の保存に失敗しました',
+          description: profileUpdateResult.error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // ユーザー詳細情報を更新
       const userDetailsData: UserDetailsInsert = {
         user_id: user.id,
         full_name: formData.full_name.trim(),
@@ -319,6 +352,26 @@ export default function UserProfileForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 表示名 */}
+            <div className="space-y-2">
+              <Label htmlFor="display_name">
+                表示名
+              </Label>
+              <Input
+                id="display_name"
+                type="text"
+                value={formData.display_name}
+                onChange={e => handleInputChange('display_name', e.target.value)}
+                placeholder="ニックネームやお好きな表示名"
+              />
+              <p className="text-sm text-gray-500">
+                空の場合はメールアドレスの@より前の部分が表示されます
+              </p>
+              {errors.display_name && (
+                <p className="text-red-500 text-sm">{errors.display_name}</p>
+              )}
+            </div>
+
             {/* 氏名 */}
             <div className="space-y-2">
               <Label htmlFor="full_name">

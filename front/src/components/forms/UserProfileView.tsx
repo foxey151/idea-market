@@ -40,8 +40,10 @@ import {
   type Gender,
   type Prefecture,
 } from '@/lib/supabase/user-details';
+import { getProfile, updateProfile } from '@/lib/supabase/auth';
 
 interface FormData {
+  display_name: string;
   full_name: string;
   email: string;
   bank_name: string;
@@ -55,6 +57,7 @@ interface FormData {
 }
 
 interface FormErrors {
+  display_name?: string;
   full_name?: string;
   email?: string;
   bank_name?: string;
@@ -93,6 +96,7 @@ export default function UserProfileView() {
   const [isEditing, setIsEditing] = useState(false);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [formData, setFormData] = useState<FormData>({
+    display_name: '',
     full_name: '',
     email: '',
     bank_name: '',
@@ -121,12 +125,21 @@ export default function UserProfileView() {
   const loadUserDetails = async () => {
     setIsLoading(true);
     try {
-      const result = await getCurrentUserDetails();
+      const [userDetailsResult, profileResult] = await Promise.all([
+        getCurrentUserDetails(),
+        user ? getProfile(user.id) : Promise.resolve({ data: null, error: null })
+      ]);
 
-      if (result && !result.error && result.data) {
-        const details: UserDetails = result.data;
+      let formUpdate: Partial<FormData> = {
+        email: user?.email || '',
+      };
+
+      // ユーザー詳細情報がある場合
+      if (userDetailsResult && !userDetailsResult.error && userDetailsResult.data) {
+        const details: UserDetails = userDetailsResult.data;
         setUserDetails(details);
-        setFormData({
+        formUpdate = {
+          ...formUpdate,
           full_name: details.full_name || '',
           email: details.email || user?.email || '',
           bank_name: details.bank_name || '',
@@ -137,10 +150,20 @@ export default function UserProfileView() {
           gender: details.gender || '',
           birth_date: details.birth_date || '',
           prefecture: details.prefecture || '',
-        });
+        };
       }
+
+      // プロフィール情報がある場合
+      if (profileResult && !profileResult.error && profileResult.data) {
+        formUpdate.display_name = profileResult.data.display_name || '';
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        ...formUpdate,
+      }));
     } catch (error) {
-      console.error('ユーザー詳細情報の取得に失敗:', error);
+      console.error('ユーザー詳細情報/プロフィールの取得に失敗:', error);
     } finally {
       setIsLoading(false);
     }
@@ -231,6 +254,21 @@ export default function UserProfileView() {
 
     setIsSubmitting(true);
     try {
+      // プロフィール（display_name）を更新
+      const profileUpdateResult = await updateProfile(user.id, {
+        display_name: formData.display_name.trim() || null,
+      });
+
+      if (profileUpdateResult.error) {
+        toast({
+          title: 'プロフィール名の更新に失敗しました',
+          description: profileUpdateResult.error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // ユーザー詳細情報を更新
       const userDetailsData: UserDetailsInsert = {
         user_id: user.id,
         full_name: formData.full_name.trim(),
@@ -276,9 +314,12 @@ export default function UserProfileView() {
     }
   };
 
-  const handleCancelEdit = () => {
-    if (userDetails) {
+  const handleCancelEdit = async () => {
+    // プロフィール情報も再取得してリセット
+    if (user && userDetails) {
+      const profileResult = await getProfile(user.id);
       setFormData({
+        display_name: profileResult?.data?.display_name || '',
         full_name: userDetails.full_name || '',
         email: userDetails.email || user?.email || '',
         bank_name: userDetails.bank_name || '',
@@ -363,6 +404,14 @@ export default function UserProfileView() {
               </Button>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  表示名
+                </Label>
+                <p className="text-sm mt-1">
+                  {formData.display_name || 'メールアドレスの@より前の部分が表示されます'}
+                </p>
+              </div>
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">
                   氏名
@@ -483,6 +532,27 @@ export default function UserProfileView() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
+                    <Label htmlFor="display_name">
+                      表示名
+                    </Label>
+                    <Input
+                      id="display_name"
+                      type="text"
+                      value={formData.display_name}
+                      onChange={e =>
+                        handleInputChange('display_name', e.target.value)
+                      }
+                      placeholder="ニックネームやお好きな表示名"
+                    />
+                    <p className="text-sm text-gray-500">
+                      空の場合はメールアドレスの@より前の部分が表示されます
+                    </p>
+                    {errors.display_name && (
+                      <p className="text-red-500 text-sm">{errors.display_name}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="full_name">
                       氏名 <span className="text-red-500">*</span>
                     </Label>
@@ -500,7 +570,9 @@ export default function UserProfileView() {
                       <p className="text-red-500 text-sm">{errors.full_name}</p>
                     )}
                   </div>
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">
                       メールアドレス <span className="text-red-500">*</span>

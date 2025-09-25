@@ -50,6 +50,23 @@ export const getIdeas = async (limit = 20, offset = 0) => {
   return { data, error };
 };
 
+// アイデア一覧取得（完成済みのもののみ - 購入ページ用）
+export const getClosedIdeas = async (limit = 20, offset = 0) => {
+  const { data, error } = await supabase
+    .from('ideas')
+    .select(
+      `
+      *,
+      profiles(display_name, role)
+    `
+    )
+    .eq('status', 'closed')
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  return { data, error };
+};
+
 // アイデア詳細取得
 export const getIdeaById = async (id: string) => {
   const { data, error } = await supabase

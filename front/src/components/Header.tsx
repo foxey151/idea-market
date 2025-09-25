@@ -102,7 +102,7 @@ const Header = () => {
               />
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-md scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
-            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">
               アイデアマーケット
             </span>
           </Link>
@@ -114,6 +114,12 @@ const Header = () => {
               className="text-foreground/80 hover:text-primary transition-colors"
             >
               アイデア一覧
+            </Link>
+            <Link
+              href="/idea-buy"
+              className="text-foreground/80 hover:text-primary transition-colors"
+            >
+              アイデア購入
             </Link>
             <Link
               href="/search"
@@ -138,13 +144,13 @@ const Header = () => {
           {/* Search Bar and Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="アイデアを検索..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-10 w-64 bg-background/50"
+                className="pl-9 w-48 text-sm bg-background/50"
               />
             </form>
             {loading ? (
@@ -186,13 +192,13 @@ const Header = () => {
         {/* Mobile Search Bar - Always visible on mobile */}
         <div className="md:hidden mt-4">
           <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               type="text"
               placeholder="アイデアを検索..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-10 bg-background/50"
+              className="pl-9 text-sm bg-background/50"
             />
           </form>
         </div>
@@ -207,6 +213,13 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 アイデア一覧
+              </Link>
+              <Link
+                href="/idea-buy"
+                className="text-foreground/80 hover:text-primary transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                アイデア購入
               </Link>
               <Link
                 href="/search"

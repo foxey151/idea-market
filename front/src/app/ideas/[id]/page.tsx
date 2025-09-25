@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -45,6 +46,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ShoppingCart,
+  CreditCard,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/StableAuthContext';
@@ -54,10 +57,29 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogHeader,
+  DialogDescription,
   // DialogTrigger, // 現在未使用
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { IdeaDetail, Comment, AttachmentInfo } from '@/types/ideas';
+
+// 購入フォームの型定義
+interface PurchaseFormData {
+  companyOrName: string;
+  industry: string;
+  contactPerson: string;
+  phoneNumber: string;
+  formalDocumentation: 'required' | 'not_required';
+}
+
+interface PurchaseFormErrors {
+  companyOrName?: string;
+  contactPerson?: string;
+  phoneNumber?: string;
+}
 
 export default function IdeaDetailPage() {
   const [idea, setIdea] = useState<IdeaDetail | null>(null);
@@ -71,10 +93,123 @@ export default function IdeaDetailPage() {
     null
   );
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  
+  // 購入フォーム関連の状態
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [purchaseFormData, setPurchaseFormData] = useState<PurchaseFormData>({
+    companyOrName: '',
+    industry: '',
+    contactPerson: '',
+    phoneNumber: '',
+    formalDocumentation: 'not_required',
+  });
+  const [purchaseFormErrors, setPurchaseFormErrors] = useState<PurchaseFormErrors>({});
+  const [isPurchaseSubmitting, setIsPurchaseSubmitting] = useState(false);
+  
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
   const ideaId = params.id as string;
+
+  // 価格フォーマット関数
+  const formatPrice = (price: string | null): string => {
+    if (!price) return '価格未設定';
+    const numPrice = parseInt(price, 10);
+    return `¥${numPrice.toLocaleString()}`;
+  };
+
+  // 購入ボタン押下時の処理
+  const handlePurchase = () => {
+    if (!user) {
+      toast({
+        title: 'ログインが必要です',
+        description: '購入するにはログインしてください。',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsPurchaseModalOpen(true);
+  };
+
+  // 購入フォームの入力処理
+  const handlePurchaseFormChange = (field: keyof PurchaseFormData, value: string) => {
+    setPurchaseFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    // エラーをクリア
+    if (purchaseFormErrors[field as keyof PurchaseFormErrors]) {
+      setPurchaseFormErrors(prev => ({
+        ...prev,
+        [field]: undefined,
+      }));
+    }
+  };
+
+  // 購入フォームのバリデーション
+  const validatePurchaseForm = (): boolean => {
+    const newErrors: PurchaseFormErrors = {};
+
+    if (!purchaseFormData.companyOrName.trim()) {
+      newErrors.companyOrName = '企業名またはお名前は必須です';
+    }
+
+    if (!purchaseFormData.contactPerson.trim()) {
+      newErrors.contactPerson = 'ご担当者様は必須です';
+    }
+
+    if (!purchaseFormData.phoneNumber.trim()) {
+      newErrors.phoneNumber = '電話番号は必須です';
+    } else if (!/^[\d-+()]+$/.test(purchaseFormData.phoneNumber)) {
+      newErrors.phoneNumber = '正しい電話番号を入力してください';
+    }
+
+    setPurchaseFormErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // 購入フォーム送信処理
+  const handlePurchaseFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validatePurchaseForm()) {
+      return;
+    }
+
+    try {
+      setIsPurchaseSubmitting(true);
+
+      // TODO: 実際の購入処理を実装
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 仮の処理
+
+      toast({
+        title: '注文情報を受け付けました',
+        description: 'ご入力いただいた情報で注文を進めさせていただきます。',
+      });
+
+      // フォームをリセット
+      setPurchaseFormData({
+        companyOrName: '',
+        industry: '',
+        contactPerson: '',
+        phoneNumber: '',
+        formalDocumentation: 'not_required',
+      });
+      setPurchaseFormErrors({});
+      setIsPurchaseModalOpen(false);
+
+    } catch (error) {
+      console.error('購入処理エラー:', error);
+      toast({
+        title: 'エラー',
+        description: '注文処理中にエラーが発生しました。',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPurchaseSubmitting(false);
+    }
+  };
 
   const loadAttachments = useCallback(async () => {
     if (!idea || !idea.attachments || idea.attachments.length === 0) {
@@ -473,6 +608,136 @@ export default function IdeaDetailPage() {
         </DialogContent>
       </Dialog>
 
+      {/* 購入フォームモーダル */}
+      <Dialog open={isPurchaseModalOpen} onOpenChange={setIsPurchaseModalOpen}>
+        <DialogContent className="max-w-md w-full">
+          <DialogHeader>
+            <DialogTitle>注文者情報入力</DialogTitle>
+            <DialogDescription>
+              以下の情報をご入力ください。
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handlePurchaseFormSubmit} className="space-y-4">
+            {/* 企業名またはお名前 */}
+            <div className="space-y-2">
+              <Label htmlFor="companyOrName">
+                企業名またはお名前 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="companyOrName"
+                type="text"
+                value={purchaseFormData.companyOrName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePurchaseFormChange('companyOrName', e.target.value)}
+                placeholder="株式会社○○ または 山田太郎"
+                className={purchaseFormErrors.companyOrName ? 'border-red-500' : ''}
+              />
+              {purchaseFormErrors.companyOrName && (
+                <p className="text-red-500 text-sm">{purchaseFormErrors.companyOrName}</p>
+              )}
+            </div>
+
+            {/* 業種 */}
+            <div className="space-y-2">
+              <Label htmlFor="industry">
+                業種
+              </Label>
+              <Input
+                id="industry"
+                type="text"
+                value={purchaseFormData.industry}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePurchaseFormChange('industry', e.target.value)}
+                placeholder="IT、製造業、サービス業など"
+              />
+            </div>
+
+            {/* ご担当者様 */}
+            <div className="space-y-2">
+              <Label htmlFor="contactPerson">
+                ご担当者様 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="contactPerson"
+                type="text"
+                value={purchaseFormData.contactPerson}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePurchaseFormChange('contactPerson', e.target.value)}
+                placeholder="田中一郎"
+                className={purchaseFormErrors.contactPerson ? 'border-red-500' : ''}
+              />
+              {purchaseFormErrors.contactPerson && (
+                <p className="text-red-500 text-sm">{purchaseFormErrors.contactPerson}</p>
+              )}
+            </div>
+
+            {/* 電話番号 */}
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">
+                電話番号 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="phoneNumber"
+                type="tel"
+                value={purchaseFormData.phoneNumber}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePurchaseFormChange('phoneNumber', e.target.value)}
+                placeholder="03-1234-5678"
+                className={purchaseFormErrors.phoneNumber ? 'border-red-500' : ''}
+              />
+              {purchaseFormErrors.phoneNumber && (
+                <p className="text-red-500 text-sm">{purchaseFormErrors.phoneNumber}</p>
+              )}
+            </div>
+
+            {/* 正式文章化 */}
+            <div className="space-y-3">
+              <Label>正式文章化</Label>
+              <RadioGroup
+                value={purchaseFormData.formalDocumentation}
+                onValueChange={(value: 'required' | 'not_required') =>
+                  handlePurchaseFormChange('formalDocumentation', value)
+                }
+                className="flex flex-col gap-3"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="not_required" id="not_required" />
+                  <Label htmlFor="not_required">不要</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="required" id="required" />
+                  <Label htmlFor="required">必要（+25,000円）</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* ボタン */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsPurchaseModalOpen(false)}
+                disabled={isPurchaseSubmitting}
+                className="flex-1"
+              >
+                キャンセル
+              </Button>
+              <Button
+                type="submit"
+                disabled={isPurchaseSubmitting}
+                className="flex-1"
+              >
+                {isPurchaseSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    処理中...
+                  </>
+                ) : (
+                  '注文を確定する'
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <div className="min-h-screen bg-background">
         <Header />
 
@@ -772,182 +1037,284 @@ export default function IdeaDetailPage() {
                   </CardContent>
                 </Card>
 
-                {/* コメント欄 */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5" />
-                      コメント ({comments.length})
-                    </CardTitle>
-                    <CardDescription>
-                      {idea.status === 'published'
-                        ? 'このアイデアについてディスカッションしましょう'
-                        : (idea.status as any) === 'overdue'
-                          ? '期限切れのため新しいコメントは投稿できません'
-                          : '完成したアイデアのコメント履歴です'}
-                    </CardDescription>
-                  </CardHeader>
-
-                  <CardContent>
-                    {(() => {
-                      console.log(
-                        'コメント表示チェック - comments:',
-                        comments,
-                        'length:',
-                        comments.length
-                      );
-                      return comments && comments.length > 0;
-                    })() ? (
+                {/* コメント欄または購入セクション */}
+                {idea.status === 'closed' ? (
+                  /* 購入セクション */
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <ShoppingCart className="h-5 w-5" />
+                        アイデア購入
+                      </CardTitle>
+                      <CardDescription>
+                        このアイデアは完成済みです。詳細を購入してビジネスにお役立てください。
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
                       <div className="space-y-6">
-                        {comments.map(comment => {
-                          const isIdeaAuthor =
-                            comment.author_id === idea.author_id;
+                        {/* 価格表示 */}
+                        <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border-2 border-primary/20">
+                          <div className="flex items-center justify-center gap-2 mb-2">
+                            <CreditCard className="h-6 w-6 text-primary" />
+                            <span className="text-sm font-medium text-muted-foreground">価格</span>
+                          </div>
+                          <div className="text-3xl font-bold text-primary">
+                            {formatPrice(idea.price)}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            一度購入すると詳細なアイデア内容をご覧いただけます
+                          </p>
+                        </div>
 
-                          return (
-                            <div
-                              key={comment.id}
-                              className={`flex ${isIdeaAuthor ? 'justify-start' : 'justify-end'}`}
-                            >
-                              <div
-                                className={`max-w-[70%] ${isIdeaAuthor ? 'order-2' : 'order-1'}`}
-                              >
-                                {/* ユーザー情報 */}
-                                <div
-                                  className={`flex items-center gap-2 mb-2 ${isIdeaAuthor ? 'justify-start' : 'justify-end'}`}
-                                >
+                        {/* 購入ボタン */}
+                        <div className="flex flex-col gap-3">
+                          <Button
+                            onClick={handlePurchase}
+                            className="w-full text-lg py-6"
+                            size="lg"
+                          >
+                            <ShoppingCart className="h-5 w-5 mr-2" />
+                            このアイデアを購入する
+                          </Button>
+                          <p className="text-xs text-muted-foreground text-center">
+                            ※ 購入後は返金できませんのでご注意ください
+                          </p>
+                        </div>
+
+                        {/* コメント履歴（読み取り専用） */}
+                        {comments && comments.length > 0 && (
+                          <div className="pt-6 border-t">
+                            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                              <MessageSquare className="h-5 w-5" />
+                              開発時のコメント履歴 ({comments.length})
+                            </h3>
+                            <div className="space-y-4 max-h-96 overflow-y-auto">
+                              {comments.map(comment => {
+                                const isIdeaAuthor = comment.author_id === idea.author_id;
+                                return (
                                   <div
-                                    className={`flex items-center gap-1 ${isIdeaAuthor ? 'flex-row' : 'flex-row-reverse'}`}
+                                    key={comment.id}
+                                    className={`flex ${isIdeaAuthor ? 'justify-start' : 'justify-end'}`}
                                   >
-                                    <User className="h-3 w-3" />
-                                    <span className="text-xs font-medium">
-                                      {comment.profiles?.display_name ||
-                                        'Unknown'}
-                                      {isIdeaAuthor && (
-                                        <span className="ml-1 text-blue-600">
-                                          （制作者）
+                                    <div className={`max-w-[70%] ${isIdeaAuthor ? 'order-2' : 'order-1'}`}>
+                                      <div className={`flex items-center gap-2 mb-2 ${isIdeaAuthor ? 'justify-start' : 'justify-end'}`}>
+                                        <div className={`flex items-center gap-1 ${isIdeaAuthor ? 'flex-row' : 'flex-row-reverse'}`}>
+                                          <User className="h-3 w-3" />
+                                          <span className="text-xs font-medium">
+                                            {comment.profiles?.display_name || 'Unknown'}
+                                            {isIdeaAuthor && (
+                                              <span className="ml-1 text-blue-600">（制作者）</span>
+                                            )}
+                                          </span>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">
+                                          {new Date(comment.created_at).toLocaleDateString('ja-JP')}
                                         </span>
-                                      )}
+                                      </div>
+                                      <div className="relative">
+                                        <div className={`px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap ${
+                                          isIdeaAuthor
+                                            ? 'bg-red-500 text-white'
+                                            : 'bg-gray-100 text-gray-900'
+                                        }`}>
+                                          {comment.text}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                                      isIdeaAuthor
+                                        ? 'bg-red-500 text-white order-1 mr-3'
+                                        : 'bg-gray-300 text-gray-700 order-2 ml-3'
+                                    }`}>
+                                      {(comment.profiles?.display_name || 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  /* 通常のコメント欄 */
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5" />
+                        コメント ({comments.length})
+                      </CardTitle>
+                      <CardDescription>
+                        {idea.status === 'published'
+                          ? 'このアイデアについてディスカッションしましょう'
+                          : (idea.status as any) === 'overdue'
+                            ? '期限切れのため新しいコメントは投稿できません'
+                            : '完成したアイデアのコメント履歴です'}
+                      </CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                      {(() => {
+                        console.log(
+                          'コメント表示チェック - comments:',
+                          comments,
+                          'length:',
+                          comments.length
+                        );
+                        return comments && comments.length > 0;
+                      })() ? (
+                        <div className="space-y-6">
+                          {comments.map(comment => {
+                            const isIdeaAuthor =
+                              comment.author_id === idea.author_id;
+
+                            return (
+                              <div
+                                key={comment.id}
+                                className={`flex ${isIdeaAuthor ? 'justify-start' : 'justify-end'}`}
+                              >
+                                <div
+                                  className={`max-w-[70%] ${isIdeaAuthor ? 'order-2' : 'order-1'}`}
+                                >
+                                  {/* ユーザー情報 */}
+                                  <div
+                                    className={`flex items-center gap-2 mb-2 ${isIdeaAuthor ? 'justify-start' : 'justify-end'}`}
+                                  >
+                                    <div
+                                      className={`flex items-center gap-1 ${isIdeaAuthor ? 'flex-row' : 'flex-row-reverse'}`}
+                                    >
+                                      <User className="h-3 w-3" />
+                                      <span className="text-xs font-medium">
+                                        {comment.profiles?.display_name ||
+                                          'Unknown'}
+                                        {isIdeaAuthor && (
+                                          <span className="ml-1 text-blue-600">
+                                            （制作者）
+                                          </span>
+                                        )}
+                                      </span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">
+                                      {new Date(
+                                        comment.created_at
+                                      ).toLocaleDateString('ja-JP')}
                                     </span>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">
-                                    {new Date(
-                                      comment.created_at
-                                    ).toLocaleDateString('ja-JP')}
-                                  </span>
-                                </div>
 
-                                {/* 吹き出し */}
-                                <div className="relative">
-                                  <div
-                                    className={`
-                                px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap
-                                ${
-                                  isIdeaAuthor
-                                    ? 'bg-red-500 text-white'
-                                    : 'bg-gray-100 text-gray-900'
-                                }
-                              `}
-                                  >
-                                    {comment.text}
+                                  {/* 吹き出し */}
+                                  <div className="relative">
+                                    <div
+                                      className={`
+                                  px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap
+                                  ${
+                                    isIdeaAuthor
+                                      ? 'bg-red-500 text-white'
+                                      : 'bg-gray-100 text-gray-900'
+                                  }
+                                `}
+                                    >
+                                      {comment.text}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
 
-                              {/* アバター部分 */}
-                              <div
-                                className={`
-                          flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium
-                          ${
-                            isIdeaAuthor
-                              ? 'bg-red-500 text-white order-1 mr-3'
-                              : 'bg-gray-300 text-gray-700 order-2 ml-3'
-                          }
-                        `}
-                              >
-                                {(comment.profiles?.display_name || 'U')
-                                  .charAt(0)
-                                  .toUpperCase()}
+                                {/* アバター部分 */}
+                                <div
+                                  className={`
+                            flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium
+                            ${
+                              isIdeaAuthor
+                                ? 'bg-red-500 text-white order-1 mr-3'
+                                : 'bg-gray-300 text-gray-700 order-2 ml-3'
+                            }
+                          `}
+                                >
+                                  {(comment.profiles?.display_name || 'U')
+                                    .charAt(0)
+                                    .toUpperCase()}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <p className="text-muted-foreground">
-                          まだコメントがありません。最初のコメントを投稿してみませんか？
-                        </p>
-                      </div>
-                    )}
-
-                    {/* コメント投稿フォーム */}
-                    <div className="mt-6 pt-6 border-t">
-                      {idea.status === 'published' ? (
-                        user ? (
-                          <div className="space-y-4">
-                            <Textarea
-                              placeholder="コメントを入力してください..."
-                              value={commentText}
-                              onChange={e => setCommentText(e.target.value)}
-                              rows={3}
-                              className="resize-none"
-                            />
-                            <div className="flex justify-end">
-                              <Button
-                                onClick={handleSubmitComment}
-                                disabled={
-                                  !commentText.trim() || commentSubmitting
-                                }
-                                className="flex items-center gap-2"
-                              >
-                                {commentSubmitting ? (
-                                  <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                    投稿中...
-                                  </>
-                                ) : (
-                                  <>
-                                    <MessageSquare className="h-4 w-4" />
-                                    コメントを投稿
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="text-center py-4">
-                            <p className="text-muted-foreground mb-4">
-                              コメントを投稿するにはログインが必要です
-                            </p>
-                            <Button
-                              variant="outline"
-                              onClick={() =>
-                                router.push(
-                                  `/login?redirect=${encodeURIComponent(`/ideas/${ideaId}`)}`
-                                )
-                              }
-                            >
-                              ログイン
-                            </Button>
-                          </div>
-                        )
+                            );
+                          })}
+                        </div>
                       ) : (
-                        <div className="text-center py-4">
-                          <div className="p-4 bg-muted rounded-lg">
-                            <p className="text-muted-foreground">
-                              {(idea.status as any) === 'overdue'
-                                ? '期限切れのアイデアにはコメントできません。'
-                                : (idea.status as any) === 'completed'
-                                  ? '完成したアイデアにはコメントできません。'
-                                  : 'このアイデアにはコメントできません。'}
-                            </p>
-                          </div>
+                        <div className="text-center py-8">
+                          <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                          <p className="text-muted-foreground">
+                            まだコメントがありません。最初のコメントを投稿してみませんか？
+                          </p>
                         </div>
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
+
+                      {/* コメント投稿フォーム */}
+                      <div className="mt-6 pt-6 border-t">
+                        {idea.status === 'published' ? (
+                          user ? (
+                            <div className="space-y-4">
+                              <Textarea
+                                placeholder="コメントを入力してください..."
+                                value={commentText}
+                                onChange={e => setCommentText(e.target.value)}
+                                rows={3}
+                                className="resize-none"
+                              />
+                              <div className="flex justify-end">
+                                <Button
+                                  onClick={handleSubmitComment}
+                                  disabled={
+                                    !commentText.trim() || commentSubmitting
+                                  }
+                                  className="flex items-center gap-2"
+                                >
+                                  {commentSubmitting ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                      投稿中...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <MessageSquare className="h-4 w-4" />
+                                      コメントを投稿
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-4">
+                              <p className="text-muted-foreground mb-4">
+                                コメントを投稿するにはログインが必要です
+                              </p>
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  router.push(
+                                    `/login?redirect=${encodeURIComponent(`/ideas/${ideaId}`)}`
+                                  )
+                                }
+                              >
+                                ログイン
+                              </Button>
+                            </div>
+                          )
+                        ) : (
+                          <div className="text-center py-4">
+                            <div className="p-4 bg-muted rounded-lg">
+                              <p className="text-muted-foreground">
+                                {(idea.status as any) === 'overdue'
+                                  ? '期限切れのアイデアにはコメントできません。'
+                                  : (idea.status as any) === 'completed'
+                                    ? '完成したアイデアにはコメントできません。'
+                                    : 'このアイデアにはコメントできません。'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               {/* サイドバー（広告エリア） */}
