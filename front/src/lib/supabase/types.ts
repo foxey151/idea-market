@@ -106,7 +106,7 @@ export type Database = {
           detail: string | null;
           attachments: string[];
           deadline: string | null;
-          status: 'published' | 'overdue' | 'closed';
+          status: 'published' | 'overdue' | 'closed' | 'soldout';
           price: Database['public']['Enums']['price_enum'] | null;
           special: string | null;
           created_at: string;
@@ -121,7 +121,7 @@ export type Database = {
           detail?: string | null;
           attachments?: string[];
           deadline?: string | null;
-          status?: 'draft' | 'published' | 'closed' | 'overdue';
+          status?: 'draft' | 'published' | 'closed' | 'overdue' | 'soldout';
           price?: Database['public']['Enums']['price_enum'] | null;
           special?: string | null;
           created_at?: string;
@@ -136,7 +136,7 @@ export type Database = {
           detail?: string | null;
           attachments?: string[];
           deadline?: string | null;
-          status?: 'published' | 'closed' | 'overdue';
+          status?: 'published' | 'closed' | 'overdue' | 'soldout';
           price?: Database['public']['Enums']['price_enum'] | null;
           special?: string | null;
           created_at?: string;
@@ -243,6 +243,41 @@ export type Database = {
           status?: Database['public']['Enums']['purchase_status'];
           paid_at?: string;
           created_at?: string;
+        };
+      };
+      sold: {
+        Row: {
+          id: string;
+          idea_id: string;
+          user_id: string;
+          is_paid: boolean;
+          phone_number: string;
+          company: string | null;
+          manager: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          idea_id: string;
+          user_id: string;
+          is_paid?: boolean;
+          phone_number: string;
+          company?: string | null;
+          manager?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          idea_id?: string;
+          user_id?: string;
+          is_paid?: boolean;
+          phone_number?: string;
+          company?: string | null;
+          manager?: string | null;
+          created_at?: string;
+          updated_at?: string;
         };
       };
       // 広告関連テーブル（型定義はUIのために保持、実際の処理は無効）
@@ -476,6 +511,16 @@ export type Database = {
           _payload: any;
         };
         Returns: undefined;
+      };
+      purchase_idea: {
+        Args: {
+          p_idea_id: string;
+          p_user_id: string;
+          p_phone: string;
+          p_company: string;
+          p_manager: string;
+        };
+        Returns: string;
       };
     };
     Enums: {

@@ -263,6 +263,55 @@ export const getPopularIdeas = async (limit = 10) => {
   return { data, error };
 };
 
+// 購入処理（sold作成とideasのsoldout更新）
+export const purchaseIdea = async (
+  params: {
+    ideaId: string;
+    userId: string;
+    phoneNumber: string; // 数字のみ
+    company: string;
+    manager: string;
+  }
+) => {
+  const { ideaId, userId, phoneNumber, company, manager } = params;
+  return await supabase.rpc('purchase_idea', {
+    p_idea_id: ideaId,
+    p_user_id: userId,
+    p_phone: phoneNumber,
+    p_company: company,
+    p_manager: manager,
+  });
+};
+
+// 自分の購入一覧（sold）を取得
+export const getMyPurchases = async (
+  userId: string,
+  limit = 50,
+  offset = 0
+) => {
+  // sold: ユーザー自身のみ閲覧可（RLS）
+  const query = supabase
+    .from('sold')
+    .select(
+      `
+      *,
+      ideas(id, title, mmb_no, status)
+    `
+    )
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  return await query as any;
+};
+
+// 自分の購入を取消（sold削除 + ideas.statusをpublished）
+export const cancelMyPurchase = async (params: { soldId: string; userId: string }) => {
+  const { soldId, userId } = params;
+  // SECURITY DEFINER 関数を呼び出し
+  return await supabase.rpc('cancel_purchase', { p_sold_id: soldId, p_user_id: userId });
+};
+
 // 最新のアイデア取得
 export const getLatestIdeas = async (limit = 10) => {
   const { data, error } = await supabase

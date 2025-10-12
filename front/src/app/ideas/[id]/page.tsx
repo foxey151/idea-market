@@ -65,6 +65,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { IdeaDetail, Comment, AttachmentInfo } from '@/types/ideas';
+import { purchaseIdea } from '@/lib/supabase/ideas';
 
 // 購入フォームの型定義
 interface PurchaseFormData {
@@ -134,6 +135,10 @@ export default function IdeaDetailPage() {
 
   // 購入フォームの入力処理
   const handlePurchaseFormChange = (field: keyof PurchaseFormData, value: string) => {
+    // 電話番号は数字のみ保持
+    if (field === 'phoneNumber') {
+      value = value.replace(/\D/g, '');
+    }
     setPurchaseFormData(prev => ({
       ...prev,
       [field]: value,
@@ -162,8 +167,8 @@ export default function IdeaDetailPage() {
 
     if (!purchaseFormData.phoneNumber.trim()) {
       newErrors.phoneNumber = '電話番号は必須です';
-    } else if (!/^[\d-+()]+$/.test(purchaseFormData.phoneNumber)) {
-      newErrors.phoneNumber = '正しい電話番号を入力してください';
+    } else if (!/^\d+$/.test(purchaseFormData.phoneNumber)) {
+      newErrors.phoneNumber = '数字のみで入力してください（ハイフン不可）';
     }
 
     setPurchaseFormErrors(newErrors);
@@ -193,14 +198,41 @@ export default function IdeaDetailPage() {
   const handleOrderConfirmation = async () => {
     try {
       setIsPurchaseSubmitting(true);
+      if (!user) {
+        toast({
+          title: 'ログインが必要です',
+          description: '購入するにはログインしてください。',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-      // TODO: 実際の購入処理を実装
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 仮の処理
+      // Supabase RPC を呼び出し（sold作成 + ideasをsoldout）
+      const { error: purchaseError } = await purchaseIdea({
+        ideaId,
+        userId: user.id,
+        phoneNumber: purchaseFormData.phoneNumber,
+        company: purchaseFormData.companyOrName,
+        manager: purchaseFormData.contactPerson,
+      });
+
+      if (purchaseError) {
+        console.error('購入処理エラー:', purchaseError);
+        toast({
+          title: 'エラー',
+          description: '購入処理に失敗しました。',
+          variant: 'destructive',
+        });
+        return;
+      }
 
       toast({
         title: '注文情報を受け付けました',
         description: 'ご入力いただいた情報で注文を進めさせていただきます。',
       });
+
+      // ローカル状態も売り切れに更新
+      setIdea(prev => (prev ? { ...prev, status: 'soldout' } : prev));
 
       // フォームをリセット
       setPurchaseFormData({
@@ -711,9 +743,11 @@ export default function IdeaDetailPage() {
               <Input
                 id="phoneNumber"
                 type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
                 value={purchaseFormData.phoneNumber}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePurchaseFormChange('phoneNumber', e.target.value)}
-                placeholder="03-1234-5678"
+                placeholder="09012345678"
                 className={purchaseFormErrors.phoneNumber ? 'border-red-500' : ''}
               />
               {purchaseFormErrors.phoneNumber && (
@@ -889,7 +923,9 @@ export default function IdeaDetailPage() {
                           variant={
                             idea.status === 'published'
                               ? 'default'
-                              : 'secondary'
+                              : idea.status === 'soldout'
+                                ? 'destructive'
+                                : 'secondary'
                           }
                         >
                           {idea.status === 'published'
@@ -898,7 +934,9 @@ export default function IdeaDetailPage() {
                               ? '期限切れ'
                               : idea.status === 'closed'
                                 ? '完成'
-                                : 'その他'}
+                                : idea.status === 'soldout'
+                                  ? '売り切れ'
+                                  : 'その他'}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -1163,6 +1201,9 @@ export default function IdeaDetailPage() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                      )}
+                      {idea.status === 'soldout' && (
+                        <Badge className="bg-red-100 text-red-800">売り切れ</Badge>
                       )}
                     </div>
                   </CardContent>

@@ -215,7 +215,7 @@ export function DocumentEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[70vh] flex flex-col z-[100]">
+      <DialogContent className="max-w-6xl h-[70vh] z-[100] grid grid-rows-[auto,1fr,auto] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl">
             {documentTitles[documentType]}の編集
@@ -225,7 +225,7 @@ export function DocumentEditor({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 flex flex-col space-y-4">
+        <div className="min-h-0 overflow-hidden">
           {loading ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
@@ -234,21 +234,21 @@ export function DocumentEditor({
               </div>
             </div>
           ) : (
-            <div className="flex-1">
+            <div className="h-full min-h-0 flex flex-col quill-root">
               <ReactQuill
                 value={content}
                 onChange={setContent}
                 modules={quillModules}
                 formats={quillFormats}
                 placeholder="文書の内容を入力してください..."
-                className="h-[400px]"
+                className="h-full"
                 theme="snow"
               />
             </div>
           )}
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4 border-t">
+        <div className="flex justify-end space-x-3 pt-4 border-t shrink-0">
           <Button variant="outline" onClick={handleCancel} disabled={saving}>
             キャンセル
           </Button>
