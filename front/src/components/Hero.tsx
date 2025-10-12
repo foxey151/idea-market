@@ -121,29 +121,6 @@ const Hero = () => {
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-border/50 animate-fade-in animation-delay-800">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">
-                10,000+
-              </div>
-              <div className="text-sm text-muted-foreground">登録アイデア</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-secondary mb-2">
-                5,000+
-              </div>
-              <div className="text-sm text-muted-foreground">活動ユーザー</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">¥50M+</div>
-              <div className="text-sm text-muted-foreground">総取引額</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-secondary mb-2">98%</div>
-              <div className="text-sm text-muted-foreground">満足度</div>
-            </div>
-          </div>
         </div>
       </div>
     </section>

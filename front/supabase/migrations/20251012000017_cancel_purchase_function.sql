@@ -41,3 +41,4 @@ REVOKE ALL ON FUNCTION public.cancel_purchase(UUID, UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.cancel_purchase(UUID, UUID) TO anon, authenticated;
 
 
+

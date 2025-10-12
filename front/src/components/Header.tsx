@@ -31,6 +31,12 @@ const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { user, profile, signOut, loading } = useAuth();
 
+  const truncateText = (text: string, maxLength: number) => {
+    const chars = Array.from(text);
+    if (chars.length <= maxLength) return text;
+    return chars.slice(0, maxLength).join('') + '...';
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -54,7 +60,10 @@ const Header = () => {
         >
           <User className="h-4 w-4" />
           <span className="hidden sm:inline">
-            {profile?.display_name || user?.email?.split('@')[0] || 'ユーザー'}
+            {truncateText(
+              profile?.display_name || user?.email?.split('@')[0] || 'ユーザー',
+              15
+            )}
           </span>
         </Button>
       </DropdownMenuTrigger>
