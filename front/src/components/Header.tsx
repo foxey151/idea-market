@@ -62,7 +62,7 @@ const Header = () => {
           <span className="hidden sm:inline">
             {truncateText(
               profile?.display_name || user?.email?.split('@')[0] || 'ユーザー',
-              15
+              6
             )}
           </span>
         </Button>
