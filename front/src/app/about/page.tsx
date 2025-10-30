@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Lightbulb, TrendingUp, Shield } from 'lucide-react';
+import IdeaPurchaseFlow from '@/components/idea-purchase-flow';
 
 export const metadata: Metadata = {
   title: 'サービス案内 | アイデアマーケット',
@@ -181,6 +182,14 @@ export default function AboutPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* アイデア投稿還元と購入のフロー */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center mb-6">
+            アイデア投稿還元と購入のフロー
+          </h2>
+          <img className="mx-auto w-2/3" src="idea-purchase-flow.png" alt="アイデア投稿還元と購入のフロー" />
         </div>
 
         {/* 会社情報 */}
