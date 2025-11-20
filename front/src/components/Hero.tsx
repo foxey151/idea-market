@@ -1,27 +1,33 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, TrendingUp, Search } from 'lucide-react';
+import { ArrowRight, Sparkles, TrendingUp, Search, Lightbulb, Gem } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/StableAuthContext';
 import heroBackground from '@/assets/hero-background.jpg';
 
 const Hero = () => {
+  const { user } = useAuth();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 z-0">
         <Image
           src={heroBackground}
           alt="Hero background"
           fill
-          className="object-cover opacity-20"
+          className="object-cover opacity-40"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-hero opacity-30" />
+        <div className="absolute inset-0 bg-gradient-hero opacity-20" />
       </div>
 
       {/* Background Gradients */}
-      <div className="absolute inset-0 bg-gradient-subtle" />
+      <div className="absolute inset-0 bg-gradient-subtle/60 z-0" />
+
+      {/* White Mask */}
+      <div className="absolute inset-0 bg-sky-200/30 z-0" />
 
       {/* Animated Background Elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-glow-pulse" />
@@ -93,32 +99,60 @@ const Hero = () => {
             </div>
           </div>
 
-          <div className="text-left animate-fade-in animation-delay-200">
-            <p className="text-lg md:text-lg text-muted-foreground mb-12 leading-relaxed pl-12">
-              アイデアとは何も特許的なものだけではありません。ちょっとした思いつきが他の人からしたら珠玉のものかもしれません。
-              <br />
-              検索者の方へ：ここは知の宝が埋もれているかもしれません
-            </p>
+          <div className="max-w-4xl mx-auto animate-fade-in animation-delay-200 mb-12 space-y-6">
+            {/* アイデアについてのメッセージ */}
+            <div className="relative p-8 bg-card/70 backdrop-blur-sm rounded-2xl border-l-4 border-primary shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center shadow-md">
+                  <Lightbulb className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-lg md:text-xl text-foreground leading-relaxed">
+                    アイデアとは何も特許的なものだけではありません。ちょっとした思いつきが他の人から見れば、珠玉のものになるしれません。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 検索者へのメッセージ */}
+            <div className="relative p-8 bg-card/70 backdrop-blur-sm rounded-2xl border-l-4 border-secondary shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-secondary rounded-full flex items-center justify-center shadow-md">
+                  <Gem className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-lg md:text-xl text-foreground leading-relaxed">
+                    <span className="font-bold text-secondary">検索者の方へ：</span>
+                    <br />
+                    <span className="text-muted-foreground">ここは知の宝が埋もれているかもしれません</span>
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Call to Action */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in animation-delay-600">
-            <Button
-              variant="hero"
-              size="lg"
-              className="group px-8 py-6 text-lg font-semibold shadow-glow hover:shadow-elegant transition-all duration-300"
-            >
-              無料でアイデア投稿
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <Link href={user ? '/ideas/new' : '/signup'}>
+              <Button
+                variant="hero"
+                size="lg"
+                className="group px-8 py-6 text-lg font-semibold shadow-glow hover:shadow-elegant transition-all duration-300"
+              >
+                無料でアイデア投稿
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
 
-            <Button
-              variant="outline"
-              size="lg"
-              className="px-8 py-6 text-lg font-semibold border-2 hover:bg-primary/5"
-            >
-              アイデアを探す
-            </Button>
+            <Link href="/search">
+              <Button
+                variant="outline"
+                size="lg"
+                className="px-8 py-6 text-lg font-semibold border-2 hover:bg-primary/5"
+              >
+                アイデアを探す
+              </Button>
+            </Link>
           </div>
 
         </div>

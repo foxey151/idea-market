@@ -104,7 +104,7 @@ export default function IdeasPage() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            ここで表示されているアイデアは最終（購入）段階ではありません。購入可能アイデアは<a className="text-primary hover:underline" href="/idea-buy">ここ</a>をクリックしてください。
+            ここで表示されているアイデアは最終（購入）段階ではありません。<br />購入可能アイデアは<a className="text-secondary hover:underline" href="/idea-buy">ここ</a>をクリックしてください。
             </p>
           </div>
 

@@ -661,8 +661,8 @@ export default function IdeaDetailPage() {
           }
         }}
       >
-        <DialogContent className="max-w-md w-full">
-          <DialogHeader>
+        <DialogContent className="max-w-md w-full max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>
               {purchaseStep === 1 ? '注文者情報入力' : 'お支払い情報'}
             </DialogTitle>
@@ -674,8 +674,9 @@ export default function IdeaDetailPage() {
             </DialogDescription>
           </DialogHeader>
           
+          <div className="flex-1 overflow-y-auto min-h-0">
           {purchaseStep === 1 ? (
-            <form onSubmit={handlePurchaseFormSubmit} className="space-y-4">
+            <form id="purchase-form" onSubmit={handlePurchaseFormSubmit} className="space-y-4">
             {/* 企業名またはお名前 */}
             <div className="space-y-2">
               <Label htmlFor="companyOrName">
@@ -767,33 +768,7 @@ export default function IdeaDetailPage() {
               </RadioGroup>
             </div>
 
-            {/* ボタン */}
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsPurchaseModalOpen(false)}
-                disabled={isPurchaseSubmitting}
-                className="flex-1"
-              >
-                キャンセル
-              </Button>
-              <Button
-                type="submit"
-                disabled={isPurchaseSubmitting}
-                className="flex-1"
-              >
-                {isPurchaseSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    処理中...
-                  </>
-                ) : (
-                  '次に進む'
-                )}
-              </Button>
-            </div>
-          </form>
+            </form>
           ) : (
             // 第2ステップ: 支払い情報画面
             <div className="space-y-4">
@@ -852,18 +827,61 @@ export default function IdeaDetailPage() {
               <div className="space-y-3">
                 <h3 className="font-medium text-lg">お支払い方法</h3>
                 <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-                  <p className="font-medium">お支払いは以下の口座にお振込みでお願いします</p>
+                  <p className="font-medium">
+                    お支払いは以下の口座にお振込みでお願いします
+                  </p>
+
+                  
                   <div className="space-y-1 text-sm">
                     <div><span className="font-medium">銀行:</span> GMOあおぞらネット銀行</div>
                     <div><span className="font-medium">支店:</span> 法人営業部</div>
                     <div><span className="font-medium">口座種別:</span> 普通</div>
                     <div><span className="font-medium">口座番号:</span> 1421634</div>
                   </div>
+                  
                 </div>
               </div>
 
-              {/* ボタン */}
-              <div className="flex gap-3 pt-4">
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <p className="text-s text-black-500">
+                  文章化不要の場合は入金確認後1週間以内、文章化必要の場合は入金後20日以内に文章をご入力いただいたアドレスに送信します
+              </p>
+              </div>
+            </div>
+          )}
+          </div>
+          
+          {/* ボタン部分 - 固定 */}
+          <div className="flex-shrink-0 flex gap-3 pt-4 border-t">
+            {purchaseStep === 1 ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsPurchaseModalOpen(false)}
+                  disabled={isPurchaseSubmitting}
+                  className="flex-1"
+                >
+                  キャンセル
+                </Button>
+                <Button
+                  type="submit"
+                  form="purchase-form"
+                  disabled={isPurchaseSubmitting}
+                  className="flex-1"
+                >
+                  {isPurchaseSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      処理中...
+                    </>
+                  ) : (
+                    '次に進む'
+                  )}
+                </Button>
+              </>
+            ) : (
+              <>
                 <Button
                   type="button"
                   variant="outline"
@@ -888,9 +906,9 @@ export default function IdeaDetailPage() {
                     '注文を確定する'
                   )}
                 </Button>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 

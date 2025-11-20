@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Eye, Calendar } from 'lucide-react';
+import { MessageCircle, Eye, Calendar, ShoppingCart } from 'lucide-react';
 import { searchIdeas, getIdeaByCmtNo } from '@/lib/supabase/ideas';
 
 interface SearchResult {
@@ -143,16 +143,18 @@ export function SearchResults() {
                       variant={
                         (result as any).status === 'published'
                           ? 'default'
-                          : 'secondary'
+                          : (result as any).status === 'closed'
+                            ? 'default'
+                            : 'secondary'
                       }
                       className="text-xs"
                     >
                       {(result as any).status === 'published'
                         ? '公開中'
-                        : (result as any).status === 'overdue'
-                          ? '期限切れ'
-                          : (result as any).status === 'closed'
-                            ? '完成'
+                        : (result as any).status === 'closed'
+                          ? '購入可能'
+                          : (result as any).status === 'overdue'
+                            ? '期限切れ'
                             : 'その他'}
                     </Badge>
                   </div>
@@ -194,12 +196,31 @@ export function SearchResults() {
                   )}
                 </div>
 
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`/ideas/${result.id}`}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    詳細を見る
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  {(result as any).status === 'closed' ? (
+                    <>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/ideas/${result.id}`}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          詳細を見る
+                        </Link>
+                      </Button>
+                      <Button size="sm" asChild>
+                        <Link href={`/ideas/${result.id}`}>
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          購入する
+                        </Link>
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/ideas/${result.id}`}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        詳細を見る
+                      </Link>
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

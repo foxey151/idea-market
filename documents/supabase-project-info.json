@@ -1,0 +1,304 @@
+{
+  "current_project": {
+    "id": "imjqecithlgsjhhkbkbn",
+    "ref": "imjqecithlgsjhhkbkbn",
+    "name": "ideaMarket",
+    "organization_id": "bijqmshejhpxfmdzrvkk",
+    "region": "ap-northeast-1",
+    "status": "ACTIVE_HEALTHY",
+    "database": {
+      "host": "db.imjqecithlgsjhhkbkbn.supabase.co",
+      "version": "17.4.1.074",
+      "postgres_engine": "17",
+      "release_channel": "ga"
+    },
+    "created_at": "2025-08-27T01:46:48.187579Z",
+    "api_url": "https://imjqecithlgsjhhkbkbn.supabase.co",
+    "anon_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltanFlY2l0aGxnc2poaGtia2JuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyNTkyMDgsImV4cCI6MjA3MTgzNTIwOH0.iRSgJTNlRJKjaf12VyjrF5NSxYPst1fbhZv3m_Z4XtU"
+  },
+  "tables": [
+    {
+      "schema": "public",
+      "name": "profiles",
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "schema": "public",
+      "name": "user_details",
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "schema": "public",
+      "name": "mmb_counters",
+      "rls_enabled": false,
+      "rows": 0
+    },
+    {
+      "schema": "public",
+      "name": "ideas",
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "schema": "public",
+      "name": "idea_versions",
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "schema": "public",
+      "name": "comments",
+      "rls_enabled": true,
+      "rows": 4
+    },
+    {
+      "schema": "public",
+      "name": "audit_logs",
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "schema": "public",
+      "name": "blog_views",
+      "rls_enabled": true,
+      "rows": 1
+    },
+    {
+      "schema": "public",
+      "name": "blog_view_counts",
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "schema": "public",
+      "name": "pages_content",
+      "rls_enabled": false,
+      "rows": 0
+    },
+    {
+      "schema": "public",
+      "name": "sold",
+      "rls_enabled": true,
+      "rows": 0
+    }
+  ],
+  "storage_buckets": [
+    {
+      "name": "attachments",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "name": "ideas",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "name": "avatars",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    }
+  ],
+  "extensions": [
+    {
+      "name": "uuid-ossp",
+      "schema": "extensions",
+      "installed_version": "1.1"
+    },
+    {
+      "name": "pgcrypto",
+      "schema": "extensions",
+      "installed_version": "1.3"
+    },
+    {
+      "name": "pg_trgm",
+      "schema": "public",
+      "installed_version": "1.6"
+    },
+    {
+      "name": "btree_gin",
+      "schema": "public",
+      "installed_version": "1.3"
+    },
+    {
+      "name": "pg_stat_statements",
+      "schema": "extensions",
+      "installed_version": "1.11"
+    },
+    {
+      "name": "pg_graphql",
+      "schema": "graphql",
+      "installed_version": "1.5.11"
+    },
+    {
+      "name": "supabase_vault",
+      "schema": "vault",
+      "installed_version": "0.3.1"
+    }
+  ],
+  "migrations": [
+    {
+      "version": "20250130000001",
+      "name": "blog_views_table"
+    },
+    {
+      "version": "20250130000002",
+      "name": "fix_blog_views_policies"
+    },
+    {
+      "version": "20250130000003",
+      "name": "fix_rls_policies"
+    },
+    {
+      "version": "20250902000001",
+      "name": "extensions_and_enums"
+    },
+    {
+      "version": "20250902000002",
+      "name": "profiles_table"
+    },
+    {
+      "version": "20250902000003",
+      "name": "user_details_table"
+    },
+    {
+      "version": "20250902000004",
+      "name": "mmb_counters_table"
+    },
+    {
+      "version": "20250902000005",
+      "name": "ideas_table"
+    },
+    {
+      "version": "20250902000006",
+      "name": "idea_versions_table"
+    },
+    {
+      "version": "20250902000007",
+      "name": "comments_table"
+    },
+    {
+      "version": "20250902000008",
+      "name": "purchases_table"
+    },
+    {
+      "version": "20250902000009",
+      "name": "audit_logs_table"
+    },
+    {
+      "version": "20250902000010",
+      "name": "setup_storage"
+    },
+    {
+      "version": "20250902000011",
+      "name": "rls_policies"
+    },
+    {
+      "version": "20250902000012",
+      "name": "search_functions"
+    },
+    {
+      "version": "20251012032435",
+      "name": "20251012_sold_table_and_status_v2"
+    },
+    {
+      "version": "20251012054310",
+      "name": "20251012000015_admin_sold_policies"
+    },
+    {
+      "version": "20251012060014",
+      "name": "20251012000016_admin_user_details_policies"
+    },
+    {
+      "version": "20251120101918",
+      "name": "restore_idea_on_sold_delete"
+    }
+  ],
+  "custom_functions": [
+    "create_monthly_partition",
+    "generate_mmb_no",
+    "handle_new_user",
+    "purchase_idea",
+    "restore_idea_on_sold_delete",
+    "search_ideas",
+    "search_ideas_simple",
+    "search_users",
+    "set_mmb_no",
+    "set_updated_at",
+    "update_blog_view_count"
+  ],
+  "triggers": [
+    {
+      "name": "trg_ideas_set_mmb_no",
+      "table": "ideas",
+      "event": "INSERT",
+      "timing": "BEFORE"
+    },
+    {
+      "name": "trg_ideas_updated_at",
+      "table": "ideas",
+      "event": "UPDATE",
+      "timing": "BEFORE"
+    },
+    {
+      "name": "trg_profiles_updated_at",
+      "table": "profiles",
+      "event": "UPDATE",
+      "timing": "BEFORE"
+    },
+    {
+      "name": "trg_user_details_updated_at",
+      "table": "user_details",
+      "event": "UPDATE",
+      "timing": "BEFORE"
+    },
+    {
+      "name": "trg_comments_updated_at",
+      "table": "comments",
+      "event": "UPDATE",
+      "timing": "BEFORE"
+    },
+    {
+      "name": "trg_versions_updated_at",
+      "table": "idea_versions",
+      "event": "UPDATE",
+      "timing": "BEFORE"
+    },
+    {
+      "name": "trg_sold_updated_at",
+      "table": "sold",
+      "event": "UPDATE",
+      "timing": "BEFORE"
+    },
+    {
+      "name": "trg_pages_content_updated_at",
+      "table": "pages_content",
+      "event": "UPDATE",
+      "timing": "BEFORE"
+    },
+    {
+      "name": "trg_blog_view_counts_updated_at",
+      "table": "blog_view_counts",
+      "event": "UPDATE",
+      "timing": "BEFORE"
+    },
+    {
+      "name": "trg_update_blog_view_count",
+      "table": "blog_views",
+      "event": "INSERT",
+      "timing": "AFTER"
+    },
+    {
+      "name": "trg_restore_idea_on_sold_delete",
+      "table": "sold",
+      "event": "DELETE",
+      "timing": "AFTER"
+    }
+  ]
+}
+

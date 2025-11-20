@@ -99,7 +99,7 @@ export const getCommentsByIdeaId = async (ideaId: string) => {
   return { data, error };
 };
 
-// CMT番号でアイデア検索
+// CMT番号でアイデア検索（公開中と購入可能なもの）
 export const getIdeaByCmtNo = async (cmtNo: string) => {
   const { data, error } = await supabase
     .from('ideas')
@@ -110,13 +110,13 @@ export const getIdeaByCmtNo = async (cmtNo: string) => {
     `
     )
     .eq('mmb_no', cmtNo)
-    .eq('status', 'published')
+    .in('status', ['published', 'closed'])
     .single();
 
   return { data, error };
 };
 
-// キーワードでアイデア検索（title, summaryの部分一致、公開中のみ）
+// キーワードでアイデア検索（title, summaryの部分一致、公開中と購入可能なもの）
 export const searchIdeas = async (keyword: string, limit = 20, offset = 0) => {
   if (!keyword.trim()) {
     return { data: [], error: null };
@@ -131,7 +131,7 @@ export const searchIdeas = async (keyword: string, limit = 20, offset = 0) => {
     `
     )
     .or(`title.ilike.%${keyword}%,summary.ilike.%${keyword}%`)
-    .eq('status', 'published')
+    .in('status', ['published', 'closed'])
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
