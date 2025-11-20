@@ -254,6 +254,7 @@ export type Database = {
           phone_number: string;
           company: string | null;
           manager: string | null;
+          payment_deadline: string;
           created_at: string;
           updated_at: string;
         };
@@ -265,6 +266,7 @@ export type Database = {
           phone_number: string;
           company?: string | null;
           manager?: string | null;
+          payment_deadline?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -276,6 +278,7 @@ export type Database = {
           phone_number?: string;
           company?: string | null;
           manager?: string | null;
+          payment_deadline?: string;
           created_at?: string;
           updated_at?: string;
         };

@@ -56,11 +56,6 @@ export function LoginForm() {
   const handleSocialLogin = async (provider: 'google' /* | 'facebook' */) => {
     try {
       setLoading(true);
-      console.log('ソーシャルログイン開始:', provider);
-      console.log(
-        'リダイレクト先:',
-        `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`
-      );
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,

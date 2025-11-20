@@ -25,37 +25,43 @@ const Features = () => {
       icon: MessageSquare,
       title: 'コラボレーション機能',
       description: 'LINE風のコメント機能で、アイデアをブラッシュアップ',
-      gradient: 'bg-gradient-primary',
+      gradient: 'bg-gradient-tertiary',
+      hoverColor: 'group-hover:text-accent',
     },
     {
       icon: Shield,
       title: '安全な取引システム',
       description: '安心・安全な売買を実現',
       gradient: 'bg-gradient-secondary',
+      hoverColor: 'group-hover:text-secondary',
     },
     {
       icon: Zap,
       title: '瞬時の検索・発見',
       description: '求めるアイデアを瞬時に発見',
       gradient: 'bg-primary',
+      hoverColor: 'group-hover:text-primary',
     },
     {
       icon: Users,
       title: 'コミュニティ',
       description: '同じ志を持つクリエイターや企業とのネットワーキング',
-      gradient: 'bg-accent',
+      gradient: 'bg-gradient-tertiary',
+      hoverColor: 'group-hover:text-accent',
     },
     {
       icon: Globe,
       title: 'グローバル展開',
       description: '日本から世界へ、あなたのアイデアを国際市場に',
       gradient: 'bg-secondary',
+      hoverColor: 'group-hover:text-secondary',
     },
     {
       icon: Target,
       title: '的確なマッチング',
       description: '企業ニーズとアイデアを効率的にマッチング',
       gradient: 'bg-gradient-primary',
+      hoverColor: 'group-hover:text-primary',
     },
   ];
 
@@ -112,7 +118,7 @@ const Features = () => {
                 >
                   <feature.icon className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl text-foreground group-hover:text-primary transition-colors">
+                <CardTitle className={`text-xl text-foreground ${feature.hoverColor} transition-colors`}>
                   {feature.title}
                 </CardTitle>
               </CardHeader>

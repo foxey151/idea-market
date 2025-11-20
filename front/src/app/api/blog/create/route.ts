@@ -4,28 +4,16 @@ import { client, getAuthors } from '@/lib/microcms';
 
 // ブログ記事の作成
 export async function POST(request: NextRequest) {
-  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-  console.group(`🟢 ブログ作成API開始 [${requestId}]`);
-  console.log('タイムスタンプ:', new Date().toISOString());
-  console.log('リクエストURL:', request.url);
-  console.log('リクエストメソッド:', request.method);
-
   try {
     // リクエストボディの取得と解析
-    console.log('リクエストボディの解析開始...');
     let body;
     let rawBody = '';
 
     try {
       rawBody = await request.text();
-      console.log('生のリクエストボディ:', rawBody);
       body = JSON.parse(rawBody);
-      console.log('パース済みリクエストボディ:', body);
     } catch (parseError) {
       console.error('❌ JSONパースエラー:', parseError);
-      console.error('生のボディ:', rawBody);
-      console.groupEnd();
       return NextResponse.json(
         { error: 'JSONフォーマットが正しくありません' },
         { status: 400 }
@@ -33,18 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     // リクエストボディのバリデーション
-    console.log('バリデーション開始...');
     const { title, content, publishedAt, category, user_id } = body;
-
-    console.log('フィールド値:', {
-      title: title ? `"${title}" (${title.length}文字)` : 'undefined/null',
-      content: content
-        ? `${content.length}文字のHTMLコンテンツ`
-        : 'undefined/null',
-      publishedAt: publishedAt || 'undefined/null',
-      category: category || 'undefined/null',
-      user_id: user_id || 'undefined/null',
-    });
 
     // 必須フィールドチェック
     const missingFields = [];
@@ -54,7 +31,6 @@ export async function POST(request: NextRequest) {
 
     if (missingFields.length > 0) {
       console.error('❌ 必須フィールドが不足:', missingFields);
-      console.groupEnd();
       return NextResponse.json(
         {
           error: '必須フィールドが不足しています',
@@ -66,7 +42,6 @@ export async function POST(request: NextRequest) {
     }
 
     // 著者のcontentIdを取得
-    console.log('著者情報の取得開始...');
     let authorContentId: string | null = null;
     
     try {
@@ -75,7 +50,6 @@ export async function POST(request: NextRequest) {
       
       if (!author) {
         console.error('❌ 指定されたuser_idに対応する著者が見つかりません:', user_id);
-        console.groupEnd();
         return NextResponse.json(
           {
             error: '指定されたユーザーIDに対応する著者が見つかりません',
@@ -86,10 +60,8 @@ export async function POST(request: NextRequest) {
       }
       
       authorContentId = author.id;
-      console.log('✅ 著者情報取得成功:', { user_id, contentId: authorContentId });
     } catch (authorError: any) {
       console.error('❌ 著者情報取得エラー:', authorError);
-      console.groupEnd();
       return NextResponse.json(
         {
           error: '著者情報の取得に失敗しました',
@@ -116,41 +88,30 @@ export async function POST(request: NextRequest) {
       createData.category = category;
     }
 
-    console.log('microCMSに送信するデータ:', createData);
-
     // microCMSにブログ記事を作成
     if (!client) {
       console.error('❌ microCMSクライアントが初期化されていません。');
       throw new Error('microCMSクライアントが初期化されていません。');
     }
-    console.log('microCMSへのPOSTリクエスト開始...');
     const response = await client.create({
       endpoint: 'blogs',
       content: createData,
     });
-    console.log('✅ microCMSレスポンス:', response);
-    console.log('作成されたブログID:', response.id);
 
     // キャッシュ無効化処理
-    console.log('キャッシュ無効化開始...');
     try {
       // ブログ一覧ページのキャッシュを無効化
       revalidatePath('/blog');
-      console.log('✅ ブログ一覧ページのキャッシュを無効化しました');
 
       // 作成された記事の詳細ページのキャッシュも無効化
       revalidatePath(`/blog/${response.id}`);
-      console.log(`✅ 個別記事ページ (/blog/${response.id}) のキャッシュを無効化しました`);
 
       // ホームページのキャッシュも無効化（ブログが表示される場合）
       revalidatePath('/');
-      console.log('✅ ホームページのキャッシュを無効化しました');
     } catch (revalidateError) {
       console.error('⚠️ キャッシュ無効化エラー:', revalidateError);
       // キャッシュ無効化エラーは致命的ではないので続行
     }
-
-    console.groupEnd();
 
     return NextResponse.json({
       success: true,
@@ -196,8 +157,6 @@ export async function POST(request: NextRequest) {
           errorMessage = `microCMSエラー (${error.status}): ${error.message}`;
       }
     }
-
-    console.groupEnd();
 
     return NextResponse.json(
       {

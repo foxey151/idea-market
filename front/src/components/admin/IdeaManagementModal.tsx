@@ -157,34 +157,18 @@ export function IdeaManagementModal({
                         {new Date(idea.created_at).toLocaleDateString('ja-JP')}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8"
-                            onClick={() => {
-                              onOpenChange(false);
-                              window.location.href = `/admin/${idea.id}/submit`;
-                            }}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            編集
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs"
-                            onClick={() => {
-                              console.log(
-                                'Navigating to:',
-                                `/admin/${idea.id}/submit`
-                              );
-                              window.location.href = `/admin/${idea.id}/submit`;
-                            }}
-                          >
-                            テスト
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8"
+                          onClick={() => {
+                            onOpenChange(false);
+                            window.location.href = `/admin/${idea.id}/submit`;
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          編集
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

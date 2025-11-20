@@ -6,21 +6,10 @@ export function createClient() {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    console.log('Supabase設定チェック:', {
-      url: url ? '設定済み' : '未設定',
-      key: key ? '設定済み' : '未設定',
-      urlLength: url?.length || 0,
-      keyLength: key?.length || 0,
-    });
-
     if (!url || !key || url.length < 10 || key.length < 10) {
       const error =
         'Supabaseの環境変数が設定されていません。環境変数にNEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを設定してください。';
       console.error(error);
-      console.error('現在の値:', {
-        url: url?.substring(0, 20) + '...',
-        key: key?.substring(0, 20) + '...',
-      });
 
       // 環境変数が不足している場合はダミークライアントを返す
       return {
@@ -52,9 +41,7 @@ export function createClient() {
       } as any;
     }
 
-    console.log('Supabaseクライアント作成中...');
     const client = createBrowserClient<Database>(url, key);
-    console.log('Supabaseクライアント作成完了');
     return client;
   } catch (error) {
     console.error('Supabaseクライアント作成エラー:', error);

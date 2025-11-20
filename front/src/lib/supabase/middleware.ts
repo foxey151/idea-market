@@ -90,8 +90,6 @@ export async function updateSession(request: NextRequest) {
         'redirect',
         encodeURIComponent(request.nextUrl.pathname)
       );
-
-      console.log('未認証アクセスをブロック:', request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
 

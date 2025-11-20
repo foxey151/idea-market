@@ -49,10 +49,11 @@ export default {
         },
       },
       backgroundImage: {
-        'gradient-primary':
-          'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 100%)',
-        'gradient-secondary':
-          'linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--secondary)) 100%)',
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-secondary': 'var(--gradient-secondary)',
+        'gradient-tertiary': 'var(--gradient-tertiary)',
+        'gradient-hero': 'var(--gradient-hero)',
+        'gradient-subtle': 'var(--gradient-subtle)',
       },
       borderRadius: {
         lg: 'var(--radius)',

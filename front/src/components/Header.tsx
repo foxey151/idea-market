@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Search,
   Menu,
   X,
   LogIn,
@@ -14,6 +14,7 @@ import {
   User,
   Lightbulb,
   ShoppingCart,
+  Search,
 } from 'lucide-react';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { useAuth } from '@/contexts/StableAuthContext';
@@ -27,9 +28,10 @@ import {
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { user, profile, signOut, loading } = useAuth();
+  const [headerSearchQuery, setHeaderSearchQuery] = useState('');
+  const router = useRouter();
 
   const truncateText = (text: string, maxLength: number) => {
     const chars = Array.from(text);
@@ -37,16 +39,19 @@ const Header = () => {
     return chars.slice(0, maxLength).join('') + '...';
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // 検索ページに遷移（実装する際はNext.jsのrouterを使用）
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
-    }
-  };
-
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleHeaderSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = headerSearchQuery.trim();
+    if (!q) return;
+    const params = new URLSearchParams();
+    params.set('q', q);
+    params.set('type', 'keyword');
+    router.push(`/search?${params.toString()}`);
+    if (isMenuOpen) setIsMenuOpen(false);
   };
 
   // ユーザーメニューコンポーネント
@@ -131,12 +136,6 @@ const Header = () => {
               アイデア購入
             </Link>
             <Link
-              href="/search"
-              className="text-foreground/80 hover:text-primary transition-colors"
-            >
-              検索
-            </Link>
-            <Link
               href="/about"
               className="text-foreground/80 hover:text-primary transition-colors"
             >
@@ -150,17 +149,20 @@ const Header = () => {
             </Link>
           </nav>
 
-          {/* Search Bar and Desktop Actions */}
+          {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            {/* Desktop Search */}
+            <form onSubmit={handleHeaderSearch} className="flex items-center gap-2">
               <Input
-                type="text"
-                placeholder="アイデアを検索..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="pl-9 w-48 text-sm bg-background/50"
+                placeholder="アイデア検索..."
+                value={headerSearchQuery}
+                onChange={e => setHeaderSearchQuery(e.target.value)}
+                className="w-64"
               />
+              <Button type="submit" size="sm" disabled={!headerSearchQuery.trim()}>
+                <Search className="h-4 w-4 mr-2" />
+                検索
+              </Button>
             </form>
             {loading ? (
               <Button variant="outline" size="sm" disabled>
@@ -198,17 +200,18 @@ const Header = () => {
           </Button>
         </div>
 
-        {/* Mobile Search Bar - Always visible on mobile */}
+        {/* Mobile Search */}
         <div className="md:hidden mt-4">
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <form onSubmit={handleHeaderSearch} className="flex items-center gap-2">
             <Input
-              type="text"
-              placeholder="アイデアを検索..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 text-sm bg-background/50"
+              placeholder="アイデア検索..."
+              value={headerSearchQuery}
+              onChange={e => setHeaderSearchQuery(e.target.value)}
+              className="flex-1"
             />
+            <Button type="submit" size="sm" disabled={!headerSearchQuery.trim()}>
+              <Search className="h-4 w-4" />
+            </Button>
           </form>
         </div>
 
@@ -229,13 +232,6 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 アイデア購入
-              </Link>
-              <Link
-                href="/search"
-                className="text-foreground/80 hover:text-primary transition-colors py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                検索
               </Link>
               <Link
                 href="/about-ideas"

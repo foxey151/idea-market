@@ -3,17 +3,7 @@ import { getAuthors, createAuthor } from '@/lib/microcms';
 
 export async function GET(_request: NextRequest) {
   try {
-    console.log('著者API: データ取得開始');
-
     const authors = await getAuthors();
-
-    console.log('著者API: データ取得成功', {
-      count: authors.contents.length,
-      authors: authors.contents.map(author => ({
-        id: author.id,
-        name: author.user_id,
-      })),
-    });
 
     return NextResponse.json(authors);
   } catch (error: any) {
@@ -32,8 +22,6 @@ export async function GET(_request: NextRequest) {
 // 新しく追加するPOSTメソッド
 export async function POST(request: NextRequest) {
   try {
-    console.log('著者登録API: リクエスト開始');
-
     const body = await request.json();
     const { user_id } = body;
 
@@ -45,8 +33,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('著者登録API: user_id受信', { user_id });
-
     // 既存の著者をチェック
     const existingAuthors = await getAuthors();
     const authorExists = existingAuthors.contents.some(
@@ -54,7 +40,6 @@ export async function POST(request: NextRequest) {
     );
 
     if (authorExists) {
-      console.log('著者登録API: 既に登録済み', { user_id });
       return NextResponse.json(
         { message: '既に著者として登録されています', user_id },
         { status: 200 }
@@ -63,11 +48,6 @@ export async function POST(request: NextRequest) {
 
     // microCMSに著者を作成
     const newAuthor = await createAuthor({ user_id });
-
-    console.log('著者登録API: 登録成功', {
-      id: newAuthor.id,
-      user_id: newAuthor.user_id,
-    });
 
     return NextResponse.json(
       {

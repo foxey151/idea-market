@@ -220,11 +220,6 @@ export function StableAuthProvider({
   ) => {
     try {
       const redirectUrl = `${window.location.origin}/auth/callback?type=signup`;
-      console.log('=== SignUp Debug Info ===');
-      console.log('Email:', email);
-      console.log('Role:', role);
-      console.log('Redirect URL:', redirectUrl);
-      console.log('Window origin:', window.location.origin);
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -235,14 +230,7 @@ export function StableAuthProvider({
         },
       });
 
-      console.log('SignUp result:', { data, error });
       if (data?.user) {
-        console.log(
-          'User created:',
-          data.user.id,
-          'Email confirmed:',
-          data.user.email_confirmed_at
-        );
       }
 
       return { error };

@@ -23,8 +23,6 @@ export default async function BlogPage() {
   let popularBlogData: any[] = [];
 
   try {
-    console.log('ブログページ: データ取得開始');
-    
     const [categoriesResult, blogsResult, popularResult] = await Promise.all([
       getCategories().catch(error => {
         console.error('カテゴリ取得エラー:', error);
@@ -43,12 +41,6 @@ export default async function BlogPage() {
     categories = categoriesResult.contents;
     blogs = blogsResult.contents;
     popularBlogData = popularResult;
-    
-    console.log('ブログページ: データ取得完了', {
-      categoriesCount: categories.length,
-      blogsCount: blogs.length,
-      popularBlogCount: popularBlogData.length
-    });
   } catch (error) {
     console.error('ブログページ: 予期しないエラー:', error);
   }
@@ -63,7 +55,6 @@ export default async function BlogPage() {
   try {
     if (blogIds.length > 0) {
       blogViewCounts = await getBlogViewCounts(blogIds);
-      console.log('閲覧数取得完了:', blogViewCounts.length);
     }
   } catch (error) {
     console.error('閲覧数取得エラー:', error);

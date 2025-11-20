@@ -157,8 +157,6 @@ export function IdeaCreateForm() {
         .single();
 
       if (profileError) {
-        console.log('プロフィールが存在しないため作成します:', user.id);
-
         // プロフィールを作成
         const { error: createError } = await supabase.from('profiles').insert([
           {
@@ -186,8 +184,6 @@ export function IdeaCreateForm() {
           setUploadingFiles(true);
           setUploadProgress(0);
 
-          console.log('ファイルアップロード開始:', uploadedFiles.length, '件');
-
           // 進捗付きアップロード
           const { data: uploadData, error: uploadError } =
             await uploadFiles(uploadedFiles);
@@ -202,8 +198,6 @@ export function IdeaCreateForm() {
 
           // アップロードされたファイルのパスを取得
           attachments = uploadData.map(file => file.path);
-
-          console.log('ファイルアップロード完了:', attachments);
 
           setUploadProgress(100);
 
@@ -237,18 +231,12 @@ export function IdeaCreateForm() {
         attachments: attachments, // アップロードされたファイルパスを追加
       };
 
-      // デバッグ情報
-      console.log('投稿データ:', ideaInsertData);
-      console.log('ユーザー情報:', user);
-
       // アイデアをデータベースに保存
       const { data: ideaData, error } = await supabase
         .from('ideas')
         .insert([ideaInsertData])
         .select()
         .single();
-
-      console.log('Supabase応答:', { data: ideaData, error });
 
       if (error) {
         console.error('Supabaseエラー詳細:', {

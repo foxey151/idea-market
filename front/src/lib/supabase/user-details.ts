@@ -54,18 +54,12 @@ export async function getCurrentUserDetails() {
     }
 
     if (!user.user) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('ユーザーがログインしていません');
-      }
       return {
         data: null,
         error: { message: 'ユーザーがログインしていません' },
       };
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('現在のユーザー:', user.user.id);
-    }
     return getUserDetails(user.user.id);
   } catch (error) {
     console.error('getCurrentUserDetailsでエラー:', error);
@@ -107,10 +101,6 @@ async function ensureProfileExists(userId: string) {
     if (insertError) {
       console.error('プロフィール作成エラー:', insertError);
       throw insertError;
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('プロフィールを作成しました:', userId);
     }
   }
 }

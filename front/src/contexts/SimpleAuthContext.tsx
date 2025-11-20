@@ -22,11 +22,8 @@ export function SimpleAuthProvider({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('SimpleAuthProvider: 初期化開始');
-
     // 2秒後に初期化完了をシミュレート
     const timer = setTimeout(() => {
-      console.log('SimpleAuthProvider: 初期化完了');
       setLoading(false);
 
       // 環境変数チェック

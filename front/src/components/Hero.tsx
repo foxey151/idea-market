@@ -60,7 +60,7 @@ const Hero = () => {
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold mb-2 text-primary">
+              <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-primary transition-colors">
                 アイデア売買
               </h3>
               <p className="text-muted-foreground text-sm">
@@ -72,23 +72,23 @@ const Hero = () => {
               <div className="w-12 h-12 bg-gradient-secondary rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <TrendingUp className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold mb-2 text-secondary">
+              <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-secondary transition-colors">
                 アイデア換金
               </h3>
               <p className="text-muted-foreground text-sm">
-                優れたアイデアを適正価格で収益化し、継続的な収入を得られます
+                優れたアイデアを適正価格で収益化し、継続的な収入が得られます
               </p>
             </div>
 
             <div className="group p-6 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 hover:shadow-elegant transition-all duration-300 hover:-translate-y-1">
-              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-gradient-tertiary rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
                 <Search className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold mb-2 text-accent">
+              <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-accent transition-colors">
                 アイデア検索
               </h3>
               <p className="text-muted-foreground text-sm">
-                膨大なアイデアの中から、あなたのニーズにぴったりのものを発見
+                膨大なアイデアの中からあなたのニーズにぴったりのものを発見します
               </p>
             </div>
           </div>

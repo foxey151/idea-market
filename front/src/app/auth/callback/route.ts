@@ -16,20 +16,6 @@ export async function GET(request: NextRequest) {
         ? '/reset-password'
         : '/';
 
-  console.log('=== Auth Callback Debug Info ===');
-  console.log('Full URL:', requestUrl);
-  console.log('Origin:', origin);
-  console.log(
-    'Code:',
-    code ? `Present (${code.substring(0, 10)}...)` : 'Missing'
-  );
-  console.log('Type:', type);
-  console.log('Error code:', error_code);
-  console.log('Error description:', error_description);
-  console.log('RedirectTo:', redirectTo);
-  console.log('All params:', Object.fromEntries(searchParams.entries()));
-  console.log('Headers:', Object.fromEntries(request.headers.entries()));
-
   // エラーがある場合の処理
   if (error_code) {
     console.error(
@@ -45,7 +31,6 @@ export async function GET(request: NextRequest) {
   if (code) {
     try {
       const supabase = await createClient();
-      console.log('Auth callback - Attempting to exchange code for session');
 
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
@@ -68,8 +53,6 @@ export async function GET(request: NextRequest) {
       }
 
       if (data?.user) {
-        console.log('Auth callback - User authenticated:', data.user.id);
-
         const forwardedHost = request.headers.get('x-forwarded-host');
         const isLocalEnv = process.env.NODE_ENV === 'development';
 

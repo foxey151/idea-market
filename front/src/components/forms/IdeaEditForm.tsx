@@ -257,9 +257,6 @@ export function IdeaEditForm({ ideaId }: IdeaEditFormProps) {
         }),
       };
 
-      // デバッグ情報
-      console.log('更新データ:', updateData);
-
       // アイデアを更新
       const { data: updatedIdea, error } = await updateIdea(ideaId, updateData);
 

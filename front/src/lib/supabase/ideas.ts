@@ -312,6 +312,11 @@ export const cancelMyPurchase = async (params: { soldId: string; userId: string 
   return await supabase.rpc('cancel_purchase', { p_sold_id: soldId, p_user_id: userId });
 };
 
+// 期限切れ購入を自動削除（管理者用）
+export const autoCancelOverduePurchases = async () => {
+  return await supabase.rpc('auto_cancel_overdue_purchases');
+};
+
 // 最新のアイデア取得
 export const getLatestIdeas = async (limit = 10) => {
   const { data, error } = await supabase
@@ -421,15 +426,6 @@ export const updateAllOverdueIdeas = async () => {
         return { error: updateError };
       }
 
-      console.log(
-        `${overdueIdeas.length}件の期限切れアイデアを自動更新しました:`,
-        {
-          ideaIds,
-          titles: overdueIdeas.map((idea: any) => idea.title),
-          timestamp: now,
-        }
-      );
-
       return {
         data: {
           updatedCount: overdueIdeas.length,
@@ -439,7 +435,6 @@ export const updateAllOverdueIdeas = async () => {
       };
     }
 
-    console.log('期限切れのアイデアは見つかりませんでした');
     return { data: { updatedCount: 0, updatedIdeas: [], timestamp: now } };
   } catch (error) {
     console.error('期限切れアイデア自動更新中に予期しないエラーが発生:', error);
@@ -505,15 +500,11 @@ export const checkAdminStatus = async () => {
 
 // ページコンテンツ関連関数
 export const getPageContent = async (pageType: string) => {
-  console.log('Getting page content for:', pageType);
-
   const { data, error } = await supabase
     .from('pages_content')
     .select('*')
     .eq('page_type', pageType)
     .single();
-
-  console.log('Page content result:', { data, error });
 
   return { data, error };
 };

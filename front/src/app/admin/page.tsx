@@ -224,7 +224,7 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900">
-                      期限切れアイデア管理
+                      改善意見の募集期限切れ
                     </h2>
                     <p className="text-gray-600 text-sm">
                       期限切れのアイデアを自動的に検出し、ステータスを更新します

@@ -7,34 +7,18 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-
-  console.group(`🔵 ブログ更新API開始 [${requestId}]`);
-  console.log('タイムスタンプ:', new Date().toISOString());
-  console.log('リクエストURL:', request.url);
-  console.log('リクエストメソッド:', request.method);
-
   try {
     const { id } = await params;
-    console.log('ブログID:', id);
-
-    // 認証チェックは削除（一般ユーザーでも編集可能）
-    console.log('ブログ更新処理を開始します（認証なし）');
 
     // リクエストボディの取得と解析
-    console.log('リクエストボディの解析開始...');
     let body;
     let rawBody = '';
 
     try {
       rawBody = await request.text();
-      console.log('生のリクエストボディ:', rawBody);
       body = JSON.parse(rawBody);
-      console.log('パース済みリクエストボディ:', body);
     } catch (parseError) {
       console.error('❌ JSONパースエラー:', parseError);
-      console.error('生のボディ:', rawBody);
-      console.groupEnd();
       return NextResponse.json(
         { error: 'JSONフォーマットが正しくありません' },
         { status: 400 }
@@ -42,16 +26,7 @@ export async function PUT(
     }
 
     // リクエストボディのバリデーション
-    console.log('バリデーション開始...');
     const { title, content, publishedAt } = body;
-
-    console.log('フィールド値:', {
-      title: title ? `"${title}" (${title.length}文字)` : 'undefined/null',
-      content: content
-        ? `${content.length}文字のHTMLコンテンツ`
-        : 'undefined/null',
-      publishedAt: publishedAt || 'undefined/null',
-    });
 
     // 必須フィールドチェック
     const missingFields = [];
@@ -61,7 +36,6 @@ export async function PUT(
 
     if (missingFields.length > 0) {
       console.error('❌ 必須フィールドが不足:', missingFields);
-      console.groupEnd();
       return NextResponse.json(
         {
           error: '必須フィールドが不足しています',
@@ -73,7 +47,6 @@ export async function PUT(
     }
 
     // publishedAtの日付形式検証と変換
-    console.log('日付フォーマットの検証...');
     let formattedPublishedAt: string;
 
     try {
@@ -82,15 +55,12 @@ export async function PUT(
         formattedPublishedAt = new Date(
           `${publishedAt}T00:00:00.000Z`
         ).toISOString();
-        console.log('日付形式を変換:', publishedAt, '->', formattedPublishedAt);
       } else {
         // ISO形式の場合はそのまま使用
         formattedPublishedAt = new Date(publishedAt).toISOString();
-        console.log('ISO形式の日付を使用:', formattedPublishedAt);
       }
     } catch (dateError) {
       console.error('❌ 日付フォーマットエラー:', dateError);
-      console.groupEnd();
       return NextResponse.json(
         { error: '公開日時の形式が正しくありません' },
         { status: 400 }
@@ -104,18 +74,14 @@ export async function PUT(
       publishedAt: formattedPublishedAt,
     };
 
-    console.log('microCMSに送信するデータ:', updateData);
-
     // microCMSのブログ記事を更新
     if (!client) {
       console.error('❌ microCMSクライアントが初期化されていません');
-      console.groupEnd();
       return NextResponse.json(
         { error: 'サーバー内部エラー: microCMSクライアントが利用できません' },
         { status: 500 }
       );
     }
-    console.log('microCMSへのPATCHリクエスト開始...');
     if (!client) {
       throw new Error('microCMSクライアントが初期化されていません');
     }
@@ -125,28 +91,19 @@ export async function PUT(
       content: updateData,
     });
 
-    console.log('✅ microCMSレスポンス:', response);
-    console.log('更新されたブログID:', response.id);
-
     // キャッシュ無効化処理
-    console.log('キャッシュ無効化開始...');
     try {
       // ブログ一覧ページのキャッシュを無効化
       revalidatePath('/blog');
-      console.log('✅ ブログ一覧ページのキャッシュを無効化しました');
 
       // 更新された記事の詳細ページのキャッシュも無効化
       revalidatePath(`/blog/${id}`);
-      console.log(`✅ 個別記事ページ (/blog/${id}) のキャッシュを無効化しました`);
 
       // ホームページのキャッシュも無効化
       revalidatePath('/');
-      console.log('✅ ホームページのキャッシュを無効化しました');
     } catch (revalidateError) {
       console.error('⚠️ キャッシュ無効化エラー:', revalidateError);
     }
-
-    console.groupEnd();
 
     return NextResponse.json({
       success: true,
@@ -193,8 +150,6 @@ export async function PUT(
       }
     }
 
-    console.groupEnd();
-
     return NextResponse.json(
       {
         error: errorMessage,
@@ -211,31 +166,18 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-  console.group(`🟡 ブログ部分更新API開始 [${requestId}]`);
-  console.log('タイムスタンプ:', new Date().toISOString());
-  console.log('リクエストURL:', request.url);
-  console.log('リクエストメソッド:', request.method);
-
   try {
     const { id } = await params;
-    console.log('ブログID:', id);
 
     // リクエストボディの取得と解析
-    console.log('リクエストボディの解析開始...');
     let body;
     let rawBody = '';
 
     try {
       rawBody = await request.text();
-      console.log('生のリクエストボディ:', rawBody);
       body = JSON.parse(rawBody);
-      console.log('パース済みリクエストボディ:', body);
     } catch (parseError) {
       console.error('❌ JSONパースエラー:', parseError);
-      console.error('生のボディ:', rawBody);
-      console.groupEnd();
       return NextResponse.json(
         { error: 'JSONフォーマットが正しくありません' },
         { status: 400 }
@@ -269,7 +211,6 @@ export async function PATCH(
         fieldsToUpdate.push('publishedAt');
       } catch (dateError) {
         console.error('❌ 日付フォーマットエラー:', dateError);
-        console.groupEnd();
         return NextResponse.json(
           { error: '公開日時の形式が正しくありません' },
           { status: 400 }
@@ -278,19 +219,13 @@ export async function PATCH(
     }
 
     if (fieldsToUpdate.length === 0) {
-      console.warn('更新するフィールドがありません');
-      console.groupEnd();
       return NextResponse.json(
         { error: '更新するフィールドが指定されていません' },
         { status: 400 }
       );
     }
 
-    console.log('更新対象フィールド:', fieldsToUpdate);
-    console.log('microCMSに送信するデータ:', updateData);
-
     // microCMSのブログ記事を部分更新
-    console.log('microCMSへのPATCHリクエスト開始...');
     if (!client) {
       throw new Error('microCMSクライアントが初期化されていません');
     }
@@ -300,28 +235,19 @@ export async function PATCH(
       content: updateData,
     });
 
-    console.log('✅ microCMSレスポンス:', response);
-    console.log('更新されたブログID:', response.id);
-
     // キャッシュ無効化処理
-    console.log('キャッシュ無効化開始...');
     try {
       // ブログ一覧ページのキャッシュを無効化
       revalidatePath('/blog');
-      console.log('✅ ブログ一覧ページのキャッシュを無効化しました');
 
       // 更新された記事の詳細ページのキャッシュも無効化
       revalidatePath(`/blog/${id}`);
-      console.log(`✅ 個別記事ページ (/blog/${id}) のキャッシュを無効化しました`);
 
       // ホームページのキャッシュも無効化
       revalidatePath('/');
-      console.log('✅ ホームページのキャッシュを無効化しました');
     } catch (revalidateError) {
       console.error('⚠️ キャッシュ無効化エラー:', revalidateError);
     }
-
-    console.groupEnd();
 
     return NextResponse.json({
       success: true,
@@ -367,8 +293,6 @@ export async function PATCH(
           errorMessage = `microCMSエラー (${error.status}): ${error.message}`;
       }
     }
-
-    console.groupEnd();
 
     return NextResponse.json(
       {

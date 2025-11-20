@@ -76,7 +76,6 @@ export default function BlogNewPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        console.log('カテゴリ取得開始');
         const response = await fetch('/api/categories');
 
         if (!response.ok) {
@@ -84,7 +83,6 @@ export default function BlogNewPage() {
         }
 
         const data = await response.json();
-        console.log('カテゴリ取得成功:', data);
 
         setCategories(data.contents || []);
       } catch (error) {
@@ -103,7 +101,6 @@ export default function BlogNewPage() {
   useEffect(() => {
     const fetchAuthors = async () => {
       try {
-        console.log('著者取得開始');
         const response = await fetch('/api/authors');
 
         if (!response.ok) {
@@ -111,7 +108,6 @@ export default function BlogNewPage() {
         }
 
         const data = await response.json();
-        console.log('著者取得成功:', data);
 
         setAuthors(data.contents || []);
         setAuthorsLoaded(true); // 読み込み完了フラグを設定
@@ -143,8 +139,6 @@ export default function BlogNewPage() {
         }
 
         if (!authors.map((author) => author.user_id).includes(currentUserId)) {        
-          console.log('著者登録開始:', currentUserId);
-          
           // 実行フラグを設定
           authorCheckExecutedRef.current = true;
 
@@ -163,15 +157,12 @@ export default function BlogNewPage() {
             authorCheckExecutedRef.current = false;
             throw new Error(data.error || '著者登録に失敗しました');
           }
-
-          console.log('著者登録成功:', data);
           
           // 成功した場合、著者リストを再取得して状態を更新
           if (data.author) {
             setAuthors(prevAuthors => [...prevAuthors, data.author]);
           }
         } else {
-          console.log('既に著者として登録済みです:', currentUserId);
           // 既に登録済みの場合もフラグを設定
           authorCheckExecutedRef.current = true;
         }
@@ -229,8 +220,6 @@ export default function BlogNewPage() {
         ...(formData.category && { category: formData.category }),
       };
 
-      console.log('送信データ:', submitData);
-
       const response = await fetch('/api/blog/create', {
         method: 'POST',
         headers: {
@@ -240,7 +229,6 @@ export default function BlogNewPage() {
       });
 
       const result = await response.json();
-      console.log('APIレスポンス:', result);
 
       if (!response.ok) {
         throw new Error(result.error || 'ブログ記事の作成に失敗しました');

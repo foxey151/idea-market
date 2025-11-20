@@ -270,7 +270,6 @@ export default function IdeaDetailPage() {
 
     try {
       setLoadingAttachments(true);
-      console.log('添付ファイル読み込み開始:', idea.attachments);
 
       const attachmentsWithUrls = await Promise.all(
         idea.attachments.map(async filePath => {
@@ -279,8 +278,6 @@ export default function IdeaDetailPage() {
           const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(filePath);
           // ファイル名を取得
           const fileName = filePath.split('/').pop() || filePath;
-
-          console.log('ファイル処理:', { filePath, url, isImage, fileName });
 
           return {
             path: filePath,
@@ -291,7 +288,6 @@ export default function IdeaDetailPage() {
         })
       );
 
-      console.log('添付ファイル読み込み完了:', attachmentsWithUrls);
       setAttachmentUrls(attachmentsWithUrls);
     } catch (error) {
       console.error('添付ファイル読み込みエラー:', error);
@@ -378,24 +374,19 @@ export default function IdeaDetailPage() {
 
   const fetchComments = useCallback(async () => {
     try {
-      console.log('コメント取得開始 - ideaId:', ideaId);
       const { data, error } = await getCommentsByIdeaId(ideaId);
 
       if (error) {
-        console.error('コメント取得エラー:', error);
         return;
       }
 
-      console.log('コメント取得結果:', data);
       if (data) {
         setComments(data);
-        console.log('コメント設定完了:', data.length, '件');
       } else {
-        console.log('コメントデータがnullです');
         setComments([]);
       }
     } catch (error) {
-      console.error('コメント取得エラー:', error);
+      // エラーは無視
     }
   }, [ideaId]);
 
@@ -1327,15 +1318,7 @@ export default function IdeaDetailPage() {
                     </CardHeader>
 
                     <CardContent>
-                      {(() => {
-                        console.log(
-                          'コメント表示チェック - comments:',
-                          comments,
-                          'length:',
-                          comments.length
-                        );
-                        return comments && comments.length > 0;
-                      })() ? (
+                      {comments && comments.length > 0 ? (
                         <div className="space-y-6">
                           {comments.map(comment => {
                             const isIdeaAuthor =

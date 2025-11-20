@@ -54,7 +54,6 @@ export default function IdeasPage() {
       const { data, error } = await getIdeas(50, 0);
 
       if (error) {
-        console.error('アイデア取得エラー:', error);
         toast({
           title: 'エラー',
           description: 'アイデアの取得に失敗しました。',
@@ -77,7 +76,6 @@ export default function IdeasPage() {
         setIdeas([]);
       }
     } catch (error) {
-      console.error('予期しないエラー:', error);
       toast({
         title: 'エラー',
         description: '予期しないエラーが発生しました。',
@@ -106,7 +104,7 @@ export default function IdeasPage() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              hoge
+            ここで表示されているアイデアは最終（購入）段階ではありません。購入可能アイデアは<a className="text-primary hover:underline" href="/idea-buy">ここ</a>をクリックしてください。
             </p>
           </div>
 

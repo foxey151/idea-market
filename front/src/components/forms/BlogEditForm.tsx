@@ -239,7 +239,6 @@ export default function BlogEditForm({ blog }: BlogEditFormProps) {
       publishedAt: data.publishedAt,
     };
 
-    console.log('送信予定データ:', processedData);
     setFormDataToSubmit(processedData);
     setShowConfirmModal(true);
   };
@@ -259,9 +258,6 @@ export default function BlogEditForm({ blog }: BlogEditFormProps) {
         publishedAt: new Date(formDataToSubmit.publishedAt).toISOString(),
       };
 
-      // JSONの妥当性を事前チェック
-      console.log('送信するリクエストボディ:', requestBody);
-
       // PATCHメソッドで変更されたフィールドのみを送信
       const finalRequestBody: Record<string, unknown> = {};
 
@@ -278,14 +274,6 @@ export default function BlogEditForm({ blog }: BlogEditFormProps) {
         ).toISOString();
       }
 
-      console.log('PATCH用の差分データ:', finalRequestBody);
-      console.log('変更検出:', {
-        titleChanged: formDataToSubmit.title !== blog.title,
-        contentChanged: formDataToSubmit.content !== blog.content,
-        publishedAtChanged:
-          formDataToSubmit.publishedAt !== blog.publishedAt.split('T')[0],
-      });
-
       const response = await fetch(`/api/blog/update/${blog.id}`, {
         method: 'PATCH',
         headers: {
@@ -294,29 +282,17 @@ export default function BlogEditForm({ blog }: BlogEditFormProps) {
         body: JSON.stringify(finalRequestBody),
       });
 
-      // レスポンスの詳細ログ
-      console.log('APIレスポンス詳細:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-        url: response.url,
-        ok: response.ok,
-      });
-
       if (!response.ok) {
         let errorData;
         let responseText = '';
 
         try {
           responseText = await response.text();
-          console.log('エラーレスポンステキスト:', responseText);
 
           // JSONパースを試行
           errorData = JSON.parse(responseText);
-          console.log('パース済みエラーデータ:', errorData);
         } catch (parseError) {
           console.error('レスポンスのJSONパースに失敗:', parseError);
-          console.log('生のレスポンステキスト:', responseText);
           errorData = { error: 'レスポンスの解析に失敗しました' };
         }
 
@@ -337,7 +313,6 @@ export default function BlogEditForm({ blog }: BlogEditFormProps) {
 
       // 成功レスポンスの処理
       const successData = await response.json();
-      console.log('更新成功レスポンス:', successData);
 
       // 成功メッセージ
       toast({
@@ -348,27 +323,10 @@ export default function BlogEditForm({ blog }: BlogEditFormProps) {
       // ブログ詳細ページにリダイレクト
       router.push(`/blog/${blog.id}`);
     } catch (error) {
-      // 詳細なエラーログ
-      console.group('🚨 ブログ更新エラー詳細');
-      console.error('エラーオブジェクト:', error);
-      console.error(
-        'エラーメッセージ:',
-        error instanceof Error ? error.message : String(error)
-      );
-      console.error(
-        'エラーのスタックトレース:',
-        error instanceof Error ? error.stack : 'スタックトレースなし'
-      );
-      console.error('送信データ:', formDataToSubmit);
-      console.error('ブログID:', blog.id);
-      console.error('タイムスタンプ:', new Date().toISOString());
-
       // ネットワークエラーかどうかを判定
       if (error instanceof TypeError && error.message.includes('fetch')) {
         console.error('ネットワークエラーの可能性:', error.message);
       }
-
-      console.groupEnd();
 
       let errorMessage = 'しばらく時間をおいて再度お試しください。';
       if (error instanceof Error) {

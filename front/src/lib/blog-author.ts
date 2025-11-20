@@ -32,23 +32,18 @@ export async function getAuthorByBlogUserId(blogUserId: string | undefined): Pro
   try {
     // user_idが未設定の場合はモックデータを返す
     if (!blogUserId) {
-      console.log('ブログにuser_idが設定されていません');
       return MOCK_AUTHOR;
     }
-
-    console.log('著者情報取得開始:', { blogUserId });
 
     // 1. microCMSから著者のcontentIdでSupabaseのuser_idを取得
     const authorsResponse = await getAuthors();
     const author = authorsResponse.contents.find(author => author.id === blogUserId);
 
     if (!author) {
-      console.log('指定されたcontentIdに対応する著者が見つかりません:', blogUserId);
       return MOCK_AUTHOR;
     }
 
     const supabaseUserId = author.user_id;
-    console.log('Supabaseユーザー情報取得:', { contentId: blogUserId, supabaseUserId });
 
     // 2. Supabaseのprofileテーブルから著者情報を取得
     const { data: profile, error } = await supabase
@@ -68,8 +63,6 @@ export async function getAuthorByBlogUserId(blogUserId: string | undefined): Pro
         isRegistered: true,
       };
     }
-
-    console.log('著者情報取得成功:', profile);
 
     return {
       id: profile.id,
@@ -102,8 +95,6 @@ export async function getAuthorsByBlogUserIds(
     if (validUserIds.length === 0) {
       return authorMap;
     }
-
-    console.log('複数著者情報取得開始:', { count: validUserIds.length });
 
     // 1. microCMSから著者情報を一括取得
     const authorsResponse = await getAuthors();
@@ -144,11 +135,6 @@ export async function getAuthorsByBlogUserIds(
         authorMap.set(userId, MOCK_AUTHOR);
       }
     }
-
-    console.log('複数著者情報取得完了:', { 
-      requested: validUserIds.length, 
-      found: authorMap.size 
-    });
 
   } catch (error) {
     console.error('複数著者情報取得エラー:', error);

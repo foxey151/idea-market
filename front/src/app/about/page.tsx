@@ -195,24 +195,91 @@ export default function AboutPage() {
         {/* 会社情報 */}
         <Card>
           <CardHeader>
-            <CardTitle>運営会社</CardTitle>
+            <CardTitle>会社概要</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-6">
               <div>
-                <h4 className="font-semibold mb-2">会社概要</h4>
-                <div className="space-y-1 text-sm text-muted-foreground">
-                  <p>会社名: 株式会社アイデアマーケット</p>
-                  <p>設立: 2025年</p>
-                  <p>事業内容: アイデア流通プラットフォームの運営</p>
+                <h4 className="font-semibold mb-3">会社名</h4>
+                <p className="text-sm text-muted-foreground">
+                  株式会社アイデアマーケット
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-3">お問い合わせ先</h4>
+                <p className="text-sm text-muted-foreground">
+                  info@idea-market.net
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-3">資本金</h4>
+                <p className="text-sm text-muted-foreground">500万円</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-3">代表取締役</h4>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>赤石有美</p>
+                  <p className="text-xs mt-2">
+                    ＜創業者兼相談役＞
+                    <br />
+                    赤石維衆
+                    <br />
+                    技術士（総合技術監理、衛生工学、建設）No.78297
+                  </p>
                 </div>
               </div>
+
               <div>
-                <h4 className="font-semibold mb-2">お問い合わせ</h4>
-                <div className="space-y-1 text-sm text-muted-foreground">
-                  <p>Email: info@idea-market.net</p>
-                  <p>営業時間: 平日 9:00-18:00</p>
-                  <p>サポート: info@idea-market.net</p>
+                <h4 className="font-semibold mb-3">所在地</h4>
+                <p className="text-sm text-muted-foreground">
+                  福岡県春日市須玖南5の20の601
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-3">連絡先</h4>
+                <p className="text-sm text-muted-foreground">
+                  info@idea-market.net
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-3">所属会</h4>
+                <p className="text-sm text-muted-foreground">
+                  九州海外協力協会、日本技術士会、アジア水ネット（ワクワクネット）など
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-3">事業内容</h4>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>アイデア売買、アイデア換金、アイデア検索の場（プラットフォーム）の提供</li>
+                  <li>ひらめき投稿、ひらめき検索の場の提供</li>
+                  <li>技術等相談の場の提供</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-3">利益配分の基本方針</h4>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>税金：37％（税金をたくさん払うことで社会貢献をします）</li>
+                    <li>社会還元：5～35％（ＮＰＯやこども施設、こども進学給付金など）</li>
+                    <li>途上国水衛生改善：5～35％（途上国農村を中心に安価な水処理装置の製造販売事業など）</li>
+                    <li>内部留保：5～35％（会社状況による）</li>
+                    <li>経営陣報酬（使用人給与＝一般従業員と同額を除く）：安定したら2～5％</li>
+                    <li>従業員インセンティブ（貢献した従業員への還元）：安定したら約10％</li>
+                    <li>その他：残り</li>
+                  </ul>
+                  <p className="mt-3">
+                    税金や社会還元、途上国水衛生改善で、利益の70％超を目指します。
+                  </p>
+                  <p className="mt-2 text-xs italic">
+                    注記：税引き前利益が3000万円を超過した時点から基本方針に従い利益配分を行います（安定してきたら社会還元等の％を増やすことになります）。それまでの利益は従業員給与や会社成長に回させていただきます。
+                  </p>
                 </div>
               </div>
             </div>
@@ -222,3 +289,4 @@ export default function AboutPage() {
     </div>
   );
 }
+

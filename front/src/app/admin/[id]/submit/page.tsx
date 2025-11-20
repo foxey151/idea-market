@@ -71,15 +71,8 @@ export default function AdminIdeaSubmitPage() {
   // Next.js 15対応：paramsがPromiseの場合
   useEffect(() => {
     const getParams = async () => {
-      console.log('useParams result:', params);
-      console.log(
-        'Current pathname:',
-        typeof window !== 'undefined' ? window.location.pathname : 'N/A'
-      );
-
       try {
         const resolvedParams = await params;
-        console.log('Resolved params:', resolvedParams);
 
         const id =
           typeof resolvedParams.id === 'string'
@@ -87,7 +80,6 @@ export default function AdminIdeaSubmitPage() {
             : Array.isArray(resolvedParams.id)
               ? resolvedParams.id[0]
               : '';
-        console.log('Extracted ID:', id);
 
         setIdeaId(id);
       } catch (error) {
@@ -97,7 +89,6 @@ export default function AdminIdeaSubmitPage() {
           typeof window !== 'undefined'
             ? window.location.pathname.split('/').pop()
             : '';
-        console.log('Fallback ID from URL:', urlId);
         setIdeaId(urlId || '');
       }
     };
@@ -188,8 +179,6 @@ export default function AdminIdeaSubmitPage() {
   const onSubmit = async (data: AdminIdeaEditFormData) => {
     try {
       setIsSubmitting(true);
-
-      console.log('管理者アイデア更新データ:', data);
 
       // 更新データの準備
       const updateData = {

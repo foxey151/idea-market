@@ -19,6 +19,7 @@ interface SoldRow {
   phone_number: string;
   company: string | null;
   manager: string | null;
+  payment_deadline: string;
   created_at: string;
   updated_at: string;
   ideas?: { id: string; title: string; mmb_no: string; status: string } | null;

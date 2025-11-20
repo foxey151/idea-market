@@ -98,22 +98,6 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">企業の方へ</h3>
             <ul className="space-y-2">
               <li>
-                <Link
-                  href="/about-ideas"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  アイデアとは
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  法人向けサービス
-                </a>
-              </li>
-              <li>
                 <a
                   href="#"
                   className="text-muted-foreground hover:text-foreground"

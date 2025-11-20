@@ -37,19 +37,12 @@ export function validateMicroCMSConfig() {
 
 // サーバーサイドでのみ実行されることを確認
 if (typeof window !== 'undefined') {
-  console.warn('microCMSクライアントはサーバーサイドでのみ使用してください');
+  // クライアントサイドでは使用しない
 }
 
 const configValidation = validateMicroCMSConfig();
 if (!configValidation.isValid) {
   console.error('microCMS設定エラー:', configValidation.errors);
-  console.error('現在の環境:', {
-    isClient: typeof window !== 'undefined',
-    nodeEnv: process.env.NODE_ENV,
-  });
-
-  // エラーを投げる代わりに警告のみにして、モックデータを返すようにする
-  console.warn('microCMS設定が不完全です。モックデータを使用します。');
 }
 
 // microCMSクライアントを条件付きで作成
@@ -69,14 +62,6 @@ export async function testMicroCMSConnection(): Promise<{
   error?: string;
 }> {
   try {
-    console.log('microCMS接続テスト開始...');
-    console.log('設定情報:', {
-      serviceDomain: process.env.MICROCMS_SERVICE_DOMAIN,
-      hasApiKey: !!process.env.MICROCMS_API_KEY,
-      clientAvailable: !!client,
-      configValid: configValidation.isValid,
-    });
-
     if (!client) {
       return {
         success: false,
@@ -93,7 +78,6 @@ export async function testMicroCMSConnection(): Promise<{
       },
     });
 
-    console.log('microCMS接続成功:', response);
     return { success: true };
   } catch (error: any) {
     console.error('microCMS接続テスト失敗:', error);
@@ -145,17 +129,7 @@ const mockBlogs: MicroCMSListResponse<Blog> = {
 // microCMSからブログ一覧を取得
 export async function getBlogs(): Promise<MicroCMSListResponse<Blog>> {
   try {
-    console.log('microCMS設定情報:', {
-      serviceDomain: process.env.MICROCMS_SERVICE_DOMAIN,
-      hasApiKey: !!process.env.MICROCMS_API_KEY,
-      apiKeyPrefix: process.env.MICROCMS_API_KEY?.substring(0, 8) + '...',
-      clientAvailable: !!client,
-    });
-
     if (!client) {
-      console.warn(
-        'microCMSクライアントが利用できません。モックデータを返します。'
-      );
       return mockBlogs;
     }
 
@@ -176,25 +150,11 @@ export async function getBlogs(): Promise<MicroCMSListResponse<Blog>> {
     });
 
     // より具体的なエラーメッセージを提供
-    if (error.message?.includes('<!DOCTYPE')) {
-      console.warn(
-        'microCMSのblogsエンドポイントが見つかりません。モックデータを返します。'
-      );
-      return mockBlogs;
-    }
-
-    if (error.status === 404) {
-      console.warn(
-        'microCMSのblogsエンドポイントが存在しません。モックデータを返します。'
-      );
+    if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
       return mockBlogs;
     }
 
     // その他のエラーの場合はモックデータを返す
-    console.warn(
-      'microCMSエラーのため、モックデータを返します:',
-      error.message
-    );
     return mockBlogs;
   }
 }
@@ -203,9 +163,6 @@ export async function getBlogs(): Promise<MicroCMSListResponse<Blog>> {
 export async function getCategories(): Promise<MicroCMSListResponse<Category>> {
   try {
     if (!client) {
-      console.warn(
-        'microCMSクライアントが利用できません。空のカテゴリリストを返します。'
-      );
       return {
         contents: [],
         totalCount: 0,
@@ -227,9 +184,6 @@ export async function getCategories(): Promise<MicroCMSListResponse<Category>> {
 
     // HTMLレスポンスやエンドポイント不存在の場合は空のリストを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
-      console.warn(
-        'microCMSのcategoriesエンドポイントが見つかりません。空のカテゴリリストを返します。'
-      );
       return {
         contents: [],
         totalCount: 0,
@@ -238,10 +192,6 @@ export async function getCategories(): Promise<MicroCMSListResponse<Category>> {
       };
     }
 
-    console.warn(
-      'microCMSエラーのため、空のカテゴリリストを返します:',
-      error.message
-    );
     return {
       contents: [],
       totalCount: 0,
@@ -257,9 +207,6 @@ export async function getBlogsByCategory(
 ): Promise<MicroCMSListResponse<Blog>> {
   try {
     if (!client) {
-      console.warn(
-        'microCMSクライアントが利用できません。空のブログリストを返します。'
-      );
       return {
         contents: [],
         totalCount: 0,
@@ -282,9 +229,6 @@ export async function getBlogsByCategory(
 
     // HTMLレスポンスやエンドポイント不存在の場合は空のリストを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
-      console.warn(
-        'microCMSのblogsエンドポイントが見つかりません。空のブログリストを返します。'
-      );
       return {
         contents: [],
         totalCount: 0,
@@ -293,10 +237,6 @@ export async function getBlogsByCategory(
       };
     }
 
-    console.warn(
-      'microCMSエラーのため、空のブログリストを返します:',
-      error.message
-    );
     return {
       contents: [],
       totalCount: 0,
@@ -310,10 +250,6 @@ export async function getBlogsByCategory(
 export async function getBlog(id: string): Promise<Blog> {
   try {
     if (!client) {
-      console.warn(
-        `microCMSクライアントが利用できません。ID: ${id} のモックデータを返します。`
-      );
-
       // リクエストされたIDに基づいてモックデータを返す
       const mockBlog = mockBlogs.contents.find(blog => blog.id === id);
       if (mockBlog) {
@@ -340,10 +276,6 @@ export async function getBlog(id: string): Promise<Blog> {
 
     // HTMLレスポンスやエンドポイント不存在の場合はモックデータを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
-      console.warn(
-        `microCMSのblogsエンドポイントが見つかりません。ID: ${id} のモックデータを返します。`
-      );
-
       // リクエストされたIDに基づいてモックデータを返す
       const mockBlog = mockBlogs.contents.find(blog => blog.id === id);
       if (mockBlog) {
@@ -360,10 +292,6 @@ export async function getBlog(id: string): Promise<Blog> {
       };
     }
 
-    console.warn(
-      'microCMSエラーのため、モックブログデータを返します:',
-      error.message
-    );
     return {
       ...mockBlogs.contents[0],
       id,
@@ -378,9 +306,6 @@ export async function getBlog(id: string): Promise<Blog> {
 export async function getAuthors(): Promise<MicroCMSListResponse<Author>> {
   try {
     if (!client) {
-      console.warn(
-        'microCMSクライアントが利用できません。空のカテゴリリストを返します。'
-      );
       return {
         contents: [],
         totalCount: 0,
@@ -402,9 +327,6 @@ export async function getAuthors(): Promise<MicroCMSListResponse<Author>> {
 
     // HTMLレスポンスやエンドポイント不存在の場合は空のリストを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
-      console.warn(
-          'microCMSのauthorsエンドポイントが見つかりません。空のカテゴリリストを返します。'
-        );
       return {
         contents: [],
         totalCount: 0,
@@ -413,10 +335,6 @@ export async function getAuthors(): Promise<MicroCMSListResponse<Author>> {
       };
     }
 
-    console.warn(
-      'microCMSエラーのため、空の著者リストを返します:',
-      error.message
-    );
     return {
       contents: [],
       totalCount: 0,
@@ -437,16 +355,12 @@ export async function createAuthor(authorData: { user_id: string }): Promise<Aut
       throw new Error('microCMSクライアントが利用できません');
     }
 
-    console.log('microCMS著者作成開始:', authorData);
-
     const response = await client.create({
       endpoint: 'authors',
       content: {
         user_id: authorData.user_id,
       },
     });
-
-    console.log('microCMS著者作成成功:', response);
 
     return {
       id: response.id,

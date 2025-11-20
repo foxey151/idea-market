@@ -4,8 +4,6 @@ import { updateAllOverdueIdeas } from '@/lib/supabase/ideas';
 // このエンドポイントは認証を必要とするため、セキュリティのため本番環境では適切な認証を実装してください
 export async function POST(_request: NextRequest) {
   try {
-    console.log('期限切れアイデア自動更新を開始します');
-
     // 期限切れアイデアの更新を実行
     const { data, error } = await updateAllOverdueIdeas();
 

@@ -25,7 +25,6 @@ export function AdminGuard({ children }: AdminGuardProps) {
         }
 
         if (!adminStatus) {
-          console.log('管理者権限がありません');
           router.push('/403');
           return;
         }

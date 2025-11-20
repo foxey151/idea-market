@@ -120,9 +120,6 @@ export default function UserProfileForm() {
   };
 
   const loadUserDetails = async () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('loadUserDetails開始');
-    }
     setIsLoading(true);
     try {
       const [userDetailsResult, profileResult] = await Promise.all([
@@ -137,9 +134,6 @@ export default function UserProfileForm() {
       // ユーザー詳細情報がある場合
       if (userDetailsResult && !userDetailsResult.error && userDetailsResult.data) {
         const userDetails: UserDetails = userDetailsResult.data;
-        if (process.env.NODE_ENV === 'development') {
-          console.log('既存のユーザー詳細情報を読み込み:', userDetails);
-        }
         formUpdate = {
           ...formUpdate,
           full_name: userDetails.full_name || '',
@@ -164,10 +158,6 @@ export default function UserProfileForm() {
         ...prev,
         ...formUpdate,
       }));
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('新規/既存ユーザーの初期値を設定');
-      }
     } catch (error) {
       console.error('ユーザー詳細情報/プロフィールの取得に失敗:', error);
       // エラーの場合もメールアドレスのみ設定
@@ -176,9 +166,6 @@ export default function UserProfileForm() {
         email: user?.email || '',
       }));
     } finally {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('loadUserDetails完了');
-      }
       setIsLoading(false);
     }
   };

@@ -66,13 +66,6 @@ export async function POST(request: NextRequest) {
       company: '会社情報',
     };
 
-    console.log(
-      'Saving content for:',
-      documentType,
-      'Content length:',
-      content?.length
-    );
-
     // データベースにコンテンツを保存
     const { data, error } = await supabase
       .from('pages_content')
@@ -160,16 +153,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('Fetching content for type:', type);
-
     // サーバーサイドでコンテンツを取得
     const { data, error } = await supabase
       .from('pages_content')
       .select('*')
       .eq('page_type', type)
       .single();
-
-    console.log('GET result:', { data: data ? 'found' : 'null', error });
 
     if (error && error.code !== 'PGRST116') {
       console.error('Database error:', error);
