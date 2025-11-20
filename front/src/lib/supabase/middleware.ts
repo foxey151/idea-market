@@ -15,6 +15,21 @@ export async function updateSession(request: NextRequest) {
       return supabaseResponse;
     }
 
+    // Cookieのサイズをチェック（HTTP 431エラーを防ぐため）
+    const allCookies = request.cookies.getAll();
+    const cookieHeaderSize = allCookies.reduce((total, cookie) => {
+      // Cookie名、値、属性のサイズを計算（概算）
+      // Set-Cookieヘッダーの形式: name=value; attributes
+      return total + cookie.name.length + (cookie.value?.length || 0) + 50; // 50バイトは属性の概算
+    }, 0);
+
+    // ヘッダーサイズが大きすぎる場合（3.5KB以上）、警告をログに記録
+    const MAX_COOKIE_SIZE = 3500; // 3.5KB（安全マージン、デフォルト4KBの制限を考慮）
+    if (cookieHeaderSize > MAX_COOKIE_SIZE) {
+      console.warn(`⚠️ Cookieサイズが大きすぎます: ${cookieHeaderSize}バイト。HTTP 431エラーの可能性があります。`);
+      console.warn(`Cookie数: ${allCookies.length}, Supabase関連Cookie: ${allCookies.filter(c => c.name.startsWith('sb-') || c.name.includes('supabase')).length}`);
+    }
+
     // 動的インポートでSupabaseクライアントを作成（Edge Runtime対応）
     const { createServerClient } = await import('@supabase/ssr');
 
@@ -24,6 +39,17 @@ export async function updateSession(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
+        // Cookieのサイズをチェック
+        const newCookieSize = cookiesToSet.reduce((total, cookie) => {
+          return total + cookie.name.length + (cookie.value?.length || 0) + 50;
+        }, 0);
+        
+        // 新しいCookieが大きすぎる場合は警告
+        if (newCookieSize > MAX_COOKIE_SIZE) {
+          console.warn(`⚠️ 新しいCookieサイズが大きすぎます: ${newCookieSize}バイト`);
+        }
+        
+        // Cookieを設定（SupabaseのSSRパッケージが自動的に管理）
         cookiesToSet.forEach(({ name, value, options: _options }) =>
           request.cookies.set(name, value)
         );
