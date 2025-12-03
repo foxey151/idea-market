@@ -101,6 +101,42 @@ supabase db push
 - 頻繁にアクセスされるカラムにインデックス設定
 - 監査ログはパーティション化でスケーラビリティ確保
 
+## 📦 サンプルデータ
+
+### サンプルデータの作成
+
+`seed_sample_data.sql` ファイルを使用して、様々なバリエーションのサンプルデータを作成できます。
+
+**含まれるデータ:**
+- 購入可能なアイデア（published, closed）
+- 独占契約で購入済み（is_exclusive=true, status=soldout）
+- 通常購入で複数回購入済み（is_exclusive=false, purchase_count > 0）
+- 期限切れアイデア（overdue）
+- 様々な価格設定（3000, 5000, 10000, 30000, 50000円）
+- 購入履歴（purchases）
+- 購入済みレコード（sold）
+
+**使用方法:**
+
+1. **Supabaseダッシュボードから実行:**
+   - [Supabase Dashboard](https://app.supabase.com) にアクセス
+   - プロジェクトを選択 → **SQL Editor**
+   - `seed_sample_data.sql` の内容をコピー＆ペーストして実行
+
+2. **Supabase CLIから実行:**
+   ```bash
+   # ローカル環境の場合
+   supabase db execute -f seed_sample_data.sql
+   
+   # リモート環境の場合
+   supabase db execute -f seed_sample_data.sql --project-ref YOUR_PROJECT_REF
+   ```
+
+**注意事項:**
+- このファイルを実行する前に、既存のユーザー（profiles）が存在する必要があります
+- ファイル内で既存のユーザーIDを自動的に取得して使用します
+- ユーザーが存在しない場合は警告が表示されます
+
 ## 🔧 メンテナンス
 
 ### バックアップ

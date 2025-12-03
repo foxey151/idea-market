@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -18,7 +18,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, Upload, AlertCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { X, Upload, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/StableAuthContext';
 import { supabase } from '@/lib/supabase/client';
@@ -36,9 +41,8 @@ const ideaSchema = z.object({
     .max(300, '概要は300文字以内で入力してください'),
   deadline: z
     .string()
-    .optional()
+    .min(1, '議論期限は必須です')
     .refine(value => {
-      if (!value) return true; // 任意フィールドなので空でもOK
       const selectedDate = new Date(value);
       const today = new Date();
       today.setHours(0, 0, 0, 0); // 今日の00:00:00に設定
@@ -47,6 +51,7 @@ const ideaSchema = z.object({
   termsAgreed: z
     .boolean()
     .refine(val => val === true, '利用規約に同意してください'),
+  isExclusive: z.boolean().default(false),
 });
 
 type IdeaFormData = z.infer<typeof ideaSchema>;
@@ -59,6 +64,9 @@ export function IdeaCreateForm() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<Map<number, string>>(new Map());
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // 明日の日付を最小値として設定
   const getMinDate = () => {
@@ -80,6 +88,7 @@ export function IdeaCreateForm() {
     summary: '',
     deadline: '',
     termsAgreed: false,
+    isExclusive: false,
   };
 
   const {
@@ -120,7 +129,24 @@ export function IdeaCreateForm() {
 
     // 有効なファイルのみ追加
     if (validFiles.length > 0) {
-      setUploadedFiles(prev => [...prev, ...validFiles]);
+      setUploadedFiles(prev => {
+        const newFiles = [...prev, ...validFiles];
+        
+        // 画像ファイルのプレビューURLを生成
+        const newPreviewUrls = new Map(previewUrls);
+        validFiles.forEach((file, idx) => {
+          const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
+          if (isImage) {
+            const fileIndex = prev.length + idx;
+            const previewUrl = URL.createObjectURL(file);
+            newPreviewUrls.set(fileIndex, previewUrl);
+          }
+        });
+        setPreviewUrls(newPreviewUrls);
+        
+        return newFiles;
+      });
+      
       toast({
         title: 'ファイルを追加しました',
         description: `${validFiles.length}件のファイルが選択されました。`,
@@ -132,7 +158,85 @@ export function IdeaCreateForm() {
   };
 
   const removeFile = (index: number) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    setUploadedFiles(prev => {
+      // すべてのプレビューURLを解放
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+      
+      // ファイルを削除
+      const newFiles = prev.filter((_, i) => i !== index);
+      
+      // 残りのファイルのプレビューURLを再生成
+      const newPreviewUrls = new Map<number, string>();
+      newFiles.forEach((file, newIndex) => {
+        const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
+        if (isImage) {
+          const previewUrl = URL.createObjectURL(file);
+          newPreviewUrls.set(newIndex, previewUrl);
+        }
+      });
+      
+      setPreviewUrls(newPreviewUrls);
+      return newFiles;
+    });
+  };
+
+  // クリーンアップ: コンポーネントのアンマウント時にプレビューURLを解放
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  // 画像プレビューを開く
+  const openImagePreview = (index: number) => {
+    const file = uploadedFiles[index];
+    const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
+    if (isImage && previewUrls.get(index)) {
+      setSelectedImageIndex(index);
+      setIsPreviewOpen(true);
+    }
+  };
+
+  // 画像プレビューを閉じる
+  const closeImagePreview = () => {
+    setIsPreviewOpen(false);
+    setSelectedImageIndex(null);
+  };
+
+  // 前の画像に移動
+  const goToPrevImage = () => {
+    if (selectedImageIndex === null) return;
+    const imageIndices = uploadedFiles
+      .map((file, index) => {
+        const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
+        return isImage && previewUrls.get(index) ? index : null;
+      })
+      .filter((index): index is number => index !== null);
+
+    const currentIndex = imageIndices.indexOf(selectedImageIndex);
+    const prevIndex =
+      currentIndex > 0
+        ? imageIndices[currentIndex - 1]
+        : imageIndices[imageIndices.length - 1];
+    setSelectedImageIndex(prevIndex);
+  };
+
+  // 次の画像に移動
+  const goToNextImage = () => {
+    if (selectedImageIndex === null) return;
+    const imageIndices = uploadedFiles
+      .map((file, index) => {
+        const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
+        return isImage && previewUrls.get(index) ? index : null;
+      })
+      .filter((index): index is number => index !== null);
+
+    const currentIndex = imageIndices.indexOf(selectedImageIndex);
+    const nextIndex =
+      currentIndex < imageIndices.length - 1
+        ? imageIndices[currentIndex + 1]
+        : imageIndices[0];
+    setSelectedImageIndex(nextIndex);
   };
 
   const onSubmit = async (data: IdeaFormData) => {
@@ -167,7 +271,6 @@ export function IdeaCreateForm() {
         ]);
 
         if (createError) {
-          console.error('プロフィール作成エラー:', createError);
           toast({
             title: 'プロフィール作成エラー',
             description: 'ユーザープロフィールの作成に失敗しました。',
@@ -206,7 +309,6 @@ export function IdeaCreateForm() {
             description: `${uploadedFiles.length}件のファイルがアップロードされました。`,
           });
         } catch (error) {
-          console.error('ファイルアップロードエラー:', error);
           toast({
             title: 'ファイルアップロード失敗',
             description:
@@ -225,10 +327,12 @@ export function IdeaCreateForm() {
       const ideaInsertData = {
         title: data.title,
         summary: data.summary,
-        deadline: data.deadline || null, // 空文字の場合はnullに変換
+        deadline: data.deadline, // 必須フィールドなのでそのまま使用
         status: 'published' as const,
         author_id: user.id,
         attachments: attachments, // アップロードされたファイルパスを追加
+        is_exclusive: data.isExclusive || false,
+        purchase_count: 0,
       };
 
       // アイデアをデータベースに保存
@@ -239,12 +343,6 @@ export function IdeaCreateForm() {
         .single();
 
       if (error) {
-        console.error('Supabaseエラー詳細:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-        });
         throw error;
       }
 
@@ -257,8 +355,6 @@ export function IdeaCreateForm() {
       // アイデア一覧ページにリダイレクト
       router.push('/ideas');
     } catch (error) {
-      console.error('アイデア投稿エラー:', error);
-
       // エラーの詳細を取得
       let errorMessage = 'しばらく時間をおいて再度お試しください。';
 
@@ -363,7 +459,7 @@ export function IdeaCreateForm() {
                   <Label htmlFor="summary">概要 *</Label>
                   <Textarea
                     id="summary"
-                    placeholder="アイデアの簡潔な説明を入力してください（20文字以上、300文字以内）"
+                    placeholder="アイデアの簡潔な説明を入力してください（20文字以上、300文字以内）図表などは下のファイルのアップロードからお願いします"
                     rows={6}
                     {...register('summary')}
                   />
@@ -379,17 +475,18 @@ export function IdeaCreateForm() {
 
                 {/* 議論期限 */}
                 <div className="space-y-2">
-                  <Label htmlFor="deadline">議論期限（任意）</Label>
+                  <Label htmlFor="deadline">議論期限 *</Label>
                   <Input
                     id="deadline"
                     type="date"
                     min={getMinDate()}
                     {...register('deadline')}
                     className="w-full"
+                    required
                   />
                   <div className="text-sm text-muted-foreground">
-                    議論期限を設定すると、その日付まで他のユーザーからのコメントや意見を受け付けます。
-                    設定しない場合は無期限で議論が可能です。
+                    その日付まで他のユーザーからのコメントや意見を受け付けます。
+                    設定しない場合は、本サービスの対象外になります。
                   </div>
                   {errors.deadline && (
                     <p className="text-sm text-destructive">
@@ -468,22 +565,35 @@ export function IdeaCreateForm() {
                           すべて削除
                         </Button>
                       </div>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
                         {uploadedFiles.map((file, index) => {
                           const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(
                             file.name
                           );
                           const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                          const previewUrl = previewUrls.get(index);
 
                           return (
                             <div
                               key={index}
-                              className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                              className="flex items-start gap-3 p-3 bg-muted rounded-lg"
                             >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
+                              {isImage && previewUrl ? (
+                                <button
+                                  type="button"
+                                  onClick={() => openImagePreview(index)}
+                                  className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                                >
+                                  <img
+                                    src={previewUrl}
+                                    alt={file.name}
+                                    className="w-20 h-20 object-contain rounded border border-border bg-muted"
+                                  />
+                                </button>
+                              ) : (
+                                <div className="w-20 h-20 bg-primary/10 rounded flex items-center justify-center flex-shrink-0">
                                   {isImage ? (
-                                    <Upload className="h-4 w-4 text-primary" />
+                                    <Upload className="h-6 w-6 text-primary" />
                                   ) : (
                                     <span className="text-xs font-bold text-primary">
                                       {file.name
@@ -493,14 +603,14 @@ export function IdeaCreateForm() {
                                     </span>
                                   )}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">
-                                    {file.name}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {fileSize} MB {isImage && '・ 画像ファイル'}
-                                  </p>
-                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">
+                                  {file.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {fileSize} MB {isImage && '・ 画像ファイル'}
+                                </p>
                               </div>
                               <Button
                                 type="button"
@@ -508,7 +618,7 @@ export function IdeaCreateForm() {
                                 size="sm"
                                 onClick={() => removeFile(index)}
                                 disabled={uploadingFiles}
-                                className="text-muted-foreground hover:text-destructive"
+                                className="text-muted-foreground hover:text-destructive flex-shrink-0"
                               >
                                 <X className="h-4 w-4" />
                               </Button>
@@ -568,6 +678,26 @@ export function IdeaCreateForm() {
                     </p>
                   )}
                 </div>
+
+                {/* 独占契約オプション */}
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="isExclusive"
+                    checked={watch('isExclusive')}
+                    onCheckedChange={checked =>
+                      setValue('isExclusive', !!checked)
+                    }
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor="isExclusive" className="text-sm font-medium">
+                      独占契約として販売する
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      チェックを入れると、このアイデアは1回のみ購入可能になります。
+                      購入後は自動的に売り切れ（soldout）状態になります。
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -602,6 +732,71 @@ export function IdeaCreateForm() {
           </>
         )}
       </form>
+
+      {/* 画像プレビューモーダル */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
+          <DialogTitle className="sr-only">画像プレビュー</DialogTitle>
+          {selectedImageIndex !== null &&
+            uploadedFiles[selectedImageIndex] &&
+            previewUrls.get(selectedImageIndex) && (
+              <div className="relative w-full h-full">
+                {/* 閉じるボタン */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
+                  onClick={closeImagePreview}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+
+                {/* 画像表示 */}
+                <div className="w-full h-full flex items-center justify-center bg-black p-4">
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <img
+                      src={previewUrls.get(selectedImageIndex)!}
+                      alt={uploadedFiles[selectedImageIndex].name}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                </div>
+
+                {/* ナビゲーションボタン */}
+                {uploadedFiles.filter((file, idx) => {
+                  const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
+                  return isImage && previewUrls.get(idx);
+                }).length > 1 && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                      onClick={goToPrevImage}
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                      onClick={goToNextImage}
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </Button>
+                  </>
+                )}
+
+                {/* 画像情報 */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded">
+                  <p className="text-sm">
+                    {uploadedFiles[selectedImageIndex].name}
+                  </p>
+                </div>
+              </div>
+            )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

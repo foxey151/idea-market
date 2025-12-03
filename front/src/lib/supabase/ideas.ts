@@ -199,7 +199,6 @@ export const updateIdea = async (id: string, updates: IdeaUpdate) => {
 
     return { data, error };
   } catch (error) {
-    console.error('updateIdea セキュリティエラー:', error);
     return { data: null, error };
   }
 };
@@ -241,7 +240,6 @@ export const deleteIdea = async (id: string) => {
 
     return { error };
   } catch (error) {
-    console.error('deleteIdea セキュリティエラー:', error);
     return { error };
   }
 };
@@ -263,7 +261,9 @@ export const getPopularIdeas = async (limit = 10) => {
   return { data, error };
 };
 
-// 購入処理（sold作成とideasのsoldout更新）
+// 購入処理（sold作成とideasの更新）
+// - 独占契約（is_exclusive=true）の場合：statusをsoldoutに更新
+// - 通常購入（is_exclusive=false）の場合：soldレコードを作成（購入回数は管理画面で支払い済みに設定されたときに増える）
 export const purchaseIdea = async (
   params: {
     ideaId: string;
@@ -303,6 +303,25 @@ export const getMyPurchases = async (
     .range(offset, offset + limit - 1);
 
   return await query as any;
+};
+
+// ユーザーが特定のアイデアを購入済みかチェック
+export const checkUserPurchasedIdea = async (
+  userId: string,
+  ideaId: string
+): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from('sold')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('idea_id', ideaId)
+    .limit(1);
+
+  if (error) {
+    return false; // エラー時は購入可能として扱う
+  }
+
+  return (data?.length ?? 0) > 0;
 };
 
 // 自分の購入を取消（sold削除 + ideas.statusをpublished）
@@ -373,7 +392,6 @@ export const updateOverdueIdeas = async (userId: string) => {
     .or(`deadline.lt.${now},deadline.is.null`);
 
   if (fetchError) {
-    console.error('期限切れアイデア取得エラー:', fetchError);
     return { error: fetchError };
   }
 
@@ -387,7 +405,6 @@ export const updateOverdueIdeas = async (userId: string) => {
       .in('id', ideaIds);
 
     if (updateError) {
-      console.error('ステータス更新エラー:', updateError);
       return { error: updateError };
     }
   }
@@ -408,7 +425,6 @@ export const updateAllOverdueIdeas = async () => {
       .or(`deadline.lt.${now},deadline.is.null`);
 
     if (fetchError) {
-      console.error('期限切れアイデア取得エラー:', fetchError);
       return { error: fetchError };
     }
 
@@ -422,7 +438,6 @@ export const updateAllOverdueIdeas = async () => {
         .in('id', ideaIds);
 
       if (updateError) {
-        console.error('ステータス更新エラー:', updateError);
         return { error: updateError };
       }
 
@@ -437,7 +452,6 @@ export const updateAllOverdueIdeas = async () => {
 
     return { data: { updatedCount: 0, updatedIdeas: [], timestamp: now } };
   } catch (error) {
-    console.error('期限切れアイデア自動更新中に予期しないエラーが発生:', error);
     return { error };
   }
 };

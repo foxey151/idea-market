@@ -287,22 +287,6 @@ export default function AdminIdeaSubmitPage() {
   return (
     <AdminGuard>
       <div className="max-w-4xl mx-auto p-6">
-        {/* デバッグ情報 */}
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <h3 className="font-semibold text-yellow-800 mb-2">デバッグ情報</h3>
-          <div className="text-sm text-yellow-700">
-            <p>Idea ID: {ideaId}</p>
-            <p>
-              Current URL:{' '}
-              {typeof window !== 'undefined' ? window.location.href : 'N/A'}
-            </p>
-            <p>
-              Pathname:{' '}
-              {typeof window !== 'undefined' ? window.location.pathname : 'N/A'}
-            </p>
-          </div>
-        </div>
-
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/admin">

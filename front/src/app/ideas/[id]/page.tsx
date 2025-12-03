@@ -31,6 +31,7 @@ import {
   getCommentsByIdeaId,
   createComment,
   deleteIdea,
+  checkUserPurchasedIdea,
 } from '@/lib/supabase/ideas';
 import {
   Calendar,
@@ -48,6 +49,8 @@ import {
   ChevronRight,
   ShoppingCart,
   CreditCard,
+  Users,
+  CheckCircle,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/StableAuthContext';
@@ -107,6 +110,8 @@ export default function IdeaDetailPage() {
   });
   const [purchaseFormErrors, setPurchaseFormErrors] = useState<PurchaseFormErrors>({});
   const [isPurchaseSubmitting, setIsPurchaseSubmitting] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState<boolean>(false);
+  const [checkingPurchase, setCheckingPurchase] = useState<boolean>(false);
   
   const router = useRouter();
   const params = useParams();
@@ -120,12 +125,31 @@ export default function IdeaDetailPage() {
     return `¥${numPrice.toLocaleString()}`;
   };
 
+  // 購入可能かどうかを判定
+  const canPurchase = () => {
+    if (!idea) return false;
+    // 独占契約でsoldoutの場合は購入不可
+    if (idea.is_exclusive && idea.status === 'soldout') {
+      return false;
+    }
+    // closed状態の場合は購入可能
+    return idea.status === 'closed';
+  };
+
   // 購入ボタン押下時の処理
   const handlePurchase = () => {
     if (!user) {
       toast({
         title: 'ログインが必要です',
         description: '購入するにはログインしてください。',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!canPurchase()) {
+      toast({
+        title: '購入できません',
+        description: 'このアイデアは購入できません。',
         variant: 'destructive',
       });
       return;
@@ -207,7 +231,7 @@ export default function IdeaDetailPage() {
         return;
       }
 
-      // Supabase RPC を呼び出し（sold作成 + ideasをsoldout）
+      // Supabase RPC を呼び出し（sold作成 + ideasを更新）
       const { error: purchaseError } = await purchaseIdea({
         ideaId,
         userId: user.id,
@@ -217,10 +241,13 @@ export default function IdeaDetailPage() {
       });
 
       if (purchaseError) {
-        console.error('購入処理エラー:', purchaseError);
+        let errorMessage = '購入処理に失敗しました。';
+        if (purchaseError.code === '23505') {
+          errorMessage = 'このアイデアは既に売り切れです。';
+        }
         toast({
           title: 'エラー',
-          description: '購入処理に失敗しました。',
+          description: errorMessage,
           variant: 'destructive',
         });
         return;
@@ -231,8 +258,24 @@ export default function IdeaDetailPage() {
         description: 'ご入力いただいた情報で注文を進めさせていただきます。',
       });
 
-      // ローカル状態も売り切れに更新
-      setIdea(prev => (prev ? { ...prev, status: 'soldout' } : prev));
+      // アイデア情報を再取得して最新の状態を反映
+      const { data: updatedIdea } = await getIdeaById(ideaId);
+      if (updatedIdea) {
+        setIdea(updatedIdea);
+        // 購入済み状態を更新
+        setHasPurchased(true);
+      } else {
+        // 再取得に失敗した場合、ローカル状態を更新
+        // 独占契約の場合はsoldout、通常購入の場合はpurchase_countを更新
+        setIdea(prev => {
+          if (!prev) return prev;
+          if (prev.is_exclusive) {
+            return { ...prev, status: 'soldout' };
+          } else {
+            return { ...prev, purchase_count: (prev.purchase_count || 0) + 1 };
+          }
+        });
+      }
 
       // フォームをリセット
       setPurchaseFormData({
@@ -247,7 +290,6 @@ export default function IdeaDetailPage() {
       setIsPurchaseModalOpen(false);
 
     } catch (error) {
-      console.error('購入処理エラー:', error);
       toast({
         title: 'エラー',
         description: '注文処理中にエラーが発生しました。',
@@ -290,7 +332,6 @@ export default function IdeaDetailPage() {
 
       setAttachmentUrls(attachmentsWithUrls);
     } catch (error) {
-      console.error('添付ファイル読み込みエラー:', error);
       toast({
         title: 'エラー',
         description: '添付ファイルの読み込みに失敗しました。',
@@ -338,7 +379,6 @@ export default function IdeaDetailPage() {
       const { data, error } = await getIdeaById(ideaId);
 
       if (error) {
-        console.error('アイデア取得エラー:', error);
         toast({
           title: 'エラー',
           description: 'アイデアの取得に失敗しました。',
@@ -360,7 +400,6 @@ export default function IdeaDetailPage() {
 
       setIdea(data);
     } catch (error) {
-      console.error('予期しないエラー:', error);
       toast({
         title: 'エラー',
         description: '予期しないエラーが発生しました。',
@@ -395,6 +434,28 @@ export default function IdeaDetailPage() {
     fetchIdea();
     fetchComments();
   }, [fetchIdea, fetchComments]);
+
+  // 購入済みチェック
+  useEffect(() => {
+    const checkPurchase = async () => {
+      if (!user || !ideaId) {
+        setHasPurchased(false);
+        return;
+      }
+
+      try {
+        setCheckingPurchase(true);
+        const purchased = await checkUserPurchasedIdea(user.id, ideaId);
+        setHasPurchased(purchased);
+      } catch (error) {
+        setHasPurchased(false); // エラー時は購入可能として扱う
+      } finally {
+        setCheckingPurchase(false);
+      }
+    };
+
+    checkPurchase();
+  }, [user, ideaId]);
 
   // アイデアが変更された時に添付ファイルを読み込む
   useEffect(() => {
@@ -451,7 +512,6 @@ export default function IdeaDetailPage() {
       const { error } = await deleteIdea(ideaId);
 
       if (error) {
-        console.error('アイデア削除エラー:', error);
         toast({
           title: 'エラー',
           description: 'アイデアの削除に失敗しました。',
@@ -467,7 +527,6 @@ export default function IdeaDetailPage() {
 
       router.push('/my/ideas');
     } catch (error) {
-      console.error('予期しないエラー:', error);
       toast({
         title: 'エラー',
         description: '予期しないエラーが発生しました。',
@@ -504,7 +563,6 @@ export default function IdeaDetailPage() {
       );
 
       if (error) {
-        console.error('コメント投稿エラー:', error);
         toast({
           title: 'エラー',
           description: 'コメントの投稿に失敗しました。',
@@ -525,7 +583,6 @@ export default function IdeaDetailPage() {
         fetchComments();
       }
     } catch (error) {
-      console.error('予期しないエラー:', error);
       toast({
         title: 'エラー',
         description: '予期しないエラーが発生しました。',
@@ -591,7 +648,7 @@ export default function IdeaDetailPage() {
           </VisuallyHidden>
           {selectedImageIndex !== null && imageFiles[selectedImageIndex] && (
             <div className="relative w-full h-full">
-              {/* 闉するボタン */}
+              {/* ボタン */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -1228,11 +1285,35 @@ export default function IdeaDetailPage() {
                         アイデア購入
                       </CardTitle>
                       <CardDescription>
-                        このアイデアは完成済みです。詳細を購入してビジネスにお役立てください。
+                        {idea.is_exclusive 
+                          ? 'このアイデアは独占契約です。1回のみ購入可能です。'
+                          : 'このアイデアは完成済みです。詳細を購入してビジネスにお役立てください。'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-6">
+                        {/* 独占契約バッジ */}
+                        {idea.is_exclusive && (
+                          <div className="flex justify-center">
+                            <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300">
+                              独占契約
+                            </Badge>
+                          </div>
+                        )}
+
+                        {/* 購入回数表示（通常購入の場合） */}
+                        {!idea.is_exclusive && idea.purchase_count > 0 && (
+                          <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <Users className="h-5 w-5 text-blue-600" />
+                            <div className="text-center">
+                              <p className="text-sm text-blue-900 font-medium">
+                                <span className="text-lg font-bold text-blue-700">{idea.purchase_count}</span>
+                                <span className="ml-1">人が購入済み</span>
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
                         {/* 価格表示 */}
                         <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border-2 border-primary/20">
                           <div className="flex items-center justify-center gap-2 mb-2">
@@ -1243,23 +1324,50 @@ export default function IdeaDetailPage() {
                             {formatPrice(idea.price)}
                           </div>
                           <p className="text-sm text-muted-foreground mt-2">
-                            一度購入すると詳細なアイデア内容をご覧いただけます
+                            {idea.is_exclusive
+                              ? '購入すると詳細なアイデア内容をご覧いただけます（1回のみ購入可能）'
+                              : '購入すると詳細なアイデア内容をご覧いただけます'}
                           </p>
                         </div>
 
                         {/* 購入ボタン */}
                         <div className="flex flex-col gap-3">
-                          <Button
-                            onClick={handlePurchase}
-                            className="w-full text-lg py-6"
-                            size="lg"
-                          >
-                            <ShoppingCart className="h-5 w-5 mr-2" />
-                            このアイデアを購入する
-                          </Button>
-                          <p className="text-xs text-muted-foreground text-center">
-                            ※ 購入後は返金できませんのでご注意ください
-                          </p>
+                          {idea.is_exclusive && idea.status === 'soldout' ? (
+                            <div className="text-center p-4 bg-muted rounded-lg">
+                              <p className="text-sm font-medium text-muted-foreground">
+                                このアイデアは売り切れです
+                              </p>
+                            </div>
+                          ) : hasPurchased ? (
+                            <>
+                              <Button
+                                className="w-full text-lg py-6 bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
+                                size="lg"
+                                disabled={true}
+                              >
+                                <CheckCircle className="h-5 w-5 mr-2" />
+                                購入済みです
+                              </Button>
+                              <p className="text-xs text-muted-foreground text-center">
+                                このアイデアは既に購入済みです
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                onClick={handlePurchase}
+                                className="w-full text-lg py-6"
+                                size="lg"
+                                disabled={idea.is_exclusive && idea.status === 'soldout' || checkingPurchase}
+                              >
+                                <ShoppingCart className="h-5 w-5 mr-2" />
+                                このアイデアを購入する
+                              </Button>
+                              <p className="text-xs text-muted-foreground text-center">
+                                ※ 購入後は返金できませんのでご注意ください
+                              </p>
+                            </>
+                          )}
                         </div>
 
                         {/* コメント履歴（読み取り専用） */}

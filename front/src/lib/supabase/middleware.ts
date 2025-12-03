@@ -11,7 +11,6 @@ export async function updateSession(request: NextRequest) {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Supabase環境変数が設定されていません');
       return supabaseResponse;
     }
 
@@ -25,10 +24,6 @@ export async function updateSession(request: NextRequest) {
 
     // ヘッダーサイズが大きすぎる場合（3.5KB以上）、警告をログに記録
     const MAX_COOKIE_SIZE = 3500; // 3.5KB（安全マージン、デフォルト4KBの制限を考慮）
-    if (cookieHeaderSize > MAX_COOKIE_SIZE) {
-      console.warn(`⚠️ Cookieサイズが大きすぎます: ${cookieHeaderSize}バイト。HTTP 431エラーの可能性があります。`);
-      console.warn(`Cookie数: ${allCookies.length}, Supabase関連Cookie: ${allCookies.filter(c => c.name.startsWith('sb-') || c.name.includes('supabase')).length}`);
-    }
 
     // 動的インポートでSupabaseクライアントを作成（Edge Runtime対応）
     const { createServerClient } = await import('@supabase/ssr');
@@ -40,15 +35,6 @@ export async function updateSession(request: NextRequest) {
       },
       setAll(cookiesToSet) {
         // Cookieのサイズをチェック
-        const newCookieSize = cookiesToSet.reduce((total, cookie) => {
-          return total + cookie.name.length + (cookie.value?.length || 0) + 50;
-        }, 0);
-        
-        // 新しいCookieが大きすぎる場合は警告
-        if (newCookieSize > MAX_COOKIE_SIZE) {
-          console.warn(`⚠️ 新しいCookieサイズが大きすぎます: ${newCookieSize}バイト`);
-        }
-        
         // Cookieを設定（SupabaseのSSRパッケージが自動的に管理）
         cookiesToSet.forEach(({ name, value, options: _options }) =>
           request.cookies.set(name, value)
@@ -68,11 +54,6 @@ export async function updateSession(request: NextRequest) {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
-
-    // 認証エラーがある場合はログに記録
-    if (authError) {
-      console.error('認証エラー:', authError);
-    }
 
     // 認証が必要なページのリスト（より詳細な定義）
     const protectedPaths = [

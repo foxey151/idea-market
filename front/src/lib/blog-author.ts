@@ -53,7 +53,6 @@ export async function getAuthorByBlogUserId(blogUserId: string | undefined): Pro
       .single();
 
     if (error || !profile) {
-      console.error('プロフィール情報の取得に失敗しました:', error);
       // プロフィールが見つからない場合でも基本情報は返す
       return {
         id: supabaseUserId,
@@ -73,7 +72,6 @@ export async function getAuthorByBlogUserId(blogUserId: string | undefined): Pro
     };
 
   } catch (error) {
-    console.error('著者情報取得エラー:', error);
     return MOCK_AUTHOR;
   }
 }
@@ -111,10 +109,6 @@ export async function getAuthorsByBlogUserIds(
         .select('id, display_name, avatar_url')
         .in('id', supabaseUserIds);
 
-      if (error) {
-        console.error('プロフィール一括取得エラー:', error);
-      }
-
       // 3. データをマップに格納
       for (const author of authors) {
         const profile = profiles?.find((p: any) => p.id === author.user_id);
@@ -137,8 +131,6 @@ export async function getAuthorsByBlogUserIds(
     }
 
   } catch (error) {
-    console.error('複数著者情報取得エラー:', error);
-    
     // エラー時はすべてモックデータで埋める
     for (const userId of blogUserIds) {
       if (userId) {

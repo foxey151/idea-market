@@ -127,7 +127,7 @@ export default function MyPurchasesPage() {
                       <div className="flex items-center gap-3">
                         <span className="text-sm text-muted-foreground">{row.ideas?.mmb_no}</span>
                         <span className="font-medium">{row.ideas?.title}</span>
-                        {row.ideas?.status && statusBadge(row.ideas.status)}
+                        {row.ideas?.status && row.ideas.status !== 'soldout' && row.ideas.status !== 'closed' && statusBadge(row.ideas.status)}
                         {row.is_paid ? (
                           <Badge className="bg-emerald-100 text-emerald-800">支払い済み</Badge>
                         ) : (

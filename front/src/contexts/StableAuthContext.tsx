@@ -64,7 +64,6 @@ export function StableAuthProvider({
         const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         if (!url || !key) {
-          console.error('Supabase環境変数が未設定');
           setLoading(false);
           return;
         }
@@ -78,7 +77,6 @@ export function StableAuthProvider({
         if (!mountedRef.current) return;
 
         if (error) {
-          console.error('セッション取得エラー:', error);
           setLoading(false);
           return;
         }
@@ -100,7 +98,6 @@ export function StableAuthProvider({
         // クリーンアップ関数を返す
         return () => subscription.unsubscribe();
       } catch (error) {
-        console.error('認証初期化エラー:', error);
         if (mountedRef.current) {
           setLoading(false);
         }
@@ -126,8 +123,6 @@ export function StableAuthProvider({
         .single();
 
       if (profileError || !mountedRef.current) {
-        if (profileError)
-          console.error('プロフィール取得エラー:', profileError);
         return;
       }
 
@@ -142,7 +137,6 @@ export function StableAuthProvider({
 
       // ユーザー詳細情報が存在しない場合は正常（初回ユーザー）
       if (userDetailsError && userDetailsError.code !== 'PGRST116') {
-        console.error('ユーザー詳細取得エラー:', userDetailsError);
         setUserDetails(null);
         setHasCompleteProfile(false);
         return;
@@ -153,7 +147,6 @@ export function StableAuthProvider({
       setUserDetails(details);
       checkProfileCompletion(details);
     } catch (error) {
-      console.error('プロフィール取得エラー:', error);
       setProfile(null);
       setUserDetails(null);
       setHasCompleteProfile(false);
@@ -235,7 +228,6 @@ export function StableAuthProvider({
 
       return { error };
     } catch (error) {
-      console.error('SignUp exception:', error);
       return { error };
     }
   };
@@ -244,7 +236,7 @@ export function StableAuthProvider({
     try {
       await supabase.auth.signOut();
     } catch (error) {
-      console.error('サインアウトエラー:', error);
+      // エラーは無視
     }
   };
 

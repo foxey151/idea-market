@@ -109,6 +109,8 @@ export type Database = {
           status: 'published' | 'overdue' | 'closed' | 'soldout';
           price: Database['public']['Enums']['price_enum'] | null;
           special: string | null;
+          purchase_count: number;
+          is_exclusive: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -124,6 +126,8 @@ export type Database = {
           status?: 'draft' | 'published' | 'closed' | 'overdue' | 'soldout';
           price?: Database['public']['Enums']['price_enum'] | null;
           special?: string | null;
+          purchase_count?: number;
+          is_exclusive?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -139,6 +143,8 @@ export type Database = {
           status?: 'published' | 'closed' | 'overdue' | 'soldout';
           price?: Database['public']['Enums']['price_enum'] | null;
           special?: string | null;
+          purchase_count?: number;
+          is_exclusive?: boolean;
           created_at?: string;
           updated_at?: string;
         };

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { getIdeas, getCommentCount } from '@/lib/supabase/ideas';
-import { Search, Filter, MessageSquare, Calendar } from 'lucide-react';
+import { Search, Filter, MessageSquare, Calendar, Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Idea } from '@/types/ideas';
 
@@ -221,7 +221,7 @@ export default function IdeasPage() {
                         {new Date(idea.created_at).toLocaleDateString('ja-JP')}
                       </div>
                     </div>
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
+                    <CardTitle className="text-lg line-clamp-2">
                       {idea.title}
                     </CardTitle>
                     <CardDescription className="line-clamp-2">
@@ -239,9 +239,23 @@ export default function IdeasPage() {
                       </div>
 
                       <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                        <div className="flex items-center gap-1">
-                          <MessageSquare className="h-4 w-4" />
-                          <span>{idea.commentCount || 0}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1">
+                            <MessageSquare className="h-4 w-4" />
+                            <span>{idea.commentCount || 0}</span>
+                          </div>
+                          {idea.is_exclusive && (
+                            <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-800 border-yellow-300">
+                              独占契約
+                            </Badge>
+                          )}
+                          {!idea.is_exclusive && idea.purchase_count > 0 && (
+                            <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              <span className="font-semibold">{idea.purchase_count}</span>
+                              <span>人購入</span>
+                            </Badge>
+                          )}
                         </div>
                       </div>
 

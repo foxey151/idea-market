@@ -41,9 +41,6 @@ if (typeof window !== 'undefined') {
 }
 
 const configValidation = validateMicroCMSConfig();
-if (!configValidation.isValid) {
-  console.error('microCMS設定エラー:', configValidation.errors);
-}
 
 // microCMSクライアントを条件付きで作成
 export const client = configValidation.isValid
@@ -80,8 +77,6 @@ export async function testMicroCMSConnection(): Promise<{
 
     return { success: true };
   } catch (error: any) {
-    console.error('microCMS接続テスト失敗:', error);
-
     let errorMessage = 'Unknown error';
     if (error.message?.includes('<!DOCTYPE')) {
       errorMessage =
@@ -142,13 +137,6 @@ export async function getBlogs(): Promise<MicroCMSListResponse<Blog>> {
     });
     return response;
   } catch (error: any) {
-    console.error('microCMSからのデータ取得に失敗しました:', {
-      error: error.message,
-      status: error.status,
-      response: error.response,
-      config: error.config,
-    });
-
     // より具体的なエラーメッセージを提供
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
       return mockBlogs;
@@ -180,8 +168,6 @@ export async function getCategories(): Promise<MicroCMSListResponse<Category>> {
     });
     return response;
   } catch (error: any) {
-    console.error('microCMSからのカテゴリデータ取得に失敗しました:', error);
-
     // HTMLレスポンスやエンドポイント不存在の場合は空のリストを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
       return {
@@ -225,8 +211,6 @@ export async function getBlogsByCategory(
     });
     return response;
   } catch (error: any) {
-    console.error('microCMSからのブログデータ取得に失敗しました:', error);
-
     // HTMLレスポンスやエンドポイント不存在の場合は空のリストを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
       return {
@@ -272,8 +256,6 @@ export async function getBlog(id: string): Promise<Blog> {
     });
     return response;
   } catch (error: any) {
-    console.error('microCMSからのデータ取得に失敗しました:', error);
-
     // HTMLレスポンスやエンドポイント不存在の場合はモックデータを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
       // リクエストされたIDに基づいてモックデータを返す
@@ -323,8 +305,6 @@ export async function getAuthors(): Promise<MicroCMSListResponse<Author>> {
     });
     return response;
   } catch (error: any) {
-    console.error('microCMSからのuidデータ取得に失敗しました:', error);
-
     // HTMLレスポンスやエンドポイント不存在の場合は空のリストを返す
     if (error.message?.includes('<!DOCTYPE') || error.status === 404) {
       return {
@@ -369,7 +349,6 @@ export async function createAuthor(authorData: { user_id: string }): Promise<Aut
       updatedAt: new Date().toISOString(),
     };
   } catch (error: any) {
-    console.error('microCMS著者作成エラー:', error);
     throw new Error(`著者の作成に失敗しました: ${error.message}`);
   }
 }

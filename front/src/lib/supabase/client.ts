@@ -7,10 +7,6 @@ export function createClient() {
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!url || !key || url.length < 10 || key.length < 10) {
-      const error =
-        'Supabaseの環境変数が設定されていません。環境変数にNEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを設定してください。';
-      console.error(error);
-
       // 環境変数が不足している場合はダミークライアントを返す
       return {
         auth: {
@@ -44,7 +40,6 @@ export function createClient() {
     const client = createBrowserClient<Database>(url, key);
     return client;
   } catch (error) {
-    console.error('Supabaseクライアント作成エラー:', error);
     throw error;
   }
 }

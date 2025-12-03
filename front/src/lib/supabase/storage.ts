@@ -3,7 +3,7 @@ import { supabase } from './client';
 // ファイルアップロード
 export const uploadFile = async (
   file: File,
-  bucket: string = 'attachments',
+  bucket: string = 'ideas',
   folder: string = 'ideas'
 ) => {
   try {
@@ -81,7 +81,7 @@ export const uploadFile = async (
 // 複数ファイルアップロード
 export const uploadFiles = async (
   files: File[],
-  bucket: string = 'attachments',
+  bucket: string = 'ideas',
   folder: string = 'ideas'
 ) => {
   try {
@@ -116,7 +116,7 @@ export const uploadFiles = async (
 // ファイル削除
 export const deleteFile = async (
   filePath: string,
-  bucket: string = 'attachments'
+  bucket: string = 'ideas'
 ) => {
   const { error } = await supabase.storage.from(bucket).remove([filePath]);
 
@@ -126,7 +126,7 @@ export const deleteFile = async (
 // ファイル一覧取得
 export const listFiles = async (
   folder: string = 'ideas',
-  bucket: string = 'attachments'
+  bucket: string = 'ideas'
 ) => {
   const { data, error } = await supabase.storage.from(bucket).list(folder);
 
@@ -136,7 +136,7 @@ export const listFiles = async (
 // ファイルURL取得
 export const getFileUrl = async (
   filePath: string,
-  bucket: string = 'attachments'
+  bucket: string = 'ideas'
 ) => {
   const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
@@ -147,7 +147,7 @@ export const getFileUrl = async (
 export const getSignedUrl = async (
   filePath: string,
   expiresIn: number = 3600, // 1時間
-  bucket: string = 'attachments'
+  bucket: string = 'ideas'
 ) => {
   const { data, error } = await supabase.storage
     .from(bucket)
@@ -184,7 +184,7 @@ export const validateFile = (
 export const uploadFilesWithProgress = async (
   files: File[],
   onProgress: (progress: number) => void,
-  bucket: string = 'attachments',
+  bucket: string = 'ideas',
   folder: string = 'ideas'
 ) => {
   const results: Array<{ data: any; error: any }> = [];

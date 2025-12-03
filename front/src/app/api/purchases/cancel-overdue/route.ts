@@ -37,7 +37,6 @@ export async function POST(request: NextRequest) {
     const { data, error } = await autoCancelOverduePurchases();
 
     if (error) {
-      console.error('期限切れ購入削除エラー:', error);
       return NextResponse.json(
         {
           error: createError(ERROR_CODES.DB_002, error),
@@ -57,7 +56,6 @@ export async function POST(request: NextRequest) {
       ideaIds,
     });
   } catch (error) {
-    console.error('期限切れ購入削除APIで予期しないエラーが発生:', error);
     return NextResponse.json(
       {
         error: createError(ERROR_CODES.SYS_001, String(error)),

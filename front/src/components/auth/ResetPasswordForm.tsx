@@ -49,7 +49,6 @@ export function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string>('');
   const { toast } = useToast();
 
   const {
@@ -64,12 +63,6 @@ export function ResetPasswordForm() {
   useEffect(() => {
     const checkTokenValidity = async () => {
       try {
-        const debugMessages = [];
-
-        // URLの状態をログ
-        const currentUrl = window.location.href;
-        debugMessages.push(`URL: ${currentUrl}`);
-
         // 現在のセッションを確認
         const {
           data: { session },
@@ -77,16 +70,12 @@ export function ResetPasswordForm() {
         } = await supabase.auth.getSession();
 
         if (error) {
-          debugMessages.push(`セッション取得エラー: ${error.message}`);
-          setDebugInfo(debugMessages.join('\n'));
           setIsValidToken(false);
           return;
         }
 
         if (session?.user) {
           // 有効なセッションがある場合
-          debugMessages.push(`有効なセッション: ${session.user.id}`);
-          setDebugInfo(debugMessages.join('\n'));
           setIsValidToken(true);
           return;
         }
@@ -108,52 +97,32 @@ export function ResetPasswordForm() {
         const tokenHashQuery = urlParams.get('token_hash');
         const typeQuery = urlParams.get('type');
 
-        debugMessages.push(`Hash params: ${window.location.hash}`);
-        debugMessages.push(`Query params: ${window.location.search}`);
-        debugMessages.push(`Type: ${type || typeQuery || 'なし'}`);
-
         // パスワードリセット用のトークンがあるか確認
         if (
           (type === 'recovery' || typeQuery === 'recovery') &&
           (accessToken || tokenHash || tokenHashQuery || tokenQuery)
         ) {
-          debugMessages.push('パスワードリセットトークンが見つかりました');
-
           if (accessToken && refreshToken) {
             // アクセストークンがある場合はセッションを設定
-            debugMessages.push('アクセストークンでセッション設定中...');
             const { error: sessionError } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken,
             });
 
             if (sessionError) {
-              debugMessages.push(
-                `セッション設定エラー: ${sessionError.message}`
-              );
-              setDebugInfo(debugMessages.join('\n'));
               setIsValidToken(false);
             } else {
-              debugMessages.push('セッション設定成功');
-              setDebugInfo(debugMessages.join('\n'));
               setIsValidToken(true);
             }
           } else {
             // その他のトークンがある場合は有効とみなす
-            debugMessages.push('その他のトークンで認証');
-            setDebugInfo(debugMessages.join('\n'));
             setIsValidToken(true);
           }
         } else {
           // 有効なトークンがない
-          debugMessages.push('有効なリセットトークンが見つかりませんでした');
-          setDebugInfo(debugMessages.join('\n'));
           setIsValidToken(false);
         }
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        setDebugInfo(`認証確認エラー: ${errorMessage}`);
         setIsValidToken(false);
       }
     };
@@ -244,17 +213,6 @@ export function ResetPasswordForm() {
                 新しいリセットリクエストを送信してください。
               </p>
             </div>
-
-            {process.env.NODE_ENV === 'development' && debugInfo && (
-              <div className="p-3 bg-gray-100 rounded-lg border">
-                <p className="text-xs font-semibold text-gray-700 mb-2">
-                  デバッグ情報:
-                </p>
-                <pre className="text-xs text-gray-600 whitespace-pre-wrap overflow-auto">
-                  {debugInfo}
-                </pre>
-              </div>
-            )}
 
             <Button className="w-full" asChild>
               <Link href="/forgot-password">
