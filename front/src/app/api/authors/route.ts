@@ -7,8 +7,6 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json(authors);
   } catch (error: any) {
-    console.error('著者API: エラー発生', error);
-
     return NextResponse.json(
       {
         error: '著者の取得に失敗しました',
@@ -57,8 +55,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error('著者登録API: エラー発生', error);
-
     return NextResponse.json(
       {
         error: '著者の登録に失敗しました',

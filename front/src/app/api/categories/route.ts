@@ -7,8 +7,6 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json(categories);
   } catch (error: any) {
-    console.error('カテゴリAPI: エラー発生', error);
-
     return NextResponse.json(
       {
         error: 'カテゴリの取得に失敗しました',

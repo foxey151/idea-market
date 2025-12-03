@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
       rawBody = await request.text();
       body = JSON.parse(rawBody);
     } catch (parseError) {
-      console.error('❌ JSONパースエラー:', parseError);
       return NextResponse.json(
         { error: 'JSONフォーマットが正しくありません' },
         { status: 400 }
@@ -30,7 +29,6 @@ export async function POST(request: NextRequest) {
     if (!user_id) missingFields.push('user_id');
 
     if (missingFields.length > 0) {
-      console.error('❌ 必須フィールドが不足:', missingFields);
       return NextResponse.json(
         {
           error: '必須フィールドが不足しています',
@@ -49,7 +47,6 @@ export async function POST(request: NextRequest) {
       const author = authorsResponse.contents.find(author => author.user_id === user_id);
       
       if (!author) {
-        console.error('❌ 指定されたuser_idに対応する著者が見つかりません:', user_id);
         return NextResponse.json(
           {
             error: '指定されたユーザーIDに対応する著者が見つかりません',
@@ -61,7 +58,6 @@ export async function POST(request: NextRequest) {
       
       authorContentId = author.id;
     } catch (authorError: any) {
-      console.error('❌ 著者情報取得エラー:', authorError);
       return NextResponse.json(
         {
           error: '著者情報の取得に失敗しました',
@@ -90,7 +86,6 @@ export async function POST(request: NextRequest) {
 
     // microCMSにブログ記事を作成
     if (!client) {
-      console.error('❌ microCMSクライアントが初期化されていません。');
       throw new Error('microCMSクライアントが初期化されていません。');
     }
     const response = await client.create({
@@ -109,7 +104,6 @@ export async function POST(request: NextRequest) {
       // ホームページのキャッシュも無効化（ブログが表示される場合）
       revalidatePath('/');
     } catch (revalidateError) {
-      console.error('⚠️ キャッシュ無効化エラー:', revalidateError);
       // キャッシュ無効化エラーは致命的ではないので続行
     }
 
@@ -120,13 +114,6 @@ export async function POST(request: NextRequest) {
       blogId: response.id,
     });
   } catch (error: any) {
-    console.error('❌ ブログ作成エラー:', {
-      message: error.message,
-      status: error.status,
-      response: error.response,
-      stack: error.stack,
-    });
-
     // microCMSエラーの詳細解析
     let errorMessage = 'ブログ記事の作成に失敗しました';
     let statusCode = 500;

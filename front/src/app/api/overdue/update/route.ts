@@ -8,7 +8,6 @@ export async function POST(_request: NextRequest) {
     const { data, error } = await updateAllOverdueIdeas();
 
     if (error) {
-      console.error('期限切れアイデア更新エラー:', error);
       return NextResponse.json(
         {
           success: false,
@@ -25,7 +24,6 @@ export async function POST(_request: NextRequest) {
       data: data,
     });
   } catch (error) {
-    console.error('期限切れアイデア更新APIで予期しないエラーが発生:', error);
     return NextResponse.json(
       {
         success: false,

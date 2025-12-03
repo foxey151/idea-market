@@ -18,7 +18,6 @@ export async function POST(request: NextRequest) {
     const validation = BlogViewSchema.safeParse(requestBody);
     if (!validation.success) {
       const error = createError(ERROR_CODES.API_001, validation.error.issues);
-      console.error('API_001 - バリデーションエラー:', error);
       return NextResponse.json(error, { status: 400 });
     }
 
@@ -61,8 +60,6 @@ export async function POST(request: NextRequest) {
       data,
     });
   } catch (error) {
-    console.error('閲覧記録API エラー:', error);
-
     // エラーの詳細を返す（開発環境のみ）
     const errorMessage =
       process.env.NODE_ENV === 'development'

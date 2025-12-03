@@ -18,7 +18,6 @@ export async function PUT(
       rawBody = await request.text();
       body = JSON.parse(rawBody);
     } catch (parseError) {
-      console.error('❌ JSONパースエラー:', parseError);
       return NextResponse.json(
         { error: 'JSONフォーマットが正しくありません' },
         { status: 400 }
@@ -35,7 +34,6 @@ export async function PUT(
     if (!publishedAt) missingFields.push('publishedAt');
 
     if (missingFields.length > 0) {
-      console.error('❌ 必須フィールドが不足:', missingFields);
       return NextResponse.json(
         {
           error: '必須フィールドが不足しています',
@@ -60,7 +58,6 @@ export async function PUT(
         formattedPublishedAt = new Date(publishedAt).toISOString();
       }
     } catch (dateError) {
-      console.error('❌ 日付フォーマットエラー:', dateError);
       return NextResponse.json(
         { error: '公開日時の形式が正しくありません' },
         { status: 400 }
@@ -76,7 +73,6 @@ export async function PUT(
 
     // microCMSのブログ記事を更新
     if (!client) {
-      console.error('❌ microCMSクライアントが初期化されていません');
       return NextResponse.json(
         { error: 'サーバー内部エラー: microCMSクライアントが利用できません' },
         { status: 500 }
@@ -102,7 +98,7 @@ export async function PUT(
       // ホームページのキャッシュも無効化
       revalidatePath('/');
     } catch (revalidateError) {
-      console.error('⚠️ キャッシュ無効化エラー:', revalidateError);
+      // キャッシュ無効化エラーは無視
     }
 
     return NextResponse.json({
@@ -112,13 +108,6 @@ export async function PUT(
       updatedFields: Object.keys(updateData),
     });
   } catch (error: any) {
-    console.error('❌ ブログ更新エラー:', {
-      message: error.message,
-      status: error.status,
-      response: error.response,
-      stack: error.stack,
-    });
-
     // microCMSエラーの詳細解析
     let errorMessage = 'ブログ記事の更新に失敗しました';
     let statusCode = 500;
@@ -177,7 +166,6 @@ export async function PATCH(
       rawBody = await request.text();
       body = JSON.parse(rawBody);
     } catch (parseError) {
-      console.error('❌ JSONパースエラー:', parseError);
       return NextResponse.json(
         { error: 'JSONフォーマットが正しくありません' },
         { status: 400 }
@@ -210,7 +198,6 @@ export async function PATCH(
         }
         fieldsToUpdate.push('publishedAt');
       } catch (dateError) {
-        console.error('❌ 日付フォーマットエラー:', dateError);
         return NextResponse.json(
           { error: '公開日時の形式が正しくありません' },
           { status: 400 }
@@ -246,7 +233,7 @@ export async function PATCH(
       // ホームページのキャッシュも無効化
       revalidatePath('/');
     } catch (revalidateError) {
-      console.error('⚠️ キャッシュ無効化エラー:', revalidateError);
+      // キャッシュ無効化エラーは無視
     }
 
     return NextResponse.json({
@@ -256,13 +243,6 @@ export async function PATCH(
       updatedFields: fieldsToUpdate,
     });
   } catch (error: any) {
-    console.error('❌ ブログ部分更新エラー:', {
-      message: error.message,
-      status: error.status,
-      response: error.response,
-      stack: error.stack,
-    });
-
     // microCMSエラーの詳細解析
     let errorMessage = 'ブログ記事の部分更新に失敗しました';
     let statusCode = 500;

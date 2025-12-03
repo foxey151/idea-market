@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Auth check error:', authError);
       return NextResponse.json(
         { error: 'Authentication failed' },
         { status: 401 }
@@ -28,12 +27,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (profileError || !profile || profile.role !== 'admin') {
-      console.error(
-        'User is not admin. Role:',
-        profile?.role,
-        'Error:',
-        profileError
-      );
       return NextResponse.json(
         { error: '管理者権限が必要です' },
         { status: 403 }
@@ -83,7 +76,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Database error:', error);
       return NextResponse.json(
         { error: 'Failed to save document' },
         { status: 500 }
@@ -96,7 +88,6 @@ export async function POST(request: NextRequest) {
       data: data,
     });
   } catch (error) {
-    console.error('文書保存エラー:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -116,7 +107,6 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Auth check error:', authError);
       return NextResponse.json(
         { error: 'Authentication failed' },
         { status: 401 }
@@ -131,12 +121,6 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (profileError || !profile || profile.role !== 'admin') {
-      console.error(
-        'User is not admin. Role:',
-        profile?.role,
-        'Error:',
-        profileError
-      );
       return NextResponse.json(
         { error: '管理者権限が必要です' },
         { status: 403 }
@@ -161,7 +145,6 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Database error:', error);
       return NextResponse.json(
         { error: 'Failed to fetch document' },
         { status: 500 }
@@ -173,7 +156,6 @@ export async function GET(request: NextRequest) {
       data: data || null,
     });
   } catch (error) {
-    console.error('GET request error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
