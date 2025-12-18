@@ -69,6 +69,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { IdeaDetail, Comment, AttachmentInfo } from '@/types/ideas';
 import { purchaseIdea } from '@/lib/supabase/ideas';
+import { validateNoProfanity } from '@/lib/utils/profanity-filter';
 
 // 購入フォームの型定義
 interface PurchaseFormData {
@@ -119,9 +120,9 @@ export default function IdeaDetailPage() {
   const ideaId = params.id as string;
 
   // 価格フォーマット関数
-  const formatPrice = (price: string | null): string => {
+  const formatPrice = (price: number | string | null): string => {
     if (!price) return '価格未設定';
-    const numPrice = parseInt(price, 10);
+    const numPrice = typeof price === 'number' ? price : parseInt(price, 10);
     return `¥${numPrice.toLocaleString()}`;
   };
 
@@ -554,6 +555,27 @@ export default function IdeaDetailPage() {
       return;
     }
 
+    // 30字以上のバリデーション
+    if (commentText.trim().length < 30) {
+      toast({
+        title: 'エラー',
+        description: 'コメントは30字以上で入力してください。',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 不適切な言葉チェック
+    const profanityCheck = validateNoProfanity(commentText.trim());
+    if (!profanityCheck.valid) {
+      toast({
+        title: 'エラー',
+        description: profanityCheck.error || '不適切な言葉が含まれています。',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setCommentSubmitting(true);
       const { data, error } = await createComment(
@@ -974,9 +996,9 @@ export default function IdeaDetailPage() {
 
         <main className="pt-24 pb-16">
           <div className="container mx-auto px-4 max-w-7xl">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
               {/* メインコンテンツ */}
-              <div className="lg:col-span-3">
+              <div className="xl:col-span-3">
                 {/* アイデア詳細 */}
                 <Card className="mb-8">
                   <CardHeader>
@@ -1095,7 +1117,7 @@ export default function IdeaDetailPage() {
                                   }
                                   )
                                 </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                   {attachmentUrls
                                     .filter(file => file.isImage)
                                     .map((file, index) => (
@@ -1332,7 +1354,7 @@ export default function IdeaDetailPage() {
 
                         {/* 購入ボタン */}
                         <div className="flex flex-col gap-3">
-                          {idea.is_exclusive && idea.status === 'soldout' ? (
+                          {idea.is_exclusive && hasPurchased ? (
                             <div className="text-center p-4 bg-muted rounded-lg">
                               <p className="text-sm font-medium text-muted-foreground">
                                 このアイデアは売り切れです
@@ -1358,7 +1380,7 @@ export default function IdeaDetailPage() {
                                 onClick={handlePurchase}
                                 className="w-full text-lg py-6"
                                 size="lg"
-                                disabled={idea.is_exclusive && idea.status === 'soldout' || checkingPurchase}
+                                disabled={idea.is_exclusive && hasPurchased || checkingPurchase}
                               >
                                 <ShoppingCart className="h-5 w-5 mr-2" />
                                 このアイデアを購入する
@@ -1533,18 +1555,28 @@ export default function IdeaDetailPage() {
                         {idea.status === 'published' ? (
                           user ? (
                             <div className="space-y-4">
+                              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <p className="text-sm text-blue-900">
+                                  コメントは３０字以上でお願いします。投稿者の参考になり、アイデアがブラッシュアップされ、購入者が現れることが、みなさんの利益につながります。
+                                </p>
+                              </div>
                               <Textarea
-                                placeholder="コメントを入力してください..."
+                                placeholder="コメントを入力してください（30字以上）..."
                                 value={commentText}
                                 onChange={e => setCommentText(e.target.value)}
                                 rows={3}
                                 className="resize-none"
                               />
+                              {commentText.trim().length > 0 && commentText.trim().length < 30 && (
+                                <p className="text-sm text-red-500">
+                                  あと{30 - commentText.trim().length}字必要です
+                                </p>
+                              )}
                               <div className="flex justify-end">
                                 <Button
                                   onClick={handleSubmitComment}
                                   disabled={
-                                    !commentText.trim() || commentSubmitting
+                                    !commentText.trim() || commentText.trim().length < 30 || commentSubmitting
                                   }
                                   className="flex items-center gap-2"
                                 >
@@ -1599,7 +1631,7 @@ export default function IdeaDetailPage() {
               </div>
 
               {/* サイドバー（広告エリア） */}
-              <div className="lg:col-span-1">
+              <div className="xl:col-span-1">
                 <div className="sticky top-8 space-y-6">
                   {/* メイン広告 */}
                   <Card className="p-4">

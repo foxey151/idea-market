@@ -107,7 +107,7 @@ export type Database = {
           attachments: string[];
           deadline: string | null;
           status: 'published' | 'overdue' | 'closed' | 'soldout';
-          price: Database['public']['Enums']['price_enum'] | null;
+          price: number | null;
           special: string | null;
           purchase_count: number;
           is_exclusive: boolean;
@@ -124,7 +124,7 @@ export type Database = {
           attachments?: string[];
           deadline?: string | null;
           status?: 'draft' | 'published' | 'closed' | 'overdue' | 'soldout';
-          price?: Database['public']['Enums']['price_enum'] | null;
+          price?: number | null;
           special?: string | null;
           purchase_count?: number;
           is_exclusive?: boolean;
@@ -141,7 +141,7 @@ export type Database = {
           attachments?: string[];
           deadline?: string | null;
           status?: 'published' | 'closed' | 'overdue' | 'soldout';
-          price?: Database['public']['Enums']['price_enum'] | null;
+          price?: number | null;
           special?: string | null;
           purchase_count?: number;
           is_exclusive?: boolean;
@@ -538,7 +538,7 @@ export type Database = {
       purchase_status: 'succeeded' | 'refunded' | 'failed';
       account_type_enum: 'ordinary' | 'current';
       gender_enum: 'male' | 'female' | 'other';
-      price_enum: '3000' | '5000' | '10000' | '30000' | '50000';
+      price_enum: '10000' | '30000' | '50000';
       prefecture_enum:
         | 'hokkaido'
         | 'aomori'

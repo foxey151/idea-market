@@ -215,7 +215,7 @@ export default function MyIdeasPage() {
 
           {/* Loading State */}
           {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="animate-pulse">
                   <CardHeader>
@@ -253,7 +253,7 @@ export default function MyIdeasPage() {
             </div>
           ) : (
             /* Ideas Grid */
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredIdeas.map((idea, index) => (
                 <Card
                   key={idea.id}

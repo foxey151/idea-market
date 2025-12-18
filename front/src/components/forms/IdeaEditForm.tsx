@@ -24,6 +24,7 @@ import { useAuth } from '@/contexts/StableAuthContext';
 import { getIdeaById, updateIdea } from '@/lib/supabase/ideas';
 import { Database } from '@/lib/supabase/types';
 import { uploadFiles, validateFile } from '@/lib/supabase/storage';
+import { validateNoProfanity } from '@/lib/utils/profanity-filter';
 
 type Idea = Database['public']['Tables']['ideas']['Row'];
 
@@ -32,11 +33,23 @@ const ideaEditSchema = z.object({
   title: z
     .string()
     .min(1, 'タイトルは必須です')
-    .max(100, 'タイトルは100文字以内で入力してください'),
+    .max(100, 'タイトルは100文字以内で入力してください')
+    .refine(
+      (text: string) => validateNoProfanity(text).valid,
+      {
+        message: '不適切な言葉が含まれています。内容を確認してください。',
+      }
+    ),
   summary: z
     .string()
     .min(20, '概要は20文字以上で入力してください')
-    .max(300, '概要は300文字以内で入力してください'),
+    .max(300, '概要は300文字以内で入力してください')
+    .refine(
+      (text: string) => validateNoProfanity(text).valid,
+      {
+        message: '不適切な言葉が含まれています。内容を確認してください。',
+      }
+    ),
   deadline: z
     .string()
     .optional()

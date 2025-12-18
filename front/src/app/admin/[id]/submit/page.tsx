@@ -49,7 +49,21 @@ const adminIdeaEditSchema = z.object({
     .max(300, '概要は300文字以内で入力してください'),
   detail: z.string().optional(),
   status: z.enum(['published', 'closed', 'overdue']),
-  price: z.enum(['none', '3000', '5000', '10000', '30000', '50000']).optional(),
+  price: z
+    .union([
+      z.string().transform((val) => {
+        if (val === 'none' || val === '') {
+          return undefined;
+        }
+        const parsed = parseInt(val, 10);
+        return isNaN(parsed) ? undefined : parsed;
+      }),
+      z.number(),
+    ])
+    .optional()
+    .transform((val) => (val === undefined ? undefined : val)) as z.ZodType<
+    number | undefined
+  >,
   special: z
     .string()
     .max(500, '特別設定は500文字以内で入力してください')
@@ -104,13 +118,14 @@ export default function AdminIdeaSubmitPage() {
     watch,
     reset,
   } = useForm<AdminIdeaEditFormData>({
+    // @ts-ignore - zodResolverの型推論の問題を回避
     resolver: zodResolver(adminIdeaEditSchema),
     defaultValues: {
       title: '',
       summary: '',
       detail: '',
       status: 'published',
-      price: 'none',
+      price: undefined,
       special: '',
       deadline: '',
     },
@@ -154,7 +169,7 @@ export default function AdminIdeaSubmitPage() {
           summary: ideaData.summary,
           detail: ideaData.detail || '',
           status: ideaData.status,
-          price: ideaData.price || 'none',
+          price: ideaData.price ? ideaData.price : undefined,
           special: ideaData.special || '',
           deadline: ideaData.deadline ? ideaData.deadline.split('T')[0] : '',
         });
@@ -186,7 +201,7 @@ export default function AdminIdeaSubmitPage() {
         summary: data.summary,
         detail: data.detail || null,
         status: data.status,
-        price: data.price === 'none' ? null : data.price,
+        price: data.price || null,
         special: data.special || null,
         deadline: data.deadline || null,
         updated_at: new Date().toISOString(),
@@ -333,6 +348,7 @@ export default function AdminIdeaSubmitPage() {
           </div>
         </div>
 
+        {/* @ts-ignore - handleSubmitの型推論の問題を回避 */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <Card>
             <CardHeader>
@@ -419,18 +435,13 @@ export default function AdminIdeaSubmitPage() {
               <div className="space-y-2">
                 <Label htmlFor="price">価格設定</Label>
                 <Select
-                  value={watch('price') || 'none'}
+                  value={watch('price') ? String(watch('price')) : 'none'}
                   onValueChange={value => {
                     setValue(
                       'price',
                       value === 'none'
                         ? undefined
-                        : (value as
-                            | '3000'
-                            | '5000'
-                            | '10000'
-                            | '30000'
-                            | '50000')
+                        : parseInt(value, 10)
                     );
                   }}
                 >
@@ -439,15 +450,13 @@ export default function AdminIdeaSubmitPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">設定なし</SelectItem>
-                    <SelectItem value="3000">3,000円</SelectItem>
-                    <SelectItem value="5000">5,000円</SelectItem>
                     <SelectItem value="10000">10,000円</SelectItem>
                     <SelectItem value="30000">30,000円</SelectItem>
                     <SelectItem value="50000">50,000円</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="text-sm text-muted-foreground">
-                  アイデアの販売価格を設定できます。
+                  投稿者設定金額を設定できます（最終アイデア作成時の計算に使用されます）。
                 </div>
               </div>
 

@@ -14,6 +14,16 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   try {
     const { id } = await params;
     const blog = await getBlog(id);
+    
+    // デバッグ: コンテンツに画像が含まれているか確認
+    if (blog.content && typeof blog.content === 'string') {
+      const imageMatches = blog.content.match(/<img[^>]*>/gi);
+      if (imageMatches && imageMatches.length > 0) {
+        console.log('ブログコンテンツに画像タグが検出されました:', imageMatches.length, '個');
+        console.log('最初の画像タグ:', imageMatches[0]);
+      }
+    }
+    
     const viewCount = await getBlogViewCount(id);
     
     // 著者情報を取得
@@ -25,7 +35,16 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     );
 
     // コンテンツの改行を適切に処理 - MicroCMSの各種パターンに対応
-    const processedContent = blog.content
+    // 画像タグを一時的に保護
+    const imagePlaceholders: string[] = [];
+    let contentWithProtectedImages = blog.content.replace(/<img[^>]*>/gi, (match) => {
+      const placeholder = `__IMAGE_PLACEHOLDER_${imagePlaceholders.length}__`;
+      imagePlaceholders.push(match);
+      return placeholder;
+    });
+
+    // 改行処理
+    let processedContent = contentWithProtectedImages
       .replace(/<p><\/p>/g, '<br>') // 空のpタグを改行に変換
       .replace(/<p>\s*<\/p>/g, '<br>') // 空白のみのpタグを改行に変換
       .replace(/<p>&nbsp;<\/p>/g, '<br>') // &nbsp;のみのpタグを改行に変換
@@ -35,6 +54,14 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
       .replace(/\r\n/g, '\n') // Windows改行を統一
       .replace(/\r/g, '\n') // Mac改行を統一
       .replace(/\n/g, '<br>'); // 残りの改行をBRタグに変換
+
+    // 画像タグを復元
+    imagePlaceholders.forEach((imageTag, index) => {
+      processedContent = processedContent.replace(
+        `__IMAGE_PLACEHOLDER_${index}__`,
+        imageTag
+      );
+    });
 
     return (
       <div className="min-h-screen bg-gradient-subtle">
@@ -127,7 +154,8 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                   [&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:mb-4
                   [&_code]:bg-muted [&_code]:px-1 [&_code]:rounded [&_code]:text-primary
                   [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-4
-                  [&_img]:rounded-lg [&_img]:shadow-soft [&_img]:mb-4"
+                  [&_img]:rounded-lg [&_img]:shadow-soft [&_img]:mb-4 [&_img]:max-w-full [&_img]:h-auto [&_img]:block [&_img]:mx-auto
+                  [&_.blog-content-image]:rounded-lg [&_.blog-content-image]:shadow-soft [&_.blog-content-image]:mb-4 [&_.blog-content-image]:max-w-full [&_.blog-content-image]:h-auto [&_.blog-content-image]:block [&_.blog-content-image]:mx-auto [&_.blog-content-image]:my-5"
                 dangerouslySetInnerHTML={{ __html: processedContent }}
               />
             </div>

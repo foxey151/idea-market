@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { getClosedIdeas, getCommentCount } from '@/lib/supabase/ideas';
-import { Search, Filter, MessageSquare, Calendar, ShoppingCart, Users } from 'lucide-react';
+import { Search, MessageSquare, Calendar, ShoppingCart, Users, Filter } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Idea } from '@/types/ideas';
 
@@ -26,9 +26,9 @@ export default function IdeaBuyPage() {
   const router = useRouter();
 
   // 価格フォーマット関数
-  const formatPrice = (price: string | null): string => {
-    if (!price) return '価格未設定';
-    const numPrice = parseInt(price, 10);
+  const formatPrice = (price: string | number | null): string => {
+    if (price === null || price === undefined) return '価格未設定';
+    const numPrice = typeof price === 'string' ? parseInt(price, 10) : price;
     return `¥${numPrice.toLocaleString()}`;
   };
 
@@ -126,10 +126,6 @@ export default function IdeaBuyPage() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              フィルター
-            </Button>
           </div>
 
           {/* Stats */}
@@ -155,7 +151,7 @@ export default function IdeaBuyPage() {
 
           {/* Loading State */}
           {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="animate-pulse">
                   <CardHeader>
@@ -193,7 +189,7 @@ export default function IdeaBuyPage() {
             </div>
           ) : (
             /* Ideas Grid */
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredIdeas.map((idea, index) => (
                 <Card
                   key={idea.id}

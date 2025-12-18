@@ -22,6 +22,19 @@ export async function POST(request: NextRequest) {
     // リクエストボディのバリデーション
     const { title, content, publishedAt, category, user_id } = body;
 
+    // デバッグ: コンテンツに画像が含まれているか確認
+    if (content && typeof content === 'string') {
+      const imageMatches = content.match(/<img[^>]*>/gi);
+      if (imageMatches && imageMatches.length > 0) {
+        console.log('API: 画像タグが検出されました:', imageMatches.length, '個');
+        console.log('API: 最初の画像タグ:', imageMatches[0]);
+        console.log('API: コンテンツの長さ:', content.length);
+      } else {
+        console.warn('API: 警告 - コンテンツに画像タグが含まれていません');
+        console.log('API: コンテンツの最初の500文字:', content.substring(0, 500));
+      }
+    }
+
     // 必須フィールドチェック
     const missingFields = [];
     if (!title) missingFields.push('title');
@@ -88,10 +101,27 @@ export async function POST(request: NextRequest) {
     if (!client) {
       throw new Error('microCMSクライアントが初期化されていません。');
     }
+    
+    // デバッグ: 送信するデータを確認
+    console.log('microCMSに送信するデータ:');
+    console.log('- title:', createData.title);
+    console.log('- content length:', createData.content?.length);
+    const imageTagsInCreateData = createData.content?.match(/<img[^>]*>/gi);
+    if (imageTagsInCreateData) {
+      console.log('- 画像タグ数:', imageTagsInCreateData.length);
+      console.log('- 最初の画像タグ:', imageTagsInCreateData[0]);
+    }
+    
     const response = await client.create({
       endpoint: 'blogs',
       content: createData,
     });
+    
+    // デバッグ: microCMSからのレスポンスを確認
+    console.log('microCMSからのレスポンス:');
+    console.log('- response.id:', response.id);
+    // 注: create()メソッドはIDのみを返すため、contentは含まれません
+    // 送信データの確認は上記で既に実施済み
 
     // キャッシュ無効化処理
     try {

@@ -4,7 +4,7 @@
 export type AdminPageProps = Record<string, never>;
 
 /** 編集可能なドキュメント種別 */
-export type EditableDocument = 'terms' | 'privacy' | 'commerce' | 'company';
+export type EditableDocument = 'terms' | 'privacy' | 'commerce' | 'company' | 'advertising' | 'contact';
 
 /** ドキュメント編集フォームデータ型 */
 export interface DocumentFormData {

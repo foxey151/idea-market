@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
         hostname: 'images.microcms-assets.io',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
   // Supabaseとモジュール解決の問題を解決

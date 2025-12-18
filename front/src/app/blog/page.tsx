@@ -104,7 +104,7 @@ export default async function BlogPage() {
               <TrendingUp className="h-6 w-6 text-primary" />
               <h2 className="text-2xl font-bold">人気記事</h2>
             </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
               {popularBlogIds
                 .map((id: string) => blogs.find((blog: Blog) => blog.id === id))
                 .filter(
@@ -250,7 +250,7 @@ export default async function BlogPage() {
         {/* カテゴリ一覧 */}
         <section className="mb-16">
           <h2 className="text-2xl font-bold mb-8">カテゴリ別に記事を探す</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
             {categories.map((category: Category) => (
               <Card
                 key={category.id}

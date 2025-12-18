@@ -212,8 +212,26 @@ export default function BlogNewPage() {
         throw new Error('ユーザーIDが取得できませんでした。ログインしてください。');
       }
 
+      // エディターから最新のコンテンツを取得（画像を含む）
+      let finalContent = formData.content;
+      if (editableRef.current) {
+        finalContent = editableRef.current.innerHTML;
+        console.log('エディターから取得したコンテンツ:', finalContent.substring(0, 200));
+      }
+
+      // コンテンツ内の画像が正しく含まれているか確認
+      const contentHasImages = finalContent.includes('<img');
+      if (contentHasImages) {
+        const imageTags = finalContent.match(/<img[^>]*>/gi);
+        console.log('画像が含まれています:', imageTags?.length, '個');
+        console.log('画像タグ:', imageTags);
+      } else {
+        console.warn('警告: コンテンツに画像が含まれていません');
+      }
+
       const submitData = {
         ...formData,
+        content: finalContent, // エディターから取得した最新のコンテンツを使用
         status: 'PUBLISH',
         user_id: currentUserId,
         publishedAt: new Date().toISOString(),
@@ -272,6 +290,25 @@ export default function BlogNewPage() {
         ...prev,
         content: newContent,
       }));
+      
+      // 既存の画像にクリックイベントを追加
+      const images = editableRef.current.querySelectorAll('img');
+      images.forEach((img) => {
+        // 既にイベントリスナーが追加されているかチェック
+        if (!img.hasAttribute('data-image-click-handler')) {
+          img.setAttribute('data-image-click-handler', 'true');
+          img.setAttribute('contenteditable', 'false');
+          img.style.cursor = 'pointer';
+          img.addEventListener('click', (e) => {
+            e.preventDefault();
+            const shouldDelete = window.confirm('この画像を削除しますか？\n\n削除する場合は「OK」、キャンセルする場合は「キャンセル」をクリックしてください。');
+            if (shouldDelete && img.parentNode) {
+              img.remove();
+              handleEditablePreviewChange();
+            }
+          });
+        }
+      });
     }
   };
 
@@ -399,28 +436,142 @@ export default function BlogNewPage() {
         }
       }
     },
-    image: () => {
-      // TODO: モーダル化してより良いUI/UXを実装する
-      // eslint-disable-next-line no-alert
-      const url = window.prompt('画像URLを入力してください:');
-      if (url) {
+    image: async () => {
+      // ファイル選択ダイアログを開く
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/jpeg,image/jpg,image/png,image/webp,image/gif';
+      input.style.display = 'none';
+      
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+
+        // ファイルサイズチェック（10MB）
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+          toast({
+            title: 'エラー',
+            description: 'ファイルサイズが大きすぎます。最大10MBまでのファイルを選択してください。',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // ローディング表示
         const range = getSelectionRange();
+        let loadingElement: HTMLDivElement | null = null;
         if (range) {
-          try {
+          loadingElement = document.createElement('div');
+          loadingElement.textContent = '画像をアップロード中...';
+          loadingElement.style.padding = '10px';
+          loadingElement.style.border = '1px dashed #ccc';
+          loadingElement.style.borderRadius = '4px';
+          loadingElement.style.color = '#666';
+          range.insertNode(loadingElement);
+          window.getSelection()?.removeAllRanges();
+        }
+
+        try {
+          // FormDataを作成
+          const formData = new FormData();
+          formData.append('file', file);
+
+          // APIにアップロード
+          const response = await fetch('/api/blog/upload-image', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.error || '画像のアップロードに失敗しました');
+          }
+
+          // ローディング要素を削除
+          if (loadingElement && loadingElement.parentNode) {
+            loadingElement.remove();
+          }
+
+          // 画像を挿入
+          if (range) {
             const imgElement = document.createElement('img');
-            imgElement.src = url;
+            imgElement.src = result.url;
             imgElement.alt = '画像';
+            imgElement.className = 'blog-content-image';
             imgElement.style.maxWidth = '100%';
+            imgElement.style.height = 'auto';
+            imgElement.style.display = 'block';
+            imgElement.style.margin = '20px auto';
+            imgElement.style.borderRadius = '8px';
+            imgElement.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+            imgElement.style.cursor = 'pointer';
+            imgElement.setAttribute('contenteditable', 'false');
+            
+            // 画像をクリックしたときの処理（削除や編集）
+            imgElement.addEventListener('click', (e) => {
+              e.preventDefault();
+              const shouldDelete = window.confirm('この画像を削除しますか？\n\n削除する場合は「OK」、キャンセルする場合は「キャンセル」をクリックしてください。');
+              if (shouldDelete && imgElement.parentNode) {
+                imgElement.remove();
+                handleEditablePreviewChange();
+              }
+            });
+            
+            // 画像の読み込みエラーハンドリング
+            imgElement.onerror = () => {
+              imgElement.style.display = 'none';
+              const errorDiv = document.createElement('div');
+              errorDiv.textContent = '画像の読み込みに失敗しました';
+              errorDiv.style.padding = '10px';
+              errorDiv.style.border = '1px dashed #ccc';
+              errorDiv.style.borderRadius = '4px';
+              errorDiv.style.color = '#999';
+              errorDiv.style.textAlign = 'center';
+              imgElement.parentNode?.replaceChild(errorDiv, imgElement);
+            };
+
+            // 画像のサイズを取得して設定
+            const img = new window.Image();
+            img.onload = () => {
+              imgElement.width = img.width;
+              imgElement.height = img.height;
+              handleEditablePreviewChange();
+            };
+            img.onerror = () => {
+              console.error('画像の読み込みに失敗しました:', result.url);
+            };
+            img.src = result.url;
 
             range.insertNode(imgElement);
-
             window.getSelection()?.removeAllRanges();
             handleEditablePreviewChange();
-          } catch (error) {
-            console.error('画像の挿入に失敗しました:', error);
+
+            toast({
+              title: '成功',
+              description: '画像をアップロードしました',
+            });
           }
+        } catch (error: any) {
+          console.error('画像のアップロードに失敗しました:', error);
+          
+          // ローディング要素を削除
+          if (loadingElement && loadingElement.parentNode) {
+            loadingElement.remove();
+          }
+
+          toast({
+            title: 'エラー',
+            description: error.message || '画像のアップロードに失敗しました',
+            variant: 'destructive',
+          });
         }
-      }
+      };
+
+      document.body.appendChild(input);
+      input.click();
+      document.body.removeChild(input);
     },
   };
 
@@ -660,7 +811,8 @@ export default function BlogNewPage() {
                       [&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:mb-4
                       [&_code]:bg-muted [&_code]:px-1 [&_code]:rounded [&_code]:text-primary
                       [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-4
-                      [&_img]:rounded-lg [&_img]:shadow-soft [&_img]:mb-4
+                      [&_img]:rounded-lg [&_img]:shadow-soft [&_img]:mb-4 [&_img]:max-w-full [&_img]:h-auto [&_img]:block [&_img]:mx-auto [&_img]:my-5
+                      [&_.blog-content-image]:rounded-lg [&_.blog-content-image]:shadow-soft [&_.blog-content-image]:mb-4 [&_.blog-content-image]:max-w-full [&_.blog-content-image]:h-auto [&_.blog-content-image]:block [&_.blog-content-image]:mx-auto [&_.blog-content-image]:my-5
                       focus:ring-2 focus:ring-primary focus:ring-opacity-50 rounded-lg"
                     suppressContentEditableWarning={true}
                   >

@@ -28,17 +28,30 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/StableAuthContext';
 import { supabase } from '@/lib/supabase/client';
 import { uploadFiles, validateFile } from '@/lib/supabase/storage';
+import { validateNoProfanity } from '@/lib/utils/profanity-filter';
 
 // アイデア投稿フォームスキーマ
 const ideaSchema = z.object({
   title: z
     .string()
     .min(1, 'タイトルは必須です')
-    .max(100, 'タイトルは100文字以内で入力してください'),
+    .max(100, 'タイトルは100文字以内で入力してください')
+    .refine(
+      (text: string) => validateNoProfanity(text).valid,
+      {
+        message: '不適切な言葉が含まれています。内容を確認してください。',
+      }
+    ),
   summary: z
     .string()
     .min(20, '概要は20文字以上で入力してください')
-    .max(300, '概要は300文字以内で入力してください'),
+    .max(300, '概要は300文字以内で入力してください')
+    .refine(
+      (text: string) => validateNoProfanity(text).valid,
+      {
+        message: '不適切な言葉が含まれています。内容を確認してください。',
+      }
+    ),
   deadline: z
     .string()
     .min(1, '議論期限は必須です')
@@ -51,7 +64,7 @@ const ideaSchema = z.object({
   termsAgreed: z
     .boolean()
     .refine(val => val === true, '利用規約に同意してください'),
-  isExclusive: z.boolean().default(false),
+  isExclusive: z.boolean(),
 });
 
 type IdeaFormData = z.infer<typeof ideaSchema>;
@@ -486,7 +499,8 @@ export function IdeaCreateForm() {
                   />
                   <div className="text-sm text-muted-foreground">
                     その日付まで他のユーザーからのコメントや意見を受け付けます。
-                    設定しない場合は、本サービスの対象外になります。
+                    設定しない場合は、本サービスの対象外になります。<br />
+                    なお、最終アイデアの投稿は設定期限の３０日（土日祝含む）以内に行ってください。行われない場合は、削除の対象となり、投稿者および改善提案者は全ての権利を消失するものとします。
                   </div>
                   {errors.deadline && (
                     <p className="text-sm text-destructive">

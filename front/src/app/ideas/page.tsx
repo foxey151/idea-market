@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { getIdeas, getCommentCount } from '@/lib/supabase/ideas';
-import { Search, Filter, MessageSquare, Calendar, Users } from 'lucide-react';
+import { Search, MessageSquare, Calendar, Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Idea } from '@/types/ideas';
 
@@ -108,7 +108,7 @@ export default function IdeasPage() {
             </p>
           </div>
 
-          {/* Search and Filter */}
+          {/* Search */}
           <div className="flex flex-col md:flex-row gap-4 mb-8">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -119,10 +119,6 @@ export default function IdeasPage() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              フィルター
-            </Button>
           </div>
 
           {/* Stats */}
@@ -148,7 +144,7 @@ export default function IdeasPage() {
 
           {/* Loading State */}
           {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="animate-pulse">
                   <CardHeader>
@@ -186,7 +182,7 @@ export default function IdeasPage() {
             </div>
           ) : (
             /* Ideas Grid */
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredIdeas.map((idea, index) => (
                 <Card
                   key={idea.id}

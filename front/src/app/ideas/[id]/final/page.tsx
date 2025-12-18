@@ -16,8 +16,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { getIdeaById, updateIdea } from '@/lib/supabase/ideas';
-import { Calendar, User, Clock, Upload, X, FileText } from 'lucide-react';
+import { getIdeaById, updateIdea, getCommentCount } from '@/lib/supabase/ideas';
+import { Calendar, User, Clock, Upload, X, FileText, Calculator } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/StableAuthContext';
 import GoogleAdsense from '@/components/GoogleAdsense';
@@ -29,7 +29,9 @@ export default function FinalIdeaPage() {
   const [submitting, setSubmitting] = useState(false);
   const [detail, setDetail] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [price, setPrice] = useState<string>('3000'); // デフォルト金額を設定
+  const [basePrice, setBasePrice] = useState<string>('10000'); // 投稿者設定金額（デフォルト10000円）
+  const [commentCount, setCommentCount] = useState<number>(0);
+  const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
@@ -88,6 +90,14 @@ export default function FinalIdeaPage() {
       if (data.detail) {
         setDetail(data.detail);
       }
+      // 既存の投稿者設定金額があれば設定
+      if (data.price) {
+        setBasePrice(data.price);
+      }
+
+      // コメント数を取得
+      const { count } = await getCommentCount(ideaId);
+      setCommentCount(count || 0);
     } catch (error) {
       console.error('予期しないエラー:', error);
       toast({
@@ -100,6 +110,38 @@ export default function FinalIdeaPage() {
       setLoading(false);
     }
   }, [ideaId, user, router]);
+
+  // 販売金額を自動計算する関数
+  const calculateSalePrice = useCallback(() => {
+    if (!idea) return null;
+
+    // 投稿者設定金額（ユーザーが選択した値）
+    const basePriceValue = parseInt(basePrice, 10);
+    
+    // 改善投稿数（コメント数）
+    const improvementCount = commentCount;
+    
+    // 独占販売かどうか
+    const isExclusive = idea.is_exclusive || false;
+    
+    // 改善投稿1件あたりの金額（独占販売の場合は1000円、通常は50円）
+    const improvementPrice = isExclusive ? 1000 : 50;
+    
+    // 計算式: 販売金額 = 1.375 × (投稿者設定金額 + 改善投稿数 × 改善投稿単価)
+    const calculated = 1.375 * (basePriceValue + improvementCount * improvementPrice);
+    
+    return Math.round(calculated);
+  }, [idea, basePrice, commentCount]);
+
+  // 投稿者設定金額またはコメント数が変更されたら自動計算を実行
+  useEffect(() => {
+    if (idea && commentCount !== null && basePrice) {
+      const calculated = calculateSalePrice();
+      if (calculated !== null) {
+        setCalculatedPrice(calculated);
+      }
+    }
+  }, [idea, basePrice, commentCount, calculateSalePrice]);
 
   useEffect(() => {
     fetchIdea();
@@ -135,10 +177,10 @@ export default function FinalIdeaPage() {
       return;
     }
 
-    if (!price) {
+    if (calculatedPrice === null || calculatedPrice < 10000) {
       toast({
         title: 'エラー',
-        description: '販売価格を選択してください。',
+        description: '販売価格の計算に失敗しました。投稿者設定金額を確認してください。',
         variant: 'destructive',
       });
       return;
@@ -153,7 +195,7 @@ export default function FinalIdeaPage() {
       const { data: _data, error } = await updateIdea(ideaId, {
         detail: detail.trim(),
         attachments: attachmentPaths,
-        price: price as '3000' | '5000' | '10000' | '30000' | '50000',
+        price: calculatedPrice, // 計算結果の金額をそのまま保存
         status: 'closed', // 最終版作成後は終了状態に
         updated_at: new Date().toISOString(),
       });
@@ -233,9 +275,9 @@ export default function FinalIdeaPage() {
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
             {/* メインコンテンツ */}
-            <div className="lg:col-span-3">
+            <div className="xl:col-span-3">
               {/* アイデア詳細 */}
               <Card className="mb-8">
                 <CardHeader>
@@ -318,63 +360,109 @@ export default function FinalIdeaPage() {
                     </p>
                   </div>
 
-                  {/* 金額設定 */}
+                  {/* 投稿者設定金額 */}
                   <div className="space-y-4">
-                    <Label>販売価格 *</Label>
+                    <div>
+                      <Label>投稿者設定金額（price_enum） *</Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        販売金額の計算に使用する基本金額を選択してください。
+                      </p>
+                    </div>
                     <RadioGroup
-                      value={price}
-                      onValueChange={setPrice}
+                      value={basePrice}
+                      onValueChange={setBasePrice}
                       className="grid grid-cols-1 gap-3"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="3000" id="price-3000" />
+                        <RadioGroupItem value="10000" id="base-price-10000" />
                         <Label
-                          htmlFor="price-3000"
-                          className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
-                        >
-                          <div className="font-medium">3,000円</div>
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="5000" id="price-5000" />
-                        <Label
-                          htmlFor="price-5000"
-                          className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
-                        >
-                          <div className="font-medium">5,000円</div>
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="10000" id="price-10000" />
-                        <Label
-                          htmlFor="price-10000"
+                          htmlFor="base-price-10000"
                           className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
                         >
                           <div className="font-medium">10,000円</div>
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="30000" id="price-30000" />
+                        <RadioGroupItem value="30000" id="base-price-30000" />
                         <Label
-                          htmlFor="price-30000"
+                          htmlFor="base-price-30000"
                           className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
                         >
                           <div className="font-medium">30,000円</div>
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="50000" id="price-50000" />
+                        <RadioGroupItem value="50000" id="base-price-50000" />
                         <Label
-                          htmlFor="price-50000"
+                          htmlFor="base-price-50000"
                           className="flex-1 cursor-pointer p-3 rounded-lg border hover:bg-accent"
                         >
                           <div className="font-medium">50,000円</div>
                         </Label>
                       </div>
                     </RadioGroup>
-                    <p className="text-sm text-muted-foreground">
-                      最終アイデアの内容に応じて適切な価格を設定してください。
-                    </p>
+                  </div>
+
+                  {/* 販売金額表示 */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label>販売価格（自動計算結果） *</Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        投稿者設定金額と改善投稿数から自動計算された金額が販売価格として設定されます。
+                      </p>
+                    </div>
+                    
+                    {/* 計算式の説明 */}
+                    {calculatedPrice !== null && idea && (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">投稿者設定金額:</span>
+                            <span className="font-medium">¥{parseInt(basePrice, 10).toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">改善投稿数:</span>
+                            <span className="font-medium">
+                              {commentCount}件
+                              {idea.is_exclusive ? ' × ¥1,000' : ' × ¥50'}
+                              {' = ¥'}{(commentCount * (idea.is_exclusive ? 1000 : 50)).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="pt-2 border-t border-border">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Calculator className="h-4 w-4 text-primary" />
+                                <span className="text-sm text-muted-foreground">計算式:</span>
+                              </div>
+                              <span className="text-sm text-muted-foreground">
+                                1.375 × (¥{parseInt(basePrice, 10).toLocaleString()} + ¥{(commentCount * (idea.is_exclusive ? 1000 : 50)).toLocaleString()})
+                              </span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t-2 border-primary">
+                            <div className="flex items-center justify-between">
+                              <span className="text-lg font-semibold">販売価格:</span>
+                              <span className="text-2xl font-bold text-primary">
+                                ¥{calculatedPrice.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                          {idea.is_exclusive && (
+                            <div className="text-xs text-orange-600 mt-2">
+                              ※ 独占販売のため、改善投稿1件あたり¥1,000で計算しています
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {calculatedPrice === null && (
+                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <p className="text-sm text-yellow-800">
+                              投稿者設定金額を選択すると、自動計算された販売価格が表示されます。
+                            </p>
+                          </div>
+                    )}
                   </div>
 
                   {/* ファイル添付 */}
@@ -453,7 +541,7 @@ export default function FinalIdeaPage() {
                   <div className="flex gap-3 pt-4">
                     <Button
                       onClick={handleSubmit}
-                      disabled={!detail.trim() || !price || submitting}
+                      disabled={!detail.trim() || !basePrice || calculatedPrice === null || submitting}
                       className="flex-1"
                     >
                       {submitting ? (
@@ -480,7 +568,7 @@ export default function FinalIdeaPage() {
             </div>
 
             {/* サイドバー（広告エリア） */}
-            <div className="lg:col-span-1">
+            <div className="xl:col-span-1">
               <div className="sticky top-8 space-y-6">
                 {/* メイン広告 */}
                 <Card className="p-4">

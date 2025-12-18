@@ -23,7 +23,7 @@ interface TermsEditModalProps {
   onDocumentSelect: (documentType: EditableDocument) => void;
 }
 
-type EditableDocument = 'terms' | 'privacy' | 'commerce' | 'company';
+type EditableDocument = 'terms' | 'privacy' | 'commerce' | 'company' | 'advertising' | 'contact';
 
 const documents = [
   {
@@ -102,6 +102,46 @@ const documents = [
           strokeLinejoin="round"
           strokeWidth={2}
           d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 'advertising' as EditableDocument,
+    title: '広告掲載について',
+    description: '広告掲載に関する情報を編集します',
+    icon: (
+      <svg
+        className="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 'contact' as EditableDocument,
+    title: 'お問い合わせ',
+    description: 'お問い合わせページの内容を編集します',
+    icon: (
+      <svg
+        className="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
         />
       </svg>
     ),

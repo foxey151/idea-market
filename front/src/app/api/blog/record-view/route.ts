@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { ERROR_CODES, createError } from '@/lib/constants/error-codes';
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     const { blogId, userId, sessionId } = validation.data;
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // IPアドレスとUser-Agentを取得
     const forwarded = request.headers.get('x-forwarded-for');
@@ -59,17 +59,26 @@ export async function POST(request: NextRequest) {
       message: '閲覧記録を追加しました',
       data,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('閲覧記録保存エラー:', error);
+    
     // エラーの詳細を返す（開発環境のみ）
     const errorMessage =
       process.env.NODE_ENV === 'development'
-        ? `閲覧記録の保存に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`
+        ? `閲覧記録の保存に失敗しました: ${error?.message || error?.code || 'Unknown error'}`
         : '閲覧記録の保存に失敗しました';
 
     return NextResponse.json(
       {
         error: errorMessage,
-        details: process.env.NODE_ENV === 'development' ? error : undefined,
+        details: process.env.NODE_ENV === 'development' 
+          ? {
+              message: error?.message,
+              code: error?.code,
+              details: error?.details,
+              hint: error?.hint,
+            }
+          : undefined,
       },
       { status: 500 }
     );

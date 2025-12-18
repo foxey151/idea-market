@@ -7,6 +7,7 @@ export default function CompanyInfoPage() {
   const [content, setContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -17,16 +18,19 @@ export default function CompanyInfoPage() {
           // データが存在しない場合はデフォルトコンテンツを表示
           if (error.code === 'PGRST116') {
             setContent(getDefaultContent());
+            setUpdatedAt(null);
           } else {
             setError('コンテンツの取得に失敗しました');
           }
         } else {
           setContent(data?.content || getDefaultContent());
+          setUpdatedAt(data?.updated_at ? new Date(data.updated_at) : null);
         }
       } catch (err) {
         console.error('Error fetching company content:', err);
         setError('コンテンツの取得に失敗しました');
         setContent(getDefaultContent());
+        setUpdatedAt(null);
       } finally {
         setLoading(false);
       }
@@ -115,7 +119,7 @@ export default function CompanyInfoPage() {
             <div className="mt-8 text-right text-sm text-gray-500">
               制定日：2024年1月1日
               <br />
-              最終更新日：{new Date().toLocaleDateString('ja-JP')}
+              最終更新日：{updatedAt ? updatedAt.toLocaleDateString('ja-JP') : '2024年1月1日'}
             </div>
           </div>
         </div>

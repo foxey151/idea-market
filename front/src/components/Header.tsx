@@ -122,7 +122,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-8">
             <Link
               href="/ideas"
               className="text-foreground/80 hover:text-primary transition-colors"
@@ -150,7 +150,7 @@ const Header = () => {
           </nav>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4">
             {/* Desktop Search */}
             <form onSubmit={handleHeaderSearch} className="flex items-center gap-2">
               <Input
@@ -189,7 +189,7 @@ const Header = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
@@ -201,7 +201,7 @@ const Header = () => {
         </div>
 
         {/* Mobile Search */}
-        <div className="md:hidden mt-4">
+        <div className="lg:hidden mt-4">
           <form onSubmit={handleHeaderSearch} className="flex items-center gap-2">
             <Input
               placeholder="アイデア検索..."
@@ -217,7 +217,7 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 p-4 bg-card rounded-lg border shadow-soft animate-fade-in">
+          <div className="lg:hidden mt-4 p-4 bg-card rounded-lg border shadow-soft animate-fade-in">
             <nav className="flex flex-col space-y-4">
               <Link
                 href="/ideas"

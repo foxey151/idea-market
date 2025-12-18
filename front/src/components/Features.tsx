@@ -105,7 +105,7 @@ const Features = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+        <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-24">
           {features.map((feature, index) => (
             <Card
               key={index}
@@ -144,7 +144,7 @@ const Features = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-8 mb-16">
           {steps.map((step, index) => (
             <div
               key={index}

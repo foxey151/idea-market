@@ -98,20 +98,20 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">企業の方へ</h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/advertising"
                   className="text-muted-foreground hover:text-foreground"
                 >
                   広告掲載について
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/contact"
                   className="text-muted-foreground hover:text-foreground"
                 >
                   お問い合わせ
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -159,7 +159,7 @@ const Footer = () => {
         <div className="border-t border-border/50 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <p className="text-muted-foreground text-sm">
-              © 2024 アイデアマーケット. All rights reserved.
+              © 2025 アイデアマーケット. All rights reserved.
             </p>
           </div>
           <div className="flex space-x-4">

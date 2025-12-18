@@ -56,7 +56,7 @@ const quillFormats = [
 interface DocumentEditorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  documentType: 'terms' | 'privacy' | 'commerce' | 'company' | null;
+  documentType: 'terms' | 'privacy' | 'commerce' | 'company' | 'advertising' | 'contact' | null;
 }
 
 const documentTitles = {
@@ -64,6 +64,8 @@ const documentTitles = {
   privacy: 'プライバシーポリシー',
   commerce: '特定商取引法に基づく表記',
   company: '会社情報',
+  advertising: '広告掲載について',
+  contact: 'お問い合わせ',
 };
 
 // const documentPaths = {
@@ -141,6 +143,12 @@ export function DocumentEditor({
       case 'company':
         return `default content`;
 
+      case 'advertising':
+        return `default content`;
+
+      case 'contact':
+        return `default content`;
+
       default:
         return '';
     }
@@ -152,6 +160,30 @@ export function DocumentEditor({
       fetchDocumentContent(documentType);
     }
   }, [open, documentType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ReactQuillのエディタ部分をスクロール可能にする
+  useEffect(() => {
+    if (open) {
+      const style = document.createElement('style');
+      style.textContent = `
+        .quill-root .ql-container {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .quill-root .ql-editor {
+          flex: 1;
+          overflow-y: auto;
+          min-height: 0;
+        }
+      `;
+      document.head.appendChild(style);
+      return () => {
+        document.head.removeChild(style);
+      };
+    }
+  }, [open]);
 
   // 保存処理
   const handleSave = async () => {
@@ -215,8 +247,8 @@ export function DocumentEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[70vh] z-[100] grid grid-rows-[auto,1fr,auto] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="max-w-6xl h-[85vh] z-[100] grid grid-rows-[auto,1fr,auto] flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="text-2xl">
             {documentTitles[documentType]}の編集
           </DialogTitle>
@@ -225,9 +257,9 @@ export function DocumentEditor({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 overflow-hidden">
+        <div className="min-h-0 overflow-y-auto flex-1">
           {loading ? (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
                 <p className="text-muted-foreground">文書を読み込み中...</p>
@@ -241,7 +273,7 @@ export function DocumentEditor({
                 modules={quillModules}
                 formats={quillFormats}
                 placeholder="文書の内容を入力してください..."
-                className="h-full"
+                className="h-full flex-1"
                 theme="snow"
               />
             </div>
