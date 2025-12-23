@@ -18,8 +18,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Download, FileText } from 'lucide-react';
-import { getLogs, LogType } from '@/lib/supabase/logs';
-import { convertLogsToCSV, generateLogFileName } from '@/lib/utils/logExport';
+import { LogType } from '@/lib/supabase/logs';
+import { generateLogFileName } from '@/lib/utils/logExport';
 import { useToast } from '@/hooks/use-toast';
 
 interface LogDownloadModalProps {
@@ -31,7 +31,7 @@ export function LogDownloadModal({
   open,
   onOpenChange,
 }: LogDownloadModalProps) {
-  const [logType, setLogType] = useState<LogType>('audit');
+  const [logType, setLogType] = useState<LogType>('login');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
@@ -41,24 +41,33 @@ export function LogDownloadModal({
     try {
       setIsDownloading(true);
 
-      // ログデータを取得
-      const { data: logs, error } = await getLogs(
-        logType,
-        startDate,
-        endDate,
-        10000
-      );
+      // APIから直接CSVをダウンロード
+      const response = await fetch('/api/admin/logs/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          logType,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+        }),
+      });
 
-      if (error) {
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
         toast({
           title: 'エラー',
-          description: 'ログデータの取得に失敗しました',
+          description: errorData.error || 'ログデータの取得に失敗しました',
           variant: 'destructive',
         });
         return;
       }
 
-      if (!logs || logs.length === 0) {
+      // CSVデータを取得
+      const csvContent = await response.text();
+
+      if (!csvContent || csvContent.trim().length === 0) {
         toast({
           title: '警告',
           description: '指定された条件に一致するログがありません',
@@ -66,9 +75,6 @@ export function LogDownloadModal({
         });
         return;
       }
-
-      // CSVに変換
-      const csvContent = convertLogsToCSV(logs, logType);
 
       // ファイル名を生成
       const fileName = generateLogFileName(logType, startDate, endDate);
@@ -83,10 +89,15 @@ export function LogDownloadModal({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // 行数をカウント（ヘッダーを除く）
+      const lines = csvContent.split('\n').filter((line) => line.trim());
+      const rowCount = Math.max(0, lines.length - 1);
 
       toast({
         title: '成功',
-        description: `${logs.length}件のログをダウンロードしました`,
+        description: `${rowCount}件のログをダウンロードしました`,
       });
 
       // モーダルを閉じる
@@ -125,7 +136,8 @@ export function LogDownloadModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="audit">監査ログ</SelectItem>
+                  <SelectItem value="login">ログインログ</SelectItem>
+                  <SelectItem value="blog_view">ブログ閲覧履歴</SelectItem>
                   <SelectItem value="access" disabled>
                     アクセスログ（準備中）
                   </SelectItem>

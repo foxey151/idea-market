@@ -53,6 +53,31 @@ export async function GET(request: NextRequest) {
       }
 
       if (data?.user) {
+        // OAuthログイン成功時のログイン履歴を記録
+        try {
+          // IPアドレスとUser-Agentを取得
+          const forwarded = request.headers.get('x-forwarded-for');
+          const ip = forwarded
+            ? forwarded.split(',')[0]
+            : request.headers.get('x-real-ip') || null;
+          const userAgent = request.headers.get('user-agent') || null;
+
+          await supabase
+            .from('login_history')
+            .insert({
+              user_id: data.user.id,
+              login_status: 'success',
+              ip_address: ip,
+              user_agent: userAgent,
+              failure_reason: null,
+              login_at: new Date().toISOString(),
+              logout_at: null,
+            });
+        } catch (logError) {
+          // ログイン履歴の記録に失敗してもログイン処理は続行
+          console.error('OAuthログイン履歴記録エラー:', logError);
+        }
+
         const forwardedHost = request.headers.get('x-forwarded-host');
         const isLocalEnv = process.env.NODE_ENV === 'development';
 

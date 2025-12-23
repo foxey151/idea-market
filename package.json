@@ -4,6 +4,7 @@
     "stylelint-config-standard": "^39.0.0"
   },
   "dependencies": {
+    "next": "^16.1.1",
     "nodemailer": "^7.0.9"
   }
 }

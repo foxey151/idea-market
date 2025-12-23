@@ -200,8 +200,42 @@ export function StableAuthProvider({
         email,
         password,
       });
+
+      // ログイン履歴を記録
+      try {
+        await fetch('/api/auth/record-login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            loginStatus: error ? 'failed' : 'success',
+            failureReason: error?.message || undefined,
+          }),
+        });
+      } catch (logError) {
+        // ログイン履歴の記録に失敗してもログイン処理は続行
+        console.error('ログイン履歴記録エラー:', logError);
+      }
+
       return { error };
     } catch (error) {
+      // ログイン失敗時の記録
+      try {
+        await fetch('/api/auth/record-login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            loginStatus: 'failed',
+            failureReason: error instanceof Error ? error.message : 'Unknown error',
+          }),
+        });
+      } catch (logError) {
+        console.error('ログイン履歴記録エラー:', logError);
+      }
+
       return { error };
     }
   };

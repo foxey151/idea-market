@@ -1,58 +1,41 @@
 import { supabase } from './client';
 
 // ログの種類
-export type LogType = 'access' | 'error' | 'audit' | 'system';
+export type LogType = 'access' | 'error' | 'system' | 'login' | 'blog_view';
 
 // ログデータの型定義（audit_logsテーブルの実際の構造に合わせる）
 export interface LogEntry {
-  id: number;
-  actor_id: string | null;
-  action: string;
-  entity: string;
-  entity_id: string | null;
-  payload: any;
+  id: number | string;
+  actor_id?: string | null;
+  action?: string;
+  entity?: string;
+  entity_id?: string | null;
+  payload?: any;
   created_at: string;
+  // ログイン履歴用
+  user_id?: string | null;
+  user_display_name?: string | null;
+  user_email?: string | null;
+  login_status?: 'success' | 'failed';
+  ip_address?: string | null;
+  user_agent?: string | null;
+  failure_reason?: string | null;
+  login_at?: string;
+  // ブログ閲覧履歴用
+  blog_id?: string;
+  session_id?: string | null;
+  view_date?: string;
 }
 
-// ログデータを取得する関数
+// ログデータを取得する関数（API経由でダウンロードするため、空配列を返す）
 export const getLogs = async (
   logType: LogType,
   startDate?: string,
   endDate?: string,
   limit: number = 1000
 ): Promise<{ data: LogEntry[] | null; error: any }> => {
-  try {
-    let query = supabase
-      .from('audit_logs') // 既存のaudit_logsテーブルを使用
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    // 日付フィルター
-    if (startDate) {
-      query = query.gte('created_at', startDate);
-    }
-    if (endDate) {
-      query = query.lte('created_at', endDate);
-    }
-
-    // ログタイプフィルター（現在はaudit_logsのみ対応）
-    // 将来的に他のログテーブルを追加する際はここで分岐
-    if (logType !== 'audit') {
-      // 現在はaudit_logsのみ対応のため、audit以外の場合は空の結果を返す
-      return { data: [], error: null };
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      return { data: null, error };
-    }
-
-    return { data: data as LogEntry[], error: null };
-  } catch (error) {
-    return { data: null, error };
-  }
+  // loginとblog_viewの場合はAPI経由でダウンロードするため、空配列を返す
+  return { data: [], error: null };
 };
 
 // 監査ログを記録する関数
