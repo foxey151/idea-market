@@ -7,6 +7,9 @@ export async function recordBlogView(blogId: string, sessionId?: string) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    // セッションIDが提供されていない場合は生成
+    const finalSessionId = sessionId || generateSessionId();
+
     // API Route経由で閲覧記録を追加
     const response = await fetch('/api/blog/record-view', {
       method: 'POST',
@@ -16,7 +19,7 @@ export async function recordBlogView(blogId: string, sessionId?: string) {
       body: JSON.stringify({
         blogId,
         userId: user?.id || null,
-        sessionId: sessionId || generateSessionId(),
+        sessionId: finalSessionId,
       }),
     });
 
@@ -116,6 +119,12 @@ export async function getPopularBlogs(limit: number = 10) {
 
 // セッションIDを生成
 function generateSessionId(): string {
+  // ブラウザ環境でのみ実行
+  if (typeof window === 'undefined') {
+    // サーバーサイドではランダムなIDを生成（通常は呼ばれないはず）
+    return 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+  }
+
   // セッションストレージから既存のIDを取得、なければ新規作成
   let sessionId = sessionStorage.getItem('blog_session_id');
 

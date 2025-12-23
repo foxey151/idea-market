@@ -78,9 +78,6 @@ export async function PUT(
         { status: 500 }
       );
     }
-    if (!client) {
-      throw new Error('microCMSクライアントが初期化されていません');
-    }
     const response = await client.update({
       endpoint: 'blogs',
       contentId: id,
